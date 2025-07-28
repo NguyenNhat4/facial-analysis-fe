@@ -18,7 +18,8 @@ You need to have [Node.js](https://nodejs.org/) (version 18 or later) and npm in
     ```
 2.  Navigate into the project directory:
     ```bash
-    cd demo-leetray
+    cd ui-tooth-ai
+
     ```
 3.  Install the dependencies:
     ```bash
