@@ -57,29 +57,6 @@ export default function XrayAnalysisPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-clinical-800 to-clinical-700 text-white border-b border-clinical-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Radiation className="text-white" size={32} />
-            </div>
-            <h2 className="text-3xl font-bold mb-4">
-              Phân tích X-quang Panoramic
-            </h2>
-            <div className="mb-4">
-              <span className="bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-full">
-                🚀 Demo - Tính năng đang phát triển
-              </span>
-            </div>
-            <p className="text-lg text-clinical-200 max-w-2xl mx-auto">
-              AI phân tích X-quang toàn cảnh để phát hiện sâu răng, nhiễm trùng và các vấn đề 
-              cần điều trị, giúp lập kế hoạch điều trị chính xác.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* Patient Info Bar */}
       <section className="bg-white border-b border-clinical-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

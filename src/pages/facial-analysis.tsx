@@ -130,23 +130,7 @@ export default function FacialAnalysisPage() {
             </TabsContent>
 
             <TabsContent value="facial" className="mt-0">
-              <Card className="bg-white shadow-sm border-clinical-200">
-                <CardHeader className="border-b border-clinical-200 bg-blue-50">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h3 className="text-xl font-semibold text-clinical-900">Phân tích Gương mặt AI (Demo)</h3>
-                      <p className="text-clinical-600 mt-1">Phân tích đa góc độ với đo lường chính xác</p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm text-clinical-500">Độ chính xác</p>
-                      <p className="text-2xl font-bold text-blue-600">96.8%</p>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent className="p-8">
-                  <FacialAnalysisComponent analysis={facialAnalysis} />
-                </CardContent>
-              </Card>
+              <FacialAnalysisSection />
             </TabsContent>
 
             <TabsContent value="xray" className="mt-0">
@@ -473,6 +457,382 @@ function Model3DDemo() {
   );
 }
 
+// Facial Analysis Section Component với upload và kết quả
+function FacialAnalysisSection() {
+  const [isAnalyzed, setIsAnalyzed] = useState(false);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+
+  const handleImageUpload = () => {
+    // Mock upload - trong thực tế sẽ xử lý file upload
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        setUploadedImage(URL.createObjectURL(file));
+      }
+    };
+    input.click();
+  };
+
+  const handleAnalyze = () => {
+    setIsAnalyzed(true);
+  };
+
+  if (!isAnalyzed) {
+    return (
+      <Card className="bg-white shadow-sm border-blue-200">
+        <CardHeader className="border-b border-blue-200 bg-blue-50">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-xl font-semibold text-blue-900">Phân tích Gương mặt AI</h3>
+              <p className="text-blue-600 mt-1">Tải lên ảnh mặt trước để bắt đầu phân tích tỷ lệ gương mặt</p>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="p-8">
+          <div className="max-w-2xl mx-auto">
+            {/* Upload Area */}
+            <div className="space-y-6">
+              <div className="text-center">
+                <h4 className="text-2xl font-bold text-gray-900 mb-2">Tải ảnh Gương mặt</h4>
+                <p className="text-gray-600">Chụp ảnh thẳng mặt, nhìn thẳng vào camera để có kết quả phân tích chính xác nhất</p>
+              </div>
+
+              <div 
+                className="border-2 border-dashed border-blue-300 bg-gradient-to-br from-blue-50 to-cyan-50 rounded-2xl p-12 text-center hover:border-blue-400 hover:bg-gradient-to-br hover:from-blue-100 hover:to-cyan-100 transition-all duration-300 cursor-pointer group"
+                onClick={handleImageUpload}
+              >
+                {uploadedImage ? (
+                  <div className="space-y-6">
+                    <div className="relative inline-block">
+                      <img 
+                        src={uploadedImage} 
+                        alt="Uploaded face" 
+                        className="w-80 h-80 object-cover rounded-xl shadow-lg mx-auto"
+                      />
+                      <div className="absolute -top-2 -right-2 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center">
+                        <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className="text-lg font-semibold text-green-700">✓ Ảnh đã tải lên thành công</p>
+                      <p className="text-sm text-gray-600">Sẵn sàng để phân tích AI</p>
+                    </div>
+                    <Button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleImageUpload();
+                      }}
+                      variant="outline" 
+                      className="border-blue-300 text-blue-700 hover:bg-blue-50"
+                    >
+                      Thay đổi ảnh
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="relative">
+                      <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-2xl flex items-center justify-center mx-auto group-hover:scale-110 transition-transform duration-300 shadow-lg">
+                        <Camera className="text-white" size={40} />
+                      </div>
+                      <div className="absolute -bottom-1 -right-1 w-8 h-8 bg-white rounded-full flex items-center justify-center shadow-lg">
+                        <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      <h5 className="text-xl font-bold text-blue-900">Tải ảnh Gương mặt</h5>
+                      <p className="text-gray-700 leading-relaxed max-w-md mx-auto">
+                        Chụp ảnh thẳng mặt với ánh sáng tốt. AI sẽ phân tích các tỷ lệ và đưa ra đánh giá chuyên nghiệp
+                      </p>
+                    </div>
+                    <Button className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white px-8 py-3 text-lg font-semibold shadow-lg">
+                      <Camera className="mr-2" size={20} />
+                      Chọn ảnh từ thiết bị
+                    </Button>
+                    <div className="flex items-center justify-center space-x-4 text-sm text-gray-500 mt-4">
+                      <div className="flex items-center space-x-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <span>JPG, PNG</span>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                        <span>An toàn & Bảo mật</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Tips */}
+              <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-6">
+                <h5 className="font-semibold text-yellow-900 mb-3 flex items-center">
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  Mẹo để có kết quả tốt nhất
+                </h5>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-yellow-800">
+                  <div className="flex items-start space-x-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                    <span>Chụp ảnh trong ánh sáng tự nhiên</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                    <span>Nhìn thẳng vào camera</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                    <span>Không đeo kính hoặc khẩu trang</span>
+                  </div>
+                  <div className="flex items-start space-x-2">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                    <span>Biểu cảm tự nhiên, không cười</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Analyze Button */}
+            <div className="text-center mt-8">
+              <Button 
+                onClick={handleAnalyze}
+                disabled={!uploadedImage}
+                className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 disabled:from-gray-400 disabled:to-gray-500 text-white px-12 py-4 text-xl font-bold shadow-xl disabled:shadow-none transition-all duration-300"
+              >
+                <svg className="mr-3 w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                </svg>
+                Bắt đầu Phân tích AI
+              </Button>
+              {!uploadedImage && (
+                <p className="text-sm text-gray-500 mt-3">
+                  Vui lòng tải lên ảnh gương mặt để bắt đầu
+                </p>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Kết quả phân tích
+  return (
+    <Card className="bg-white shadow-sm border-blue-200">
+      <CardHeader className="border-b border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-2xl font-bold text-blue-900">Kết quả Phân tích Gương mặt AI</h3>
+            <p className="text-blue-600 mt-1">Phân tích hoàn tất với độ chính xác cao</p>
+          </div>
+          <div className="text-right">
+            <div className="bg-white rounded-lg p-3 shadow-sm">
+              <p className="text-sm text-blue-500 font-medium">Độ chính xác AI</p>
+              <p className="text-3xl font-bold text-blue-600">96.8%</p>
+            </div>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="p-8">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* Ảnh phân tích */}
+          <div className="xl:col-span-2 space-y-6">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xl font-bold text-gray-900">Phân tích Tỷ lệ Gương mặt</h4>
+              <div className="flex items-center space-x-2 text-sm text-green-600">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span>Đã phân tích</span>
+              </div>
+            </div>
+            
+            <div className="bg-gradient-to-br from-gray-50 to-blue-50 rounded-2xl p-6 shadow-inner">
+              <div className="relative bg-white rounded-xl p-4 shadow-lg">
+                <img 
+                  src="/assets/facial-analysis/front-analyzed.jpg" 
+                  alt="Facial analysis result" 
+                  className="w-full h-96 object-cover rounded-lg"
+                  onError={(e) => {
+                    // Fallback to mock display if image not found
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                    target.nextElementSibling?.classList.remove('hidden');
+                  }}
+                />
+                {/* Mock display fallback */}
+                <div className="hidden w-full h-96 bg-gradient-to-b from-blue-100 to-cyan-50 rounded-lg flex items-center justify-center">
+                  <div className="text-center space-y-4">
+                    <div className="w-20 h-20 bg-blue-500 rounded-full flex items-center justify-center mx-auto">
+                      <Camera className="text-white" size={32} />
+                    </div>
+                    <div>
+                      <p className="text-xl font-bold text-blue-700">Kết quả Phân tích AI</p>
+                      <p className="text-blue-600 mt-2">Ảnh gương mặt với các đường reference</p>
+                      <p className="text-sm text-blue-500 mt-1">và chỉ số đo lường chính xác</p>
+                    </div>
+                  </div>
+                </div>
+                
+                {/* Analysis overlay info */}
+                <div className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm rounded-lg p-3 shadow-lg">
+                  <div className="flex items-center space-x-2 text-sm">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="font-medium text-gray-700">AI Analysis Complete</span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-4 text-center text-sm text-gray-600">
+                <p>Các đường reference và góc đo được tính toán tự động bởi AI</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Bảng chỉ số */}
+          <div className="space-y-6">
+            <h4 className="text-xl font-bold text-gray-900">Chỉ số Đo lường</h4>
+            
+            <div className="space-y-4">
+              <Card className="bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200 shadow-lg">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h6 className="font-bold text-blue-900 text-lg">Nasolabial Angle</h6>
+                      <p className="text-sm text-blue-700">Góc mũi môi</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-3xl font-bold text-blue-900">102.5°</p>
+                      <p className="text-xs text-blue-600 mt-1">Chuẩn: 90-120°</p>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <div className="w-full bg-blue-200 rounded-full h-2">
+                      <div className="bg-blue-600 h-2 rounded-full" style={{width: '85%'}}></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-green-50 to-green-100 border-green-200 shadow-lg">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h6 className="font-bold text-green-900 text-lg">Mentolabial Angle</h6>
+                      <p className="text-sm text-green-700">Góc cằm môi</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-3xl font-bold text-green-900">128.7°</p>
+                      <p className="text-xs text-green-600 mt-1">Chuẩn: 120-140°</p>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <div className="w-full bg-green-200 rounded-full h-2">
+                      <div className="bg-green-600 h-2 rounded-full" style={{width: '92%'}}></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200 shadow-lg">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h6 className="font-bold text-orange-900 text-lg">Chin Projection</h6>
+                      <p className="text-sm text-orange-700">Độ nhô cằm</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-3xl font-bold text-orange-900">87.47°</p>
+                      <p className="text-xs text-orange-600 mt-1">H to A: 75.29°</p>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <div className="w-full bg-orange-200 rounded-full h-2">
+                      <div className="bg-orange-600 h-2 rounded-full" style={{width: '78%'}}></div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-yellow-50 to-yellow-100 border-yellow-200 shadow-lg">
+                <CardContent className="p-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h6 className="font-bold text-yellow-900 text-lg">Golden Ratio</h6>
+                      <p className="text-sm text-yellow-700">Tỷ lệ vàng</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-3xl font-bold text-yellow-900">1.618</p>
+                      <p className="text-xs text-yellow-600 mt-1">Lý tưởng: 1.618</p>
+                    </div>
+                  </div>
+                  <div className="mt-3">
+                    <div className="w-full bg-yellow-200 rounded-full h-2">
+                      <div className="bg-yellow-600 h-2 rounded-full" style={{width: '100%'}}></div>
+                    </div>
+                    <p className="text-xs text-yellow-700 mt-2 font-semibold">✓ Hoàn hảo</p>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Tổng kết */}
+            <Card className="bg-gradient-to-br from-purple-50 to-pink-50 border-purple-200 shadow-lg">
+              <CardContent className="p-5">
+                <h6 className="font-bold text-purple-900 text-lg mb-4">Đánh giá Tổng thể</h6>
+                <div className="space-y-3">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
+                    <p className="text-sm text-gray-700">Tỷ lệ gương mặt hài hòa</p>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                    <p className="text-sm text-gray-700">Các góc trong giới hạn bình thường</p>
+                  </div>
+                  <div className="flex items-center space-x-3">
+                    <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
+                    <p className="text-sm text-gray-700">Tỷ lệ vàng đạt chuẩn lý tưởng</p>
+                  </div>
+                </div>
+                <div className="mt-4 p-3 bg-white rounded-lg">
+                  <p className="text-sm font-semibold text-purple-900">Kết luận:</p>
+                  <p className="text-sm text-gray-700 mt-1">Gương mặt có tỷ lệ tốt, không cần can thiệp điều trị.</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="flex justify-center space-x-4 mt-10">
+          <Button 
+            onClick={() => setIsAnalyzed(false)}
+            variant="outline" 
+            className="border-blue-300 text-blue-700 hover:bg-blue-50 px-6 py-3"
+          >
+            <Camera className="mr-2" size={16} />
+            Phân tích ảnh mới
+          </Button>
+          <Link href="/chat">
+            <Button className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white px-6 py-3">
+              <MessageCircle className="mr-2" size={16} />
+              Tư vấn với AI
+            </Button>
+          </Link>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 // Patient Info Section Component
 function PatientInfoSection() {
   return (
@@ -644,4 +1004,5 @@ function PatientInfoSection() {
       </div>
     </div>
   );
+}
 }

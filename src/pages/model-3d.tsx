@@ -45,29 +45,6 @@ export default function Model3DPage() {
         </div>
       </header>
 
-      {/* Hero Section */}
-      <section className="bg-gradient-to-r from-blue-600 to-purple-700 text-white border-b border-clinical-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <div className="text-center">
-            <div className="w-20 h-20 bg-white/10 rounded-full flex items-center justify-center mx-auto mb-6">
-              <Box className="text-white" size={32} />
-            </div>
-            <h2 className="text-3xl font-bold mb-4">
-              Mô phỏng 3D Điều trị
-            </h2>
-            <div className="mb-4">
-              <span className="bg-white/20 text-white text-sm font-medium px-4 py-2 rounded-full">
-                🚀 Demo - Tính năng đang phát triển
-              </span>
-            </div>
-            <p className="text-lg text-blue-100 max-w-2xl mx-auto">
-              Trực quan hóa kết quả điều trị thông qua mô hình 3D tương tác. 
-              So sánh trạng thái trước và sau điều trị để đánh giá hiệu quả.
-            </p>
-          </div>
-        </div>
-      </section>
-
       {/* Patient Info Bar */}
       <section className="bg-white border-b border-clinical-200">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">

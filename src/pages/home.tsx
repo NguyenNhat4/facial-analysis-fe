@@ -29,15 +29,17 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <svg className="text-white" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                </svg>
-              </div>
-              <div>
-                <h1 className="text-xl font-semibold text-clinical-900">LeeTray</h1>
-                <p className="text-xs text-clinical-500">Hệ thống Phân tích Nha khoa AI</p>
-              </div>
+              <img 
+                src="/assets/leetray_logo.png" 
+                alt="LeeTray Logo" 
+                className="w-20 h-20 object-contain"
+              />
+              <span className="text-clinical-400 font-bold text-xl">×</span>
+              <img 
+                src="/assets/hiai-logo.png" 
+                alt="HiAI Logo" 
+                className="w-20 h-20 object-contain"
+              />
             </div>
             <div className="flex items-center space-x-4">
               <nav className="hidden md:flex space-x-8">
@@ -135,10 +137,10 @@ export default function Home() {
           </div>
 
           {/* Revolutionary Features Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
             {/* Feature 1: Facial Analysis */}
             <div className="group cursor-pointer bg-gradient-to-br from-gray-900 to-blue-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
-              <div className="relative p-6 lg:p-8 h-96 flex flex-col">
+              <div className="relative p-8 h-[450px] flex flex-col">
                 <div className="absolute top-4 right-4">
                   <span className="bg-blue-500/20 backdrop-blur-sm text-blue-300 text-xs font-bold px-3 py-1 rounded-full">
                     FEATURE #1
@@ -146,7 +148,7 @@ export default function Home() {
                 </div>
                 
                 <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-400 to-cyan-500 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl">
+                  <div className="w-24 h-24 bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl">
                     <Camera className="text-white" size={40} />
                   </div>
                   
@@ -171,7 +173,7 @@ export default function Home() {
                   </div>
                 </div>
                 
-                <div className="space-y-3">
+                <div className="space-y-3 mt-auto">
                   <Button 
                     onClick={() => handleUpload('facial')}
                     className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-bold py-3 rounded-xl shadow-lg"
@@ -188,21 +190,25 @@ export default function Home() {
             </div>
 
             {/* Feature 2: X-ray Analysis */}
-            <div className="group cursor-pointer bg-gradient-to-br from-gray-900 to-gray-800 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
-              <div className="relative p-6 lg:p-8 h-96 flex flex-col">
+            <div className="group cursor-pointer bg-gradient-to-br from-gray-900 to-blue-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
+              <div className="relative p-8 h-[450px] flex flex-col">
                 <div className="absolute top-4 right-4">
-                  <span className="bg-gray-500/20 backdrop-blur-sm text-gray-300 text-xs font-bold px-3 py-1 rounded-full">
+                  <span className="bg-blue-500/20 backdrop-blur-sm text-blue-300 text-xs font-bold px-3 py-1 rounded-full">
                     FEATURE #2
                   </span>
                 </div>
                 
                 <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
-                  <div className="w-24 h-24 bg-gradient-to-br from-gray-600 to-slate-700 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl">
-                    <Radiation className="text-white" size={40} />
+                  <div className="w-24 h-24 bg-gradient-to-br from-blue-800 to-slate-900 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl overflow-hidden">
+                    <img 
+                      src="/assets/logo/paranomic_icon.png" 
+                      alt="X-ray Panoramic Analysis" 
+                      className="w-24 h-24 object-cover"
+                    />
                   </div>
                   
                   <div>
-                    <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-gray-300 to-slate-300 bg-clip-text text-transparent">
+                    <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
                       Phân tích X-quang AI
                     </h3>
                     <p className="text-gray-300 text-sm leading-relaxed">
@@ -222,15 +228,15 @@ export default function Home() {
                   </div>
                 </div>
                 
-                <div className="space-y-3">
+                <div className="space-y-3 mt-auto">
                   <Button 
                     onClick={() => handleUpload('xray')}
-                    className="w-full bg-gradient-to-r from-gray-600 to-slate-700 hover:from-gray-700 hover:to-slate-800 text-white font-bold py-3 rounded-xl shadow-lg"
+                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-700 hover:from-blue-700 hover:to-cyan-800 text-white font-bold py-3 rounded-xl shadow-lg"
                   >
                     Tải ảnh X-quang
                   </Button>
                   <Link href="/xray-analysis">
-                    <Button className="w-full bg-transparent border border-gray-500 text-gray-300 hover:bg-gray-500/10 font-bold py-2 rounded-xl">
+                    <Button className="w-full bg-transparent border border-blue-500 text-blue-300 hover:bg-blue-500/10 font-bold py-2 rounded-xl">
                       Xem Demo
                     </Button>
                   </Link>
@@ -240,7 +246,7 @@ export default function Home() {
 
             {/* Feature 3: 3D Simulation */}
             <div className="group cursor-pointer bg-gradient-to-br from-purple-900 to-pink-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
-              <div className="relative p-6 lg:p-8 h-96 flex flex-col">
+              <div className="relative p-8 h-[450px] flex flex-col">
                 <div className="absolute top-4 right-4">
                   <span className="bg-purple-500/20 backdrop-blur-sm text-purple-300 text-xs font-bold px-3 py-1 rounded-full">
                     FEATURE #3
@@ -248,8 +254,12 @@ export default function Home() {
                 </div>
                 
                 <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
-                  <div className="w-24 h-24 bg-gradient-to-br from-purple-500 to-pink-600 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl">
-                    <Box className="text-white" size={40} />
+                  <div className="w-24 h-24 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl overflow-hidden" style={{background: 'linear-gradient(to bottom right, #511ba2, #4c1d95)'}}>
+                    <img 
+                      src="/assets/logo/3D_icon.png" 
+                      alt="3D Simulation" 
+                      className="w-24 h-24 object-cover"
+                    />
                   </div>
                   
                   <div>
@@ -273,7 +283,7 @@ export default function Home() {
                   </div>
                 </div>
                 
-                <div className="space-y-3">
+                <div className="space-y-3 mt-auto">
                   <Button 
                     onClick={() => handleUpload('3d')}
                     className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 rounded-xl shadow-lg"
@@ -314,11 +324,11 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-3 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <svg className="text-white" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.94-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-                </svg>
-              </div>
+              <img 
+                src="/assets/leetray_logo.png" 
+                alt="LeeTray Logo" 
+                className="w-12 h-12 object-contain"
+              />
               <span className="text-xl font-semibold text-white">LeeTray</span>
             </div>
             <p className="text-clinical-400">© 2025 LeeTray. All Rights Reserved.</p>
