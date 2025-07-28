@@ -1,0 +1,149 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: hsl(248, 50%, 99%);
+  --foreground: hsl(215, 27%, 32%);
+  --muted: hsl(210, 11%, 96%);
+  --muted-foreground: hsl(215, 16%, 47%);
+  --popover: hsl(0, 0%, 100%);
+  --popover-foreground: hsl(215, 27%, 32%);
+  --card: hsl(0, 0%, 100%);
+  --card-foreground: hsl(215, 27%, 32%);
+  --border: hsl(220, 13%, 91%);
+  --input: hsl(220, 13%, 91%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(210, 11%, 96%);
+  --secondary-foreground: hsl(215, 25%, 27%);
+  --accent: hsl(210, 11%, 96%);
+  --accent-foreground: hsl(215, 25%, 27%);
+  --destructive: hsl(0, 84%, 60%);
+  --destructive-foreground: hsl(60, 9%, 98%);
+  --ring: hsl(215, 27%, 32%);
+  --radius: 0.5rem;
+  
+  /* Medical theme colors */
+  --medical-blue-50: hsl(214, 100%, 97%);
+  --medical-blue-100: hsl(214, 95%, 93%);
+  --medical-blue-500: hsl(207, 90%, 54%);
+  --medical-blue-600: hsl(208, 86%, 50%);
+  --medical-blue-700: hsl(211, 84%, 45%);
+  --medical-blue-800: hsl(213, 78%, 40%);
+  --medical-blue-900: hsl(215, 72%, 35%);
+  
+  --clinical-50: hsl(210, 20%, 98%);
+  --clinical-100: hsl(220, 14%, 96%);
+  --clinical-200: hsl(220, 13%, 91%);
+  --clinical-300: hsl(216, 12%, 84%);
+  --clinical-400: hsl(218, 11%, 65%);
+  --clinical-500: hsl(220, 9%, 46%);
+  --clinical-600: hsl(215, 14%, 34%);
+  --clinical-700: hsl(217, 19%, 27%);
+  --clinical-800: hsl(215, 28%, 17%);
+  --clinical-900: hsl(222, 84%, 5%);
+}
+
+.dark {
+  --background: hsl(240, 10%, 4%);
+  --foreground: hsl(0, 0%, 98%);
+  --muted: hsl(240, 4%, 16%);
+  --muted-foreground: hsl(240, 5%, 65%);
+  --popover: hsl(240, 10%, 4%);
+  --popover-foreground: hsl(0, 0%, 98%);
+  --card: hsl(240, 10%, 4%);
+  --card-foreground: hsl(0, 0%, 98%);
+  --border: hsl(240, 4%, 16%);
+  --input: hsl(240, 4%, 16%);
+  --primary: hsl(207, 90%, 54%);
+  --primary-foreground: hsl(211, 100%, 99%);
+  --secondary: hsl(240, 4%, 16%);
+  --secondary-foreground: hsl(0, 0%, 98%);
+  --accent: hsl(240, 4%, 16%);
+  --accent-foreground: hsl(0, 0%, 98%);
+  --destructive: hsl(0, 63%, 31%);
+  --destructive-foreground: hsl(0, 0%, 98%);
+  --ring: hsl(240, 5%, 84%);
+  --radius: 0.5rem;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+  }
+}
+
+@layer components {
+  .tab-button {
+    @apply text-clinical-600 hover:text-primary transition-colors;
+  }
+  
+  .tab-button.active {
+    @apply bg-medical-blue-50 text-primary border-b-2 border-primary;
+  }
+  
+  .tooth-box {
+    @apply transition-all duration-200 hover:scale-105;
+  }
+  
+  .medical-card {
+    @apply bg-white rounded-lg border border-clinical-200 shadow-sm hover:shadow-md transition-shadow;
+  }
+  
+  .status-badge-success {
+    @apply bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .status-badge-warning {
+    @apply bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .status-badge-danger {
+    @apply bg-red-100 text-red-800 px-2 py-1 rounded-full text-xs font-medium;
+  }
+}
+
+@layer utilities {
+  .text-clinical-50 { color: var(--clinical-50); }
+  .text-clinical-100 { color: var(--clinical-100); }
+  .text-clinical-200 { color: var(--clinical-200); }
+  .text-clinical-300 { color: var(--clinical-300); }
+  .text-clinical-400 { color: var(--clinical-400); }
+  .text-clinical-500 { color: var(--clinical-500); }
+  .text-clinical-600 { color: var(--clinical-600); }
+  .text-clinical-700 { color: var(--clinical-700); }
+  .text-clinical-800 { color: var(--clinical-800); }
+  .text-clinical-900 { color: var(--clinical-900); }
+  
+  .bg-clinical-50 { background-color: var(--clinical-50); }
+  .bg-clinical-100 { background-color: var(--clinical-100); }
+  .bg-clinical-200 { background-color: var(--clinical-200); }
+  .bg-clinical-300 { background-color: var(--clinical-300); }
+  .bg-clinical-400 { background-color: var(--clinical-400); }
+  .bg-clinical-500 { background-color: var(--clinical-500); }
+  .bg-clinical-600 { background-color: var(--clinical-600); }
+  .bg-clinical-700 { background-color: var(--clinical-700); }
+  .bg-clinical-800 { background-color: var(--clinical-800); }
+  .bg-clinical-900 { background-color: var(--clinical-900); }
+  
+  .border-clinical-200 { border-color: var(--clinical-200); }
+  .border-clinical-300 { border-color: var(--clinical-300); }
+  
+  .bg-medical-blue-50 { background-color: var(--medical-blue-50); }
+  .bg-medical-blue-100 { background-color: var(--medical-blue-100); }
+  .bg-medical-blue-600 { background-color: var(--medical-blue-600); }
+  
+  .text-medical-blue-600 { color: var(--medical-blue-600); }
+  .text-medical-blue-700 { color: var(--medical-blue-700); }
+  .text-medical-blue-800 { color: var(--medical-blue-800); }
+  .text-medical-blue-900 { color: var(--medical-blue-900); }
+  
+  .border-medical-blue-200 { border-color: var(--medical-blue-100); }
+  .border-medical-blue-600 { border-color: var(--medical-blue-600); }
+}
