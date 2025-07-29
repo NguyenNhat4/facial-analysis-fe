@@ -8,12 +8,14 @@ import Chat from "@/pages/chat";
 import FacialAnalysisPage from "@/pages/facial-analysis";
 import XrayAnalysisPage from "@/pages/xray-analysis";
 import Model3DPage from "@/pages/model-3d";
+import DemoPage from "@/pages/demo";
 import NotFound from "@/pages/not-found";
 
 function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/demo" component={DemoPage} />
       <Route path="/chat" component={Chat} />
       <Route path="/facial-analysis" component={FacialAnalysisPage} />
       <Route path="/xray-analysis" component={XrayAnalysisPage} />

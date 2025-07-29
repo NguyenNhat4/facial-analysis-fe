@@ -327,11 +327,16 @@ export default function Home() {
               <img 
                 src="/assets/leetray_logo.png" 
                 alt="LeeTray Logo" 
-                className="w-12 h-12 object-contain"
+                className="w-16 h-16 object-contain"
               />
-              <span className="text-xl font-semibold text-white">LeeTray</span>
+              <span className="text-clinical-400 font-bold text-lg">×</span>
+              <img 
+                src="/assets/hiai-logo.png" 
+                alt="HiAI Logo" 
+                className="w-16 h-16 object-contain"
+              />
             </div>
-            <p className="text-clinical-400">© 2025 LeeTray. All Rights Reserved.</p>
+            <p className="text-clinical-400">© 2025 LeeTray × HiAI. All Rights Reserved.</p>
             <p className="text-clinical-500 mt-2 text-sm">Hệ thống Phân tích Nha khoa AI - Công nghệ tiên tiến cho chăm sóc sức khỏe răng miệng</p>
           </div>
         </div>
