@@ -1,21 +1,41 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
-import { Upload, Camera, Radiation, Box, User, Calendar, Phone, Mail, MapPin, Sparkles, Target, Activity, Edit3, Save, X, Brain, Scan, Stethoscope } from 'lucide-react';
+import { Upload, Camera, Radiation, Box, User, Calendar, Phone, Mail, MapPin, Sparkles, Target, Activity, Edit3, Save, X, Brain, Scan, Stethoscope, Loader2 } from 'lucide-react';
+import { ImageType, IMAGE_TYPE_MAPPING } from '../types/demo-cases';
+import { getFallbackImages } from '../utils/demo-cases';
+import { groupFilesByType, validateFileType } from '../utils/image-detection';
+import { findOutputPathFromAssets, extractCaseIdFromInputFile } from '../utils/case-mapping';
+import AIThinkingModal from '../components/ai-thinking-modal';
 
 const DemoPage = () => {
   const [location, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState('information');
+  const [activeTab, setActiveTab] = useState('record');
+  
+  // Local upload state
+  const [localImages, setLocalImages] = useState<{
+    [key in ImageType]?: {
+      input: File;
+      inputPreview: string;
+      outputPreview: string;
+      outputFilename: string;
+    }
+  }>({});
+  
+  // Current case info
+  const [currentCaseId, setCurrentCaseId] = useState<string | null>(null);
+  
   const [uploadedImages, setUploadedImages] = useState<{[key: string]: boolean}>({
     lateral: false,
     profile: false,
     frontal: false,
     general_xray: false,
-    model_3d: false
+    model_3d_upper: false,
+    model_3d_lower: false
   });
 
   // State to store uploaded image files
@@ -24,7 +44,8 @@ const DemoPage = () => {
     profile: null,
     frontal: null,
     general_xray: null,
-    model_3d: null
+    model_3d_upper: null,
+    model_3d_lower: null
   });
 
   // State to store image preview URLs
@@ -33,8 +54,14 @@ const DemoPage = () => {
     profile: '',
     frontal: '',
     general_xray: '',
-    model_3d: ''
+    model_3d_upper: '',
+    model_3d_lower: ''
   });
+
+  // Loading state for fake upload
+  const [isLoading, setIsLoading] = useState(false);
+  const [loadingProgress, setLoadingProgress] = useState(0);
+  const [loadingCards, setLoadingCards] = useState<{[key: string]: boolean}>({});
 
   // Enhanced patient data with editing states
   const [patientData, setPatientData] = useState({
@@ -56,80 +83,57 @@ const DemoPage = () => {
   const [editingField, setEditingField] = useState<string | null>(null);
   const [tempValue, setTempValue] = useState("");
 
-  // Add demo state
-  const [isLoading, setIsLoading] = useState(false);
-  const [showTooltip, setShowTooltip] = useState('');
+  // AI Thinking Modal state
+  const [showAIThinking, setShowAIThinking] = useState(false);
+  const [currentAnalysis, setCurrentAnalysis] = useState<'facial' | 'radiographic' | '3d' | 'treatment'>('facial');
+  const [pendingNavigation, setPendingNavigation] = useState<{ path: string; withImages: boolean } | null>(null);
 
-  // Demo data loader
-  const loadDemoData = async () => {
-    setIsLoading(true);
-    
-    // Simulate loading with demo images
-    const demoFiles = [
-      { id: 'frontal', name: 'demo-frontal.jpg' },
-      { id: 'lateral', name: 'demo-lateral.jpg' },
-      { id: 'model_3d', name: 'demo-3d.obj' }
-    ];
-
-    for (const file of demoFiles) {
-      await new Promise(resolve => setTimeout(resolve, 800)); // Simulate upload
-      setUploadedImages(prev => ({ ...prev, [file.id]: true }));
-      setImagePreviewUrls(prev => ({ 
-        ...prev, 
-        [file.id]: `/assets/demo_image/${file.name}` 
-      }));
-    }
-    
-    setIsLoading(false);
-  };
-
-  const uploadCategories = [
-    {
-      title: "X-ray Images",
-      items: [
-        { 
-          id: 'lateral', 
-          name: 'Lateral x-ray image', 
-          icon: '/assets/upload_logo/logo-lateral-xray.png'
-        },
-        { 
-          id: 'general_xray', 
-          name: 'General x-ray upload', 
-          icon: '/assets/upload_logo/logo-upload-xray.png'
-        },
-      ]
-    },
-    {
-      title: "Face Images",
-      items: [
-        { 
-          id: 'frontal', 
-          name: 'Frontal face image', 
-          icon: '/assets/upload_logo/frontal-face.png'
-        },
-        { 
-          id: 'profile', 
-          name: 'Side face image', 
-          icon: '/assets/upload_logo/logo-side-face.png'
+  // Cleanup URLs when component unmounts
+  useEffect(() => {
+    return () => {
+      // Cleanup all preview URLs to prevent memory leaks
+      Object.values(imagePreviewUrls).forEach(url => {
+        if (url && url.startsWith('blob:')) {
+          URL.revokeObjectURL(url);
         }
-      ]
-    },
-    {
-      title: "3D Models",
-      items: [
-        { 
-          id: 'model_3d', 
-          name: '3D model upload', 
-          icon: '/assets/upload_logo/3D-model.png'
-        }
-      ]
-    }
-  ];
+      });
+    };
+  }, []);
+
+  // Generate upload categories from IMAGE_TYPE_MAPPING
+  const uploadCategories = (() => {
+    const categories: { [key: string]: { title: string; subtitle: string; items: any[] } } = {};
+    
+    Object.entries(IMAGE_TYPE_MAPPING).forEach(([type, config]: [string, any]) => {
+      if (!categories[config.category]) {
+        categories[config.category] = {
+          title: config.category,
+          subtitle: config.category === 'Radiographic Imaging' ? 'Digital X-Ray Acquisitions' : 
+                   config.category === 'Clinical Photography' ? 'Facial Analysis Images' : 
+                   '3D Dental Scans',
+          items: []
+        };
+      }
+      
+      categories[config.category].items.push({
+        id: type,
+        name: config.name,
+        icon: config.icon
+      });
+    });
+    
+    return Object.values(categories);
+  })();
 
   // Handle file upload
   const handleFileUpload = (imageId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Clean up previous URL if exists
+      if (imagePreviewUrls[imageId]) {
+        URL.revokeObjectURL(imagePreviewUrls[imageId]);
+      }
+
       // Store the file
       setUploadedFiles(prev => ({
         ...prev,
@@ -151,20 +155,51 @@ const DemoPage = () => {
     }
   };
 
+  // Handle remove uploaded image
+  const handleRemoveImage = (imageId: string, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent card click
+    
+    // Clean up URL to prevent memory leak
+    if (imagePreviewUrls[imageId]) {
+      URL.revokeObjectURL(imagePreviewUrls[imageId]);
+    }
+
+    // Reset states
+    setUploadedFiles(prev => ({
+      ...prev,
+      [imageId]: null
+    }));
+
+    setImagePreviewUrls(prev => ({
+      ...prev,
+      [imageId]: ''
+    }));
+
+    setUploadedImages(prev => ({
+      ...prev,
+      [imageId]: false
+    }));
+  };
+
   const handleImageUpload = (imageId: string) => {
-    // Create a file input element
+    // Create and trigger file input for real upload
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.onchange = (event) => handleFileUpload(imageId, event as any);
+    input.onchange = (event) => {
+      const target = event.target as HTMLInputElement;
+      if (target.files && target.files[0]) {
+        handleFileUpload(imageId, { target: { files: target.files } } as any);
+      }
+    };
     input.click();
   };
 
   // Check if specific image types are available for analysis
   const hasFaceImages = uploadedImages.frontal || uploadedImages.profile;
   const hasXrayImages = uploadedImages.lateral || uploadedImages.general_xray;
-  const has3DModel = uploadedImages.model_3d;
-  const hasAllImages = uploadedImages.frontal && uploadedImages.profile && uploadedImages.lateral && uploadedImages.model_3d;
+  const has3DModel = uploadedImages.model_3d_upper || uploadedImages.model_3d_lower;
+  const hasAllImages = uploadedImages.frontal && uploadedImages.profile && uploadedImages.lateral && (uploadedImages.model_3d_upper || uploadedImages.model_3d_lower);
 
   const handleEditStart = (field: string, currentValue: string) => {
     setEditingField(field);
@@ -185,9 +220,46 @@ const DemoPage = () => {
     setTempValue("");
   };
 
+  // AI Thinking handlers
+  const handleAnalysisClick = (analysisType: 'facial' | 'radiographic' | '3d' | 'treatment', path: string, withImages = false) => {
+    setCurrentAnalysis(analysisType);
+    setPendingNavigation({ path, withImages });
+    setShowAIThinking(true);
+  };
+
+  const handleAIThinkingComplete = () => {
+    setShowAIThinking(false);
+    
+    // Navigate after thinking is complete
+    if (pendingNavigation) {
+      if (pendingNavigation.withImages) {
+        handleNavigation(pendingNavigation.path, true);
+      } else {
+        handleNavigation(pendingNavigation.path);
+      }
+      setPendingNavigation(null);
+    }
+  };
+
   // Navigation handlers
-  const handleNavigation = (path: string) => {
-    setLocation(path);
+  const handleNavigation = (path: string, withImages = false) => {
+    if (withImages) {
+      // Create URL params with uploaded image data
+      const imageParams = new URLSearchParams();
+      
+      // Add image URLs for analysis
+      Object.entries(imagePreviewUrls).forEach(([key, url]) => {
+        if (url && uploadedImages[key]) {
+          imageParams.set(key, url);
+        }
+      });
+      
+      // Navigate with query params
+      const queryString = imageParams.toString();
+      setLocation(queryString ? `${path}?${queryString}` : path);
+    } else {
+      setLocation(path);
+    }
   };
 
   const renderEditableField = (field: string, value: string, isTextarea = false) => {
@@ -250,60 +322,273 @@ const DemoPage = () => {
     );
   };
 
+  // Handle local images processed
+  const handleLocalImagesProcessed = (processedImages: {
+    [key in ImageType]?: {
+      input: File;
+      inputPreview: string;
+      outputPreview: string;
+      outputFilename: string;
+    }
+  }) => {
+    setLocalImages(processedImages);
+    
+    // Update uploaded images state
+    const newUploadedImages: {[key: string]: boolean} = {
+      lateral: false,
+      profile: false,
+      frontal: false,
+      general_xray: false,
+      model_3d_upper: false,
+      model_3d_lower: false
+    };
+    
+    const newImagePreviewUrls: {[key: string]: string} = {
+      lateral: '',
+      profile: '',
+      frontal: '',
+      general_xray: '',
+      model_3d_upper: '',
+      model_3d_lower: ''
+    };
+    
+    Object.entries(processedImages).forEach(([imageType, data]) => {
+      if (data) {
+        newUploadedImages[imageType] = true;
+        newImagePreviewUrls[imageType] = data.inputPreview;
+      }
+    });
+    
+    setUploadedImages(newUploadedImages);
+    setImagePreviewUrls(newImagePreviewUrls);
+  };
+
+  // Handle file picker and load images (input from local, output from assets)
+  const fakeLoadImages = async () => {
+    // Create file input element for multiple files (not folders)
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.multiple = true;
+    input.accept = 'image/*,.stl,.obj,.ply';
+    
+    input.onchange = async (event) => {
+      const target = event.target as HTMLInputElement;
+      const files = Array.from(target.files || []);
+      
+      if (files.length === 0) return;
+      
+      setIsLoading(true);
+      setLoadingProgress(0);
+      setLoadingCards({});
+      
+      // Reset all states first
+      setUploadedImages({
+        lateral: false,
+        profile: false,
+        frontal: false,
+        general_xray: false,
+        model_3d_upper: false,
+        model_3d_lower: false
+      });
+      
+      setImagePreviewUrls({
+        lateral: '',
+        profile: '',
+        frontal: '',
+        general_xray: '',
+        model_3d_upper: '',
+        model_3d_lower: ''
+      });
+      
+      try {
+        // Validate and group files by type
+        const validFiles = files.filter(validateFileType);
+        const { detected } = await groupFilesByType(validFiles);
+        
+        // Extract case ID from first file (assume all files are from same case)
+        let detectedCaseId: string | null = null;
+        for (const file of validFiles) {
+          detectedCaseId = extractCaseIdFromInputFile(file);
+          if (detectedCaseId) break;
+        }
+        
+        if (detectedCaseId) {
+          setCurrentCaseId(detectedCaseId);
+          console.log(`Detected case: ${detectedCaseId}`);
+        }
+        
+        const allDetectedFiles = Object.values(detected).flat();
+        let processedCount = 0;
+        
+        // Process each detected file
+        for (const [imageType, typeFiles] of Object.entries(detected)) {
+          if (typeFiles.length > 0) {
+            // Take the first file of each type
+            const file = typeFiles[0];
+            
+            // Set loading state for current card
+            setLoadingCards(prev => ({ ...prev, [imageType]: true }));
+            
+            // Simulate loading delay
+            await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 800));
+            
+            // Create preview URL from uploaded input file
+            const inputPreviewUrl = URL.createObjectURL(file);
+            
+            // Generate output path from assets/outputs/
+            const outputPath = findOutputPathFromAssets(file, imageType as ImageType);
+            
+            console.log(`Input: ${file.name} → Output: ${outputPath}`);
+            
+            // Set preview URL (input image)
+            setImagePreviewUrls(prev => ({
+              ...prev,
+              [imageType]: inputPreviewUrl
+            }));
+
+            // Store local image data for future processing
+            setLocalImages(prev => ({
+              ...prev,
+              [imageType as ImageType]: {
+                input: file,
+                inputPreview: inputPreviewUrl,
+                outputPreview: outputPath,
+                outputFilename: outputPath.split('/').pop() || 'output.png'
+              }
+            }));
+
+            // Mark as uploaded
+            setUploadedImages(prev => ({
+              ...prev,
+              [imageType]: true
+            }));
+
+            // Remove loading state for current card
+            setLoadingCards(prev => ({ ...prev, [imageType]: false }));
+            
+            processedCount++;
+            setLoadingProgress((processedCount / allDetectedFiles.length) * 100);
+          }
+        }
+        
+      } catch (error) {
+        console.error('Failed to process uploaded images:', error);
+      }
+      
+      // Finish loading
+      setTimeout(() => {
+        setIsLoading(false);
+        setLoadingProgress(0);
+      }, 300);
+    };
+    
+    // Trigger file picker
+    input.click();
+  };
+
+  // Load single sample image
+  const loadSingleSampleImage = async (imageId: string) => {
+    try {
+      const sampleImages = await getFallbackImages();
+      const imagePath = sampleImages[imageId as keyof typeof sampleImages];
+      if (!imagePath) return;
+
+      // Set loading state for this card
+      setLoadingCards(prev => ({ ...prev, [imageId]: true }));
+
+      // Simulate loading delay
+      await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 600));
+
+      // Clean up previous URL if exists
+      if (imagePreviewUrls[imageId]) {
+        URL.revokeObjectURL(imagePreviewUrls[imageId]);
+      }
+
+      // Set preview URL to demo image path
+      setImagePreviewUrls(prev => ({
+        ...prev,
+        [imageId]: imagePath
+      }));
+
+      // Mark as uploaded
+      setUploadedImages(prev => ({
+        ...prev,
+        [imageId]: true
+      }));
+
+      // Remove loading state
+      setLoadingCards(prev => ({ ...prev, [imageId]: false }));
+    } catch (error) {
+      console.error('Failed to load single image:', error);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50/50 via-blue-50/30 to-indigo-50/40">
-      {/* Header */}
-      <header className="bg-white/90 backdrop-blur-md shadow-lg border-b border-gray-200/50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25" style={{backgroundColor: '#fafbfc'}}>
+      {/* Medical Header */}
+      <header className="bg-white border-b-2 border-blue-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-4">
-              <div className="relative">
-                <img 
-                  src="/assets/leetray_logo.png" 
-                  alt="LeeTray Logo" 
-                  className="w-16 h-16 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full animate-pulse"></div>
+          <div className="flex justify-between items-center h-24">
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <img 
+                    src="/assets/leetray_logo.png" 
+                    alt="LeeTray Logo" 
+                    className="w-14 h-14 object-contain"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full border-2 border-white"></div>
+                </div>
+                <div className="h-8 w-px bg-gray-300"></div>
+                <div className="relative">
+                  <img 
+                    src="/assets/hiai-logo.png" 
+                    alt="HiAI Logo" 
+                    className="w-14 h-14 object-contain"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-600 rounded-full border-2 border-white"></div>
+                </div>
               </div>
-              <span className="text-gray-400 font-bold text-2xl">×</span>
-              <div className="relative">
-                <img 
-                  src="/assets/hiai-logo.png" 
-                  alt="HiAI Logo" 
-                  className="w-16 h-16 object-contain drop-shadow-md hover:scale-105 transition-transform duration-300"
-                />
-                <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-r from-emerald-500 to-teal-500 rounded-full animate-pulse"></div>
+              <div className="border-l-2 border-blue-200 pl-6">
+                <h1 className="text-xl font-bold text-gray-800">Dental Analysis System</h1>
+                <p className="text-sm text-gray-600 font-medium">AI-Powered Clinical Diagnostics</p>
               </div>
             </div>
-            <nav className="hidden md:flex space-x-8">
+            <nav className="hidden md:flex items-center space-x-1">
               <button 
                 onClick={() => handleNavigation('/')}
-                className="text-gray-600 hover:text-sky-500 font-medium transition-all duration-300 hover:scale-105 relative group cursor-pointer"
+                className="px-4 py-2 text-gray-700 hover:text-blue-700 hover:bg-blue-50 font-medium transition-all duration-200 rounded-lg"
               >
-                Trang chủ
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-sky-400 to-sky-500 group-hover:w-full transition-all duration-300"></span>
+                Dashboard
               </button>
               <button 
                 onClick={() => handleNavigation('/demo')}
-                className="text-sky-500 font-medium transition-all duration-300 hover:scale-105 relative group cursor-pointer"
+                className="px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-lg border border-blue-200"
               >
-                Tính năng
-                <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-gradient-to-r from-sky-400 to-sky-500"></span>
+                Clinical Analysis
               </button>
               <button 
                 onClick={() => handleNavigation('/facial-analysis')}
-                className="text-gray-600 hover:text-sky-500 font-medium transition-all duration-300 hover:scale-105 relative group cursor-pointer"
+                className="px-4 py-2 text-gray-700 hover:text-blue-700 hover:bg-blue-50 font-medium transition-all duration-200 rounded-lg"
               >
-                Giới thiệu
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-sky-400 to-sky-500 group-hover:w-full transition-all duration-300"></span>
+                Reports
               </button>
               <button 
                 onClick={() => handleNavigation('/chat')}
-                className="text-gray-600 hover:text-sky-500 font-medium transition-all duration-300 hover:scale-105 relative group cursor-pointer"
+                className="px-4 py-2 text-gray-700 hover:text-blue-700 hover:bg-blue-50 font-medium transition-all duration-200 rounded-lg"
               >
-                Liên hệ
-                <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-sky-400 to-sky-500 group-hover:w-full transition-all duration-300"></span>
+                Settings
               </button>
+              <div className="h-6 w-px bg-gray-300 mx-4"></div>
+              <div className="flex items-center space-x-3">
+                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                  <span className="text-white text-sm font-semibold">Dr</span>
+                </div>
+                <div className="text-sm">
+                  <p className="font-medium text-gray-800">Dr. Smith</p>
+                  <p className="text-gray-500">Orthodontist</p>
+                </div>
+              </div>
             </nav>
           </div>
         </div>
@@ -311,432 +596,418 @@ const DemoPage = () => {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Patient Selection Header */}
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl mb-8 overflow-hidden border border-gray-200/50">
-          <div className="bg-gradient-to-r from-slate-700 via-slate-600 to-slate-700 text-white px-8 py-6">
+        {/* Medical Patient Record Header */}
+        <div className="bg-white rounded-xl shadow-lg mb-8 border border-gray-200">
+          <div className="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-8 py-6">
             <div className="flex items-center justify-between">
               <div className="flex items-center space-x-6">
                 <div className="relative">
-                  <div className="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm">
-                    <User className="w-7 h-7 text-white" />
+                  <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <User className="w-8 h-8 text-white" />
                   </div>
-                  <div className="absolute -top-1 -right-1 w-4 h-4 bg-green-400 border-2 border-white rounded-full"></div>
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-blue-100 bg-clip-text text-transparent">Select Patient</h2>
-                  <p className="text-slate-200 text-lg">{patientData.name} (Male | 35 Years)</p>
+                  <div className="flex items-center space-x-3 mb-2">
+                    <h2 className="text-2xl font-bold text-white">Patient Record</h2>
+                    <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full">ACTIVE</span>
+                  </div>
+                  <p className="text-blue-100 text-lg font-medium">{patientData.name} • Male • 35 Years</p>
+                  <p className="text-blue-200 text-sm">Patient ID: #PAT-2025-001 • Last Visit: 28/07/2025</p>
                 </div>
               </div>
-
+              <div className="text-right">
+                <div className="text-blue-100 text-sm">Current Session</div>
+                <div className="text-white font-semibold">{new Date().toLocaleDateString('en-GB')}</div>
+                <div className="text-blue-200 text-sm">{new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'})}</div>
+              </div>
             </div>
           </div>
 
-          {/* Tabs */}
+          {/* Medical Navigation Tabs */}
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="w-full justify-start bg-gradient-to-r from-slate-600 via-slate-500 to-slate-600 rounded-none h-14">
-              <TabsTrigger 
-                value="information" 
-                className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-400 data-[state=active]:to-sky-500 data-[state=active]:shadow-lg transition-all duration-300 px-8 py-3 font-semibold"
-              >
-                <User className="w-4 h-4 mr-2" />
-                INFORMATION
-              </TabsTrigger>
-              <TabsTrigger 
-                value="record" 
-                className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-400 data-[state=active]:to-sky-500 data-[state=active]:shadow-lg transition-all duration-300 px-8 py-3 font-semibold"
-              >
-                <Activity className="w-4 h-4 mr-2" />
-                RECORD  
-              </TabsTrigger>
-              <TabsTrigger 
-                value="treatment" 
-                className="text-white data-[state=active]:bg-gradient-to-r data-[state=active]:from-sky-400 data-[state=active]:to-sky-500 data-[state=active]:shadow-lg transition-all duration-300 px-8 py-3 font-semibold"
-              >
-                <Calendar className="w-4 h-4 mr-2" />
-                TREATMENT HISTORY
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="information" className="p-8">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
-                {/* Patient Avatar */}
-                <div className="lg:col-span-1">
-                  <div className="bg-gradient-to-br from-white/80 to-blue-50/60 backdrop-blur-sm rounded-2xl p-8 text-center shadow-lg border border-gray-200/50">
-                    <div className="w-36 h-36 mx-auto mb-6 bg-gradient-to-br from-slate-100 to-slate-200 rounded-full flex items-center justify-center shadow-inner">
-                      <User className="w-20 h-20 text-slate-500" />
-                    </div>
-                    <div className="w-full h-2 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full"></div>
-                  </div>
-                </div>
-
-                {/* Patient Information */}
-                <div className="lg:col-span-2 space-y-8">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">LAST NAME:</label>
-                      <div className="bg-white/80 p-4 rounded-xl border-2 border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300 font-medium">
-                        {patientData.lastName}
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">FIRST NAME:</label>
-                      <div className="bg-white/80 p-4 rounded-xl border-2 border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300 font-medium">
-                        {patientData.firstName}
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">EMAIL:</label>
-                      <div className="bg-white/80 p-4 rounded-xl border-2 border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300 font-medium">
-                        {patientData.email}
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">SEX:</label>
-                      <div className="bg-white/80 p-4 rounded-xl border-2 border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300 font-medium capitalize">
-                        {patientData.sex}
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">DATE OF BIRTH:</label>
-                      <div className="bg-white/80 p-4 rounded-xl border-2 border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300 font-medium">
-                        {patientData.dateOfBirth}
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">CONSULTATION DATE:</label>
-                      <div className="bg-white/80 p-4 rounded-xl border-2 border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300 font-medium">
-                        {patientData.consultationDate}
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">PHONE:</label>
-                      <div className="bg-white/80 p-4 rounded-xl border-2 border-gray-200/60 shadow-sm hover:shadow-md transition-all duration-300 font-medium">
-                        {patientData.phone}
-                      </div>
-                    </div>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">ADDRESS:</label>
-                      {renderEditableField('address', patientData.address)}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">CHIEF COMPLAINT</label>
-                      {renderEditableField('chiefComplaint', patientData.chiefComplaint)}
-                    </div>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">DIAGNOSE</label>
-                      {renderEditableField('diagnose', patientData.diagnose)}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">NOTE</label>
-                      {renderEditableField('note', patientData.note, true)}
-                    </div>
-                    <div className="space-y-3">
-                      <label className="block text-sm font-semibold text-gray-700 mb-3">SELECTED TREATMENT PLAN</label>
-                      {renderEditableField('treatmentPlan', patientData.treatmentPlan, true)}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </TabsContent>
-
             <TabsContent value="record" className="p-8">
               {/* Upload Section */}
               <div className="mb-10">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-900 mb-2">Medical Records</h3>
-                    <div className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4 text-gray-500" />
-                      <p className="text-gray-600 font-medium">DATE: 28/07/2025</p>
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2">Clinical Imaging Data</h3>
+                    <div className="flex items-center space-x-4">
+                      <div className="flex items-center space-x-2">
+                        <Calendar className="w-4 h-4 text-blue-600" />
+                        <p className="text-gray-700 font-medium">Session Date: {new Date().toLocaleDateString('en-GB')}</p>
+                      </div>
+                      <div className="h-4 w-px bg-gray-300"></div>
+                      <div className="flex items-center space-x-2">
+                        <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                        <p className="text-gray-700 font-medium">Status: Ready for Analysis</p>
+                      </div>
                     </div>
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex items-center space-x-3">
                     <Button 
-                      className="bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 px-8 py-3 text-lg font-semibold"
+                      className={`${
+                        isLoading 
+                          ? 'bg-blue-600 hover:bg-blue-700' 
+                          : 'bg-blue-600 hover:bg-blue-700'
+                      } shadow-md hover:shadow-lg transition-all duration-200 px-6 py-3 text-base font-semibold rounded-lg border border-blue-700`}
+                      onClick={fakeLoadImages}
                       disabled={isLoading}
                     >
-                      <Upload className="w-5 h-5 mr-2" />
-                      {isLoading ? 'UPLOADING...' : 'UPLOAD IMAGE A+'}
-                    </Button>
-                    
-                    <Button 
-                      onClick={loadDemoData}
-                      className="bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 px-8 py-3 text-lg font-semibold"
-                      disabled={isLoading}
-                    >
-                      <Sparkles className="w-5 h-5 mr-2" />
-                      {isLoading ? 'LOADING...' : 'LOAD DEMO DATA'}
+                      <Upload className={`w-5 h-5 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+                      {isLoading ? 'Loading Images...' : 'Load Images'}
                     </Button>
                   </div>
                 </div>
 
-                {/* Upload Grid */}
-                <div className="space-y-10">
-                  {uploadCategories.map((category, categoryIndex) => (
-                    <div key={categoryIndex} className="space-y-6">
-                      <div className="flex items-center space-x-3">
-                        <div className="h-1 w-8 bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full"></div>
-                        <h4 className="text-xl font-bold text-gray-800">{category.title}</h4>
-                        <div className="flex-1 h-px bg-gradient-to-r from-gray-300/60 to-transparent"></div>
+                {/* Medical Loading Progress */}
+                {isLoading && (
+                  <div className="mt-4 bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-4 h-4 bg-blue-600 rounded-full animate-pulse"></div>
+                        <span className="text-base font-semibold text-gray-800">Processing Images</span>
                       </div>
-                      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
-                        {category.items.map((item) => (
-                          <Card 
-                            key={item.id}
-                            className={`group cursor-pointer transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 border-2 backdrop-blur-sm ${
-                              uploadedImages[item.id] 
-                                ? 'border-emerald-400 bg-gradient-to-br from-emerald-50/80 to-teal-50/80 shadow-lg' 
-                                : 'border-gray-200/60 bg-white/80 hover:border-blue-300/60 hover:bg-white'
-                            }`}
-                            onClick={() => handleImageUpload(item.id)}
-                          >
-                            <CardContent className="p-4 text-center relative overflow-hidden">
-                              <div className={`w-24 h-24 mx-auto mb-3 rounded-2xl flex items-center justify-center overflow-hidden transition-all duration-300 ${
-                                uploadedImages[item.id] 
-                                  ? 'bg-gradient-to-br from-emerald-100 to-teal-100 transform scale-105' 
-                                  : 'bg-white/90 border border-gray-200/60 shadow-sm group-hover:scale-105 group-hover:shadow-md group-hover:border-blue-300/60'
-                              }`}>
-                                {uploadedImages[item.id] && imagePreviewUrls[item.id] ? (
-                                  <img 
-                                    src={imagePreviewUrls[item.id]} 
-                                    alt={item.name} 
-                                    className="w-full h-full object-cover rounded-xl"
-                                  />
-                                ) : (
-                                  <img src={item.icon} alt={item.name} className="w-16 h-16 object-contain drop-shadow-sm" />
-                                )}
-                              </div>
-                              <p className="text-xs text-gray-700 leading-tight font-medium mb-2">{item.name}</p>
-                              {uploadedImages[item.id] && (
-                                <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white shadow-md animate-pulse text-xs">
-                                  <Sparkles className="w-2 h-2 mr-1" />
-                                  Uploaded
-                                </Badge>
-                              )}
-                              {/* Decorative corner */}
-                              <div className={`absolute top-0 right-0 w-0 h-0 border-l-[15px] border-b-[15px] border-l-transparent transition-all duration-300 ${
-                                uploadedImages[item.id] 
-                                  ? 'border-b-emerald-400' 
-                                  : 'border-b-blue-200/60 group-hover:border-b-blue-400/60'
-                              }`}></div>
-                            </CardContent>
-                          </Card>
-                        ))}
+                      <span className="text-sm font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded">{Math.round(loadingProgress)}%</span>
+                    </div>
+                    <Progress value={loadingProgress} className="h-3 mb-3" />
+                    <div className="text-sm text-gray-600 flex items-center justify-between">
+                      <span>Processing uploaded images...</span>
+                      <span className="text-xs text-gray-500">Auto-detecting image types</span>
+                    </div>
+                  </div>
+                )}
+
+
+
+                {/* Main Content with Sidebar Layout */}
+                <div className="flex gap-8">
+                  {/* Upload Grid - Left Side */}
+                  <div className="flex-1 space-y-10">
+                    {uploadCategories.map((category, categoryIndex) => (
+                      <div key={categoryIndex} className="space-y-6">
+                        <div className="mb-4">
+                          <div className="flex items-center space-x-3 mb-2">
+                            <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
+                            <div>
+                              <h4 className="text-xl font-bold text-gray-800">{category.title}</h4>
+                              <p className="text-sm text-gray-600 font-medium">{category.subtitle}</p>
+                            </div>
+                          </div>
+                          <div className="h-px bg-gray-200 ml-7"></div>
+                        </div>
+                        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                          {category.items.map((item) => (
+                            <Card 
+                              key={item.id}
+                              className={`group cursor-pointer transition-all duration-200 hover:shadow-lg border rounded-xl ${
+                                loadingCards[item.id]
+                                  ? 'border-blue-300 bg-blue-50 shadow-md animate-pulse'
+                                  : uploadedImages[item.id] 
+                                  ? 'border-emerald-300 bg-emerald-50 shadow-md' 
+                                  : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-md'
+                              }`}
+                              onClick={() => !loadingCards[item.id] && handleImageUpload(item.id)}
+                            >
+                              <CardContent className="p-5 text-center relative">
+                                {/* Medical Status Indicator */}
+                                <div className="absolute top-3 right-3 flex items-center space-x-1">
+                                  {uploadedImages[item.id] && (
+                                    <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                                  )}
+                                  {uploadedImages[item.id] && (
+                                    <button
+                                      onClick={(e) => handleRemoveImage(item.id, e)}
+                                      className="w-5 h-5 bg-gray-300 hover:bg-red-400 text-gray-600 hover:text-white rounded-full flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100"
+                                      title="Remove image"
+                                    >
+                                      <X className="w-3 h-3" />
+                                    </button>
+                                  )}
+                                </div>
+                                
+                                <div className={`w-20 h-20 mx-auto mb-4 rounded-xl flex items-center justify-center overflow-hidden transition-all duration-200 ${
+                                  loadingCards[item.id]
+                                    ? 'bg-blue-100 border border-blue-200'
+                                    : uploadedImages[item.id] 
+                                    ? 'bg-emerald-100 border border-emerald-200' 
+                                    : 'bg-transparent'
+                                }`}>
+                                  {loadingCards[item.id] ? (
+                                    <Upload className="w-8 h-8 text-blue-500 animate-spin" />
+                                  ) : uploadedImages[item.id] ? (
+                                    // Check if it's a 3D model file
+                                    (item.id === 'model_3d_upper' || item.id === 'model_3d_lower') ? (
+                                      <div className="relative w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
+                                        <Box className="w-12 h-12 text-purple-600" />
+                                        <div className="absolute bottom-1 right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                                        {/* Small indicator for upper/lower */}
+                                        <div className="absolute top-1 left-1 text-xs bg-purple-600 text-white px-1 rounded">
+                                          {item.id === 'model_3d_upper' ? 'U' : 'L'}
+                                        </div>
+                                      </div>
+                                    ) : imagePreviewUrls[item.id] ? (
+                                      <img 
+                                        src={imagePreviewUrls[item.id]} 
+                                        alt={item.name} 
+                                        className="w-full h-full object-cover rounded-xl"
+                                      />
+                                    ) : (
+                                      <img src={item.icon} alt={item.name} className="w-16 h-16 object-contain drop-shadow-sm" />
+                                    )
+                                  ) : (
+                                    <img src={item.icon} alt={item.name} className="w-16 h-16 object-contain drop-shadow-sm" />
+                                  )}
+                                </div>
+                                <div className="text-center">
+                                  <h5 className="text-sm font-semibold text-gray-500 mb-3">{item.name}</h5>
+                                  {loadingCards[item.id] ? (
+                                    <Badge className="bg-blue-100 text-blue-700 border border-blue-200 text-xs font-medium">
+                                      <Upload className="w-3 h-3 mr-1 animate-spin" />
+                                      Processing...
+                                    </Badge>
+                                  ) : uploadedImages[item.id] ? (
+                                    <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-medium">
+                                      <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                                      Ready
+                                    </Badge>
+                                  ) : (
+                                    <Badge className="bg-gray-100 text-gray-600 border border-gray-200 text-xs font-medium">
+                                      <Upload className="w-3 h-3 mr-1" />
+                                      Click to Load
+                                    </Badge>
+                                  )}
+                                </div>
+                              </CardContent>
+                            </Card>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Clinical Analysis Sidebar */}
+                  <div className="w-80 space-y-6">
+                    <div className="border-l-4 border-blue-600 pl-4">
+                      <h4 className="text-xl font-bold text-gray-800">Clinical Analysis</h4>
+                      <p className="text-sm text-gray-600 font-medium">AI-Powered Diagnostic Tools</p>
+                    </div>
+
+                    {/* Analysis Status Panel */}
+                    <div className="bg-white rounded-xl p-6 shadow-md border border-gray-200">
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center">
+                          <Activity className="w-5 h-5 mr-2 text-blue-600" />
+                          <span className="text-base font-semibold text-gray-800">Analysis Status</span>
+                        </div>
+                        <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full font-mono">
+                          {Object.values(uploadedImages).filter(Boolean).length} / {Object.keys(uploadedImages).length} Ready
+                        </span>
+                      </div>
+                      <Progress 
+                        value={(Object.values(uploadedImages).filter(Boolean).length / Object.keys(uploadedImages).length) * 100} 
+                        className="h-2 mb-3"
+                      />
+                      <div className="text-sm text-gray-700">
+                        {Object.values(uploadedImages).filter(Boolean).length === Object.keys(uploadedImages).length 
+                          ? "✅ All diagnostic tools are ready for use" 
+                          : "⏳ Load more data to enable additional analysis"
+                        }
                       </div>
                     </div>
-                  ))}
+
+                    <div className="space-y-4">
+                      {/* Facial Analysis */}
+                      <div className="relative group">
+                        <Button 
+                          className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${
+                            hasFaceImages 
+                              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md border border-blue-700' 
+                              : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200'
+                          }`}
+                          disabled={!hasFaceImages || showAIThinking}
+                          onClick={() => hasFaceImages && handleAnalysisClick('facial', '/facial-analysis', true)}
+                        >
+                          <div className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
+                            hasFaceImages ? 'bg-blue-500' : 'bg-gray-200'
+                          }`}>
+                            <Brain className="w-6 h-6" />
+                          </div>
+                          <div className="text-left flex-1">
+                            <div className="font-semibold text-base flex items-center justify-between">
+                              Facial Analysis
+                              {hasFaceImages && <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>}
+                            </div>
+                            <div className="text-sm opacity-80 mt-1">
+                              {hasFaceImages ? 'Cephalometric Assessment' : 'Requires facial images'}
+                            </div>
+                          </div>
+                        </Button>
+                        {!hasFaceImages && (
+                          <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                            Clinical photography required
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Radiographic Analysis */}
+                      <div className="relative group">
+                        <Button 
+                          className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${
+                            hasXrayImages 
+                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md border border-emerald-700' 
+                              : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200'
+                          }`}
+                          disabled={!hasXrayImages || showAIThinking}
+                          onClick={() => hasXrayImages && handleAnalysisClick('radiographic', '/xray-analysis', true)}
+                        >
+                          <div className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
+                            hasXrayImages ? 'bg-emerald-500' : 'bg-gray-200'
+                          }`}>
+                            <Scan className="w-6 h-6" />
+                          </div>
+                          <div className="text-left flex-1">
+                            <div className="font-semibold text-base flex items-center justify-between">
+                              Radiographic Analysis
+                              {hasXrayImages && <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>}
+                            </div>
+                            <div className="text-sm opacity-80 mt-1">
+                              {hasXrayImages ? 'Digital X-Ray Interpretation' : 'Requires radiographic data'}
+                            </div>
+                          </div>
+                        </Button>
+                        {!hasXrayImages && (
+                          <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                            Digital radiographs required
+                          </div>
+                        )}
+                      </div>
+
+                      {/* 3D Model Analysis */}
+                      <div className="relative group">
+                        <Button 
+                          className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${
+                            has3DModel 
+                              ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-md border border-purple-700' 
+                              : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200'
+                          }`}
+                          disabled={!has3DModel || showAIThinking}
+                          onClick={() => has3DModel && handleAnalysisClick('3d', '/model-3d', true)}
+                        >
+                          <div className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
+                            has3DModel ? 'bg-purple-500' : 'bg-gray-200'
+                          }`}>
+                            <Box className="w-6 h-6" />
+                          </div>
+                          <div className="text-left flex-1">
+                            <div className="font-semibold text-base flex items-center justify-between">
+                              3D Model Analysis
+                              {has3DModel && <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>}
+                            </div>
+                            <div className="text-sm opacity-80 mt-1">
+                              {has3DModel ? 'Digital Model Assessment' : 'Requires 3D scan data'}
+                            </div>
+                          </div>
+                        </Button>
+                        {!has3DModel && (
+                          <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                            Intraoral scan required
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Treatment Planning */}
+                      <div className="relative group">
+                        <Button 
+                          className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${
+                            hasAllImages 
+                              ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-md border border-orange-700' 
+                              : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200'
+                          }`}
+                          disabled={!hasAllImages || showAIThinking}
+                          onClick={() => hasAllImages && handleAnalysisClick('treatment', '/treatment-planning', true)}
+                        >
+                          <div className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
+                            hasAllImages ? 'bg-orange-500' : 'bg-gray-200'
+                          }`}>
+                            <Stethoscope className="w-6 h-6" />
+                          </div>
+                          <div className="text-left flex-1">
+                            <div className="font-semibold text-base flex items-center justify-between">
+                              Treatment Planning
+                              {hasAllImages && <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>}
+                            </div>
+                            <div className="text-sm opacity-80 mt-1">
+                              {hasAllImages ? 'AI Treatment Simulation' : 'Requires complete dataset'}
+                            </div>
+                          </div>
+                        </Button>
+                        {!hasAllImages && (
+                          <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                            Complete clinical data required
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
-                {/* Analysis Tools Section */}
-                <div className="mt-16 pt-8 border-t border-gray-200/50">
-                  <div className="flex items-center space-x-3 mb-8">
-                    <div className="h-1 w-8 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-full"></div>
-                    <h4 className="text-xl font-bold text-gray-800">Analysis Tools</h4>
-                    <div className="flex-1 h-px bg-gradient-to-r from-gray-300/60 to-transparent"></div>
-                  </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {/* Facial Analysis */}
-                    <div className="relative group">
-                      <Button 
-                        className={`w-full flex flex-col items-center justify-center p-6 h-auto transition-all duration-300 ${
-                          hasFaceImages 
-                            ? 'bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]' 
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                        }`}
-                        disabled={!hasFaceImages}
-                        onClick={() => hasFaceImages && handleNavigation('/facial-analysis')}
-                      >
-                        <Brain className="w-8 h-8 mb-3" />
-                        <div className="text-center">
-                          <div className="font-semibold text-sm flex items-center justify-center">
-                            Phân tích Gương mặt
-                            {hasFaceImages && <div className="w-2 h-2 bg-green-400 rounded-full ml-2 animate-pulse"></div>}
-                          </div>
-                          <div className="text-xs opacity-80 mt-1">
-                            {hasFaceImages ? 'Sẵn sàng phân tích!' : 'Cần ảnh ngoài mặt'}
-                          </div>
-                        </div>
-                      </Button>
-                      {!hasFaceImages && (
-                        <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                          Upload frontal or profile face image first
-                        </div>
-                      )}
-                    </div>
-
-                    {/* X-ray Analysis */}
-                    <div className="relative group">
-                      <Button 
-                        className={`w-full flex flex-col items-center justify-center p-6 h-auto transition-all duration-300 ${
-                          hasXrayImages 
-                            ? 'bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]' 
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                        }`}
-                        disabled={!hasXrayImages}
-                        onClick={() => hasXrayImages && handleNavigation('/xray-analysis')}
-                      >
-                        <Scan className="w-8 h-8 mb-3" />
-                        <div className="text-center">
-                          <div className="font-semibold text-sm">Phân tích X-quang</div>
-                          <div className="text-xs opacity-80 mt-1">
-                            {hasXrayImages ? 'Sẵn sàng phân tích!' : 'Cần ảnh X-quang'}
-                          </div>
-                        </div>
-                      </Button>
-                      {!hasXrayImages && (
-                        <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                          Upload X-ray images first
-                        </div>
-                      )}
-                    </div>
-
-                    {/* 3D Interactive */}
-                    <div className="relative group">
-                      <Button 
-                        className={`w-full flex flex-col items-center justify-center p-6 h-auto transition-all duration-300 ${
-                          has3DModel 
-                            ? 'bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]' 
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                        }`}
-                        disabled={!has3DModel}
-                        onClick={() => has3DModel && handleNavigation('/model-3d')}
-                      >
-                        <Box className="w-8 h-8 mb-3" />
-                        <div className="text-center">
-                          <div className="font-semibold text-sm">Interactive 3D</div>
-                          <div className="text-xs opacity-80 mt-1">
-                            {has3DModel ? 'Sẵn sàng tương tác!' : 'Cần mô hình 3D'}
-                          </div>
-                        </div>
-                      </Button>
-                      {!has3DModel && (
-                        <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                          Upload 3D model first
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Treatment Prediction */}
-                    <div className="relative group">
-                      <Button 
-                        className={`w-full flex flex-col items-center justify-center p-6 h-auto transition-all duration-300 ${
-                          hasAllImages 
-                            ? 'bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-600 hover:to-red-700 text-white shadow-lg hover:shadow-xl transform hover:scale-[1.02]' 
-                            : 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-200'
-                        }`}
-                        disabled={!hasAllImages}
-                      >
-                        <Stethoscope className="w-8 h-8 mb-3" />
-                        <div className="text-center">
-                          <div className="font-semibold text-sm">Dự đoán điều trị 3D</div>
-                          <div className="text-xs opacity-80 mt-1">
-                            {hasAllImages ? 'Sẵn sàng dự đoán!' : 'Cần đầy đủ ảnh & 3D'}
-                          </div>
-                        </div>
-                      </Button>
-                      {!hasAllImages && (
-                        <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                          Upload all required images and 3D model
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Upload Progress */}
-                  <div className="mt-8 bg-gradient-to-br from-white/90 to-blue-50/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center">
-                        <Target className="w-5 h-5 mr-2 text-blue-500" />
-                        <span className="text-lg font-semibold text-gray-700">Upload Progress</span>
-                      </div>
-                      <span className="text-sm text-gray-500 bg-white/80 px-3 py-1 rounded-full">
-                        {Object.values(uploadedImages).filter(Boolean).length} / {Object.keys(uploadedImages).length} completed
-                      </span>
-                    </div>
-                    <Progress 
-                      value={(Object.values(uploadedImages).filter(Boolean).length / Object.keys(uploadedImages).length) * 100} 
-                      className="h-3"
-                    />
-                    <div className="text-xs text-gray-600 mt-2">
-                      {Object.values(uploadedImages).filter(Boolean).length === Object.keys(uploadedImages).length 
-                        ? "🎉 All images uploaded! All analysis tools are now available." 
-                        : "Upload more images to unlock additional analysis tools"
-                      }
-                    </div>
-                  </div>
-                </div>
               </div>
 
 
-            </TabsContent>
-
-            <TabsContent value="treatment" className="p-8">
-              <div className="text-center py-16">
-                <div className="bg-gradient-to-br from-white/80 to-blue-100/60 backdrop-blur-sm rounded-3xl p-12 mx-auto max-w-2xl border-2 border-gray-200/40 shadow-lg">
-                  <div className="w-24 h-24 mx-auto mb-6 bg-gradient-to-br from-indigo-100/80 to-purple-100/80 rounded-full flex items-center justify-center shadow-lg backdrop-blur-sm">
-                    <Calendar className="w-12 h-12 text-indigo-500" />
-                  </div>
-                  <h3 className="text-2xl font-bold text-gray-700 mb-4 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                    Lịch sử điều trị
-                  </h3>
-                  <p className="text-gray-600 text-lg font-medium mb-6">
-                    Thông tin lịch sử điều trị sẽ được hiển thị tại đây
-                  </p>
-                  <div className="flex justify-center space-x-1">
-                    <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce"></div>
-                    <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-75"></div>
-                    <div className="w-2 h-2 bg-indigo-400 rounded-full animate-bounce delay-150"></div>
-                  </div>
-                </div>
-              </div>
             </TabsContent>
           </Tabs>
         </div>
       </div>
 
-      {/* Footer */}
-      <footer className="bg-gradient-to-r from-slate-800 via-slate-700 to-slate-800 text-white py-12 mt-16">
+      {/* Medical Footer */}
+      <footer className="bg-gray-800 text-gray-300 py-12 mt-16 border-t-4 border-blue-600">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="flex items-center justify-center space-x-4 mb-8">
-              <div className="relative group">
+            <div className="flex items-center justify-center space-x-6 mb-8">
+              <div className="flex items-center space-x-4">
                 <img 
                   src="/assets/leetray_logo.png" 
                   alt="LeeTray Logo" 
-                  className="w-20 h-20 object-contain drop-shadow-lg group-hover:scale-105 transition-transform duration-300"
+                  className="w-16 h-16 object-contain"
                 />
-                <div className="absolute inset-0 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
-              <span className="text-slate-400 font-bold text-3xl">×</span>
-              <div className="relative group">
+                <div className="h-8 w-px bg-gray-600"></div>
                 <img 
                   src="/assets/hiai-logo.png" 
                   alt="HiAI Logo" 
-                  className="w-20 h-20 object-contain drop-shadow-lg group-hover:scale-105 transition-transform duration-300"
+                  className="w-16 h-16 object-contain"
                 />
-                <div className="absolute inset-0 bg-white/10 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </div>
             </div>
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 via-indigo-500 to-purple-500 rounded-full mx-auto mb-6"></div>
-            <p className="text-slate-300 text-lg font-medium mb-2">© 2025 LeeTray × HiAI. All Rights Reserved.</p>
-            <p className="text-slate-400 text-base max-w-2xl mx-auto leading-relaxed">
-              Hệ thống Phân tích Nha khoa AI - Công nghệ tiên tiến cho chăm sóc sức khỏe răng miệng
-            </p>
-            <div className="mt-8 flex justify-center space-x-1">
-              <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-              <div className="w-2 h-2 bg-indigo-400 rounded-full animate-pulse delay-75"></div>
-              <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-150"></div>
+            <div className="w-20 h-1 bg-blue-600 rounded-full mx-auto mb-6"></div>
+            <div className="max-w-3xl mx-auto mb-6">
+              <h3 className="text-xl font-bold text-white mb-2">Clinical AI Diagnostic Platform</h3>
+              <p className="text-gray-400 text-base leading-relaxed">
+                Advanced artificial intelligence for dental diagnostics and treatment planning. 
+                Empowering healthcare professionals with cutting-edge technology.
+              </p>
             </div>
+            <div className="flex justify-center space-x-8 text-sm text-gray-500 mb-6">
+              <span>FDA Compliant</span>
+              <span>•</span>
+              <span>HIPAA Secure</span>
+              <span>•</span>
+              <span>ISO 27001 Certified</span>
+            </div>
+            <p className="text-gray-500 text-sm">© 2025 LeeTray × HiAI. All Rights Reserved. Medical Device Software.</p>
           </div>
         </div>
       </footer>
+
+      {/* AI Thinking Modal */}
+      <AIThinkingModal
+        isOpen={showAIThinking}
+        analysisType={currentAnalysis}
+        onComplete={handleAIThinkingComplete}
+      />
     </div>
   );
 };

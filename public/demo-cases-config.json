@@ -1,0 +1,114 @@
+{
+  "demoCases": [
+    {
+      "id": "case_001",
+      "name": "Nguyễn Văn A",
+      "age": 25,
+      "gender": "male",
+      "description": "Patient with Class II malocclusion, requiring comprehensive orthodontic treatment",
+      "inputFolder": "case_001/inputs",
+      "outputFolder": "case_001/outputs",
+      "availableImages": [
+        {
+          "type": "lateral",
+          "filename": "lateral.jpg",
+          "displayName": "Lateral Cephalometric"
+        },
+        {
+          "type": "general_xray", 
+          "filename": "pano.jpg",
+          "displayName": "Panoramic Radiograph"
+        },
+        {
+          "type": "frontal",
+          "filename": "frontal.jpg", 
+          "displayName": "Frontal Portrait"
+        },
+        {
+          "type": "profile",
+          "filename": "profile.jpg",
+          "displayName": "Lateral Profile"
+        },
+        {
+          "type": "model_3d_upper",
+          "filename": "model_3d_upper.stl",
+          "displayName": "Upper Jaw Scan"
+        },
+        {
+          "type": "model_3d_lower",
+          "filename": "model_3d_lower.stl",
+          "displayName": "Lower Jaw Scan"
+        }
+      ]
+    },
+    {
+      "id": "case_002", 
+      "name": "Trần Thị B",
+      "age": 32,
+      "gender": "female",
+      "description": "Patient with Class III malocclusion and crowding, surgical-orthodontic treatment planned",
+      "inputFolder": "case_002/inputs",
+      "outputFolder": "case_002/outputs",
+      "availableImages": [
+        {
+          "type": "lateral",
+          "filename": "lateral.jpg",
+          "displayName": "Lateral Cephalometric"
+        },
+        {
+          "type": "general_xray",
+          "filename": "pano.jpg", 
+          "displayName": "Panoramic Radiograph"
+        },
+        {
+          "type": "frontal",
+          "filename": "frontal.jpg",
+          "displayName": "Frontal Portrait"
+        },
+        {
+          "type": "profile",
+          "filename": "profile.jpg",
+          "displayName": "Lateral Profile"
+        }
+      ]
+    },
+    {
+      "id": "case_003",
+      "name": "Lê Văn C", 
+      "age": 18,
+      "gender": "male",
+      "description": "Adolescent patient with Class I malocclusion and mild crowding",
+      "inputFolder": "case_003/inputs",
+      "outputFolder": "case_003/outputs",
+      "availableImages": [
+        {
+          "type": "lateral",
+          "filename": "lateral.jpg",
+          "displayName": "Lateral Cephalometric"
+        },
+        {
+          "type": "general_xray",
+          "filename": "pano.jpg",
+          "displayName": "Panoramic Radiograph"
+        },
+        {
+          "type": "frontal",
+          "filename": "frontal.jpg",
+          "displayName": "Frontal Portrait"
+        }
+      ]
+    }
+  ],
+  "settings": {
+    "baseInputPath": "/assets/demo_cases",
+    "baseOutputPath": "/assets/demo_cases", 
+    "fallbackImages": {
+      "lateral": "",
+      "profile": "",
+      "frontal": "",
+      "general_xray": "",
+      "model_3d_upper": "",
+      "model_3d_lower": ""
+    }
+  }
+} 
