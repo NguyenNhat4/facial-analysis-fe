@@ -1,51 +1,33 @@
 import { Button } from "@/components/ui/button";
-import { Camera, Radiation, Box, Menu, MessageCircle } from "lucide-react";
+import { Camera, Box, Menu, MessageCircle, Brain } from "lucide-react";
 import { Link } from "wouter";
 
 export default function Home() {
-  const handleUpload = (type: string) => {
-    // Create file input element
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = type === 'facial' ? 'image/*' : type === 'xray' ? 'image/*' : '.stl,.obj,.ply';
-    input.multiple = type === 'facial';
-    
-    input.onchange = (e) => {
-      const files = (e.target as HTMLInputElement).files;
-      if (files) {
-        console.log(`Uploading ${type} files:`, files);
-        // Here you would handle the actual upload
-        alert(`Đã chọn ${files.length} file(s) cho ${type}. Chức năng upload sẽ được thêm trong phiên bản chính thức.`);
-      }
-    };
-    
-    input.click();
-  };
 
   return (
     <div className="min-h-screen bg-clinical-50">
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-clinical-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
+          <div className="flex justify-between items-center h-20">
+            <div className="flex items-center space-x-4">
               <img 
                 src="/assets/leetray_logo.png" 
                 alt="LeeTray Logo" 
-                className="w-20 h-20 object-contain"
+                className="w-28 h-28 object-contain"
               />
-              <span className="text-clinical-400 font-bold text-xl">×</span>
+              <span className="text-clinical-400 font-bold text-2xl">×</span>
               <img 
                 src="/assets/hiai-logo.png" 
                 alt="HiAI Logo" 
-                className="w-20 h-20 object-contain"
+                className="w-28 h-28 object-contain"
               />
             </div>
             <div className="flex items-center space-x-4">
               <nav className="hidden md:flex space-x-8">
                 <a href="#" className="text-clinical-600 hover:text-primary px-3 py-2 text-sm font-medium transition-colors">Trang chủ</a>
-                <a href="#" className="text-clinical-600 hover:text-primary px-3 py-2 text-sm font-medium transition-colors">Tính năng</a>
-                <a href="#" className="text-clinical-600 hover:text-primary px-3 py-2 text-sm font-medium transition-colors">Giới thiệu</a>
+                <a href="#features" className="text-clinical-600 hover:text-primary px-3 py-2 text-sm font-medium transition-colors">Tính năng</a>
+                <a href="#features" className="text-clinical-600 hover:text-primary px-3 py-2 text-sm font-medium transition-colors">Giới thiệu</a>
                 <a href="#" className="text-clinical-600 hover:text-primary px-3 py-2 text-sm font-medium transition-colors">Liên hệ</a>
               </nav>
               <Link href="/chat">
@@ -125,22 +107,22 @@ export default function Home() {
       </section>
 
       {/* Features Preview Section */}
-      <section className="bg-black text-white py-20">
+      <section id="features" className="bg-black text-white py-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-              Three Revolutionary Features
+              Four Revolutionary Features
             </h2>
             <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-              Khám phá tương lai của nha khoa với ba tính năng AI tiên tiến nhất thế giới
+              Khám phá tương lai của nha khoa với bốn tính năng AI tiên tiến nhất thế giới
             </p>
           </div>
 
           {/* Revolutionary Features Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 lg:gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
             {/* Feature 1: Facial Analysis */}
             <div className="group cursor-pointer bg-gradient-to-br from-gray-900 to-blue-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
-              <div className="relative p-8 h-[450px] flex flex-col">
+              <div className="relative p-8 pb-12 h-[380px] flex flex-col">
                 <div className="absolute top-4 right-4">
                   <span className="bg-blue-500/20 backdrop-blur-sm text-blue-300 text-xs font-bold px-3 py-1 rounded-full">
                     FEATURE #1
@@ -148,50 +130,36 @@ export default function Home() {
                 </div>
                 
                 <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl">
-                    <Camera className="text-white" size={40} />
+                  <div className="w-28 h-28 bg-gradient-to-br from-blue-700 to-blue-900 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl">
+                    <Camera className="text-white" size={48} />
                   </div>
                   
                   <div>
-                    <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
+                    <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
                       Phân tích Gương mặt AI
                     </h3>
-                    <p className="text-gray-300 text-sm leading-relaxed">
+                    <p className="text-gray-300 text-base leading-relaxed max-w-xs mx-auto">
                       Phân tích tỷ lệ gương mặt cách mạng với xử lý AI thời gian thực
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2 text-xs">
-                      <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                      <span className="text-green-300">Xử lý Thời gian thực</span>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3 text-sm">
+                      <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
+                      <span className="text-green-300 font-medium">Xử lý Thời gian thực</span>
                     </div>
-                    <div className="flex items-center space-x-2 text-xs">
-                      <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                      <span className="text-blue-300">Phân tích Tỷ lệ Vàng</span>
+                    <div className="flex items-center space-x-3 text-sm">
+                      <div className="w-3 h-3 bg-blue-400 rounded-full animate-pulse"></div>
+                      <span className="text-blue-300 font-medium">Phân tích Tỷ lệ Vàng</span>
                     </div>
                   </div>
-                </div>
-                
-                <div className="space-y-3 mt-auto">
-                  <Button 
-                    onClick={() => handleUpload('facial')}
-                    className="w-full bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 text-white font-bold py-3 rounded-xl shadow-lg"
-                  >
-                    Tải ảnh Gương mặt
-                  </Button>
-                  <Link href="/facial-analysis">
-                    <Button className="w-full bg-transparent border border-blue-500 text-blue-300 hover:bg-blue-500/10 font-bold py-2 rounded-xl">
-                      Xem Demo
-                    </Button>
-                  </Link>
                 </div>
               </div>
             </div>
 
             {/* Feature 2: X-ray Analysis */}
             <div className="group cursor-pointer bg-gradient-to-br from-gray-900 to-blue-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
-              <div className="relative p-8 h-[450px] flex flex-col">
+              <div className="relative p-8 pb-12 h-[380px] flex flex-col">
                 <div className="absolute top-4 right-4">
                   <span className="bg-blue-500/20 backdrop-blur-sm text-blue-300 text-xs font-bold px-3 py-1 rounded-full">
                     FEATURE #2
@@ -199,54 +167,40 @@ export default function Home() {
                 </div>
                 
                 <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
-                  <div className="w-24 h-24 bg-gradient-to-br from-blue-800 to-slate-900 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl overflow-hidden">
+                  <div className="w-28 h-28 bg-gradient-to-br from-blue-800 to-slate-900 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl overflow-hidden">
                     <img 
                       src="/assets/logo/paranomic_icon.png" 
                       alt="X-ray Panoramic Analysis" 
-                      className="w-24 h-24 object-cover"
+                      className="w-28 h-28 object-cover"
                     />
                   </div>
                   
                   <div>
-                    <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
+                    <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-blue-300 to-cyan-300 bg-clip-text text-transparent">
                       Phân tích X-quang AI
                     </h3>
-                    <p className="text-gray-300 text-sm leading-relaxed">
+                    <p className="text-gray-300 text-base leading-relaxed max-w-xs mx-auto">
                       Phân tích và chẩn đoán X-quang nha khoa tiên tiến bằng AI
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2 text-xs">
-                      <div className="w-2 h-2 bg-red-400 rounded-full animate-pulse"></div>
-                      <span className="text-red-300">Phát hiện Bệnh lý</span>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3 text-sm">
+                      <div className="w-3 h-3 bg-red-400 rounded-full animate-pulse"></div>
+                      <span className="text-red-300 font-medium">Phát hiện Bệnh lý</span>
                     </div>
-                    <div className="flex items-center space-x-2 text-xs">
-                      <div className="w-2 h-2 bg-yellow-400 rounded-full animate-pulse"></div>
-                      <span className="text-yellow-300">Phân loại Răng</span>
+                    <div className="flex items-center space-x-3 text-sm">
+                      <div className="w-3 h-3 bg-yellow-400 rounded-full animate-pulse"></div>
+                      <span className="text-yellow-300 font-medium">Phân loại Răng</span>
                     </div>
                   </div>
-                </div>
-                
-                <div className="space-y-3 mt-auto">
-                  <Button 
-                    onClick={() => handleUpload('xray')}
-                    className="w-full bg-gradient-to-r from-blue-600 to-cyan-700 hover:from-blue-700 hover:to-cyan-800 text-white font-bold py-3 rounded-xl shadow-lg"
-                  >
-                    Tải ảnh X-quang
-                  </Button>
-                  <Link href="/xray-analysis">
-                    <Button className="w-full bg-transparent border border-blue-500 text-blue-300 hover:bg-blue-500/10 font-bold py-2 rounded-xl">
-                      Xem Demo
-                    </Button>
-                  </Link>
                 </div>
               </div>
             </div>
 
             {/* Feature 3: 3D Simulation */}
             <div className="group cursor-pointer bg-gradient-to-br from-purple-900 to-pink-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
-              <div className="relative p-8 h-[450px] flex flex-col">
+              <div className="relative p-8 pb-12 h-[380px] flex flex-col">
                 <div className="absolute top-4 right-4">
                   <span className="bg-purple-500/20 backdrop-blur-sm text-purple-300 text-xs font-bold px-3 py-1 rounded-full">
                     FEATURE #3
@@ -254,66 +208,115 @@ export default function Home() {
                 </div>
                 
                 <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
-                  <div className="w-24 h-24 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl overflow-hidden" style={{background: 'linear-gradient(to bottom right, #511ba2, #4c1d95)'}}>
+                  <div className="w-28 h-28 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl overflow-hidden" style={{background: 'linear-gradient(to bottom right, #511ba2, #4c1d95)'}}>
                     <img 
                       src="/assets/logo/3D_icon.png" 
                       alt="3D Simulation" 
-                      className="w-24 h-24 object-cover"
+                      className="w-28 h-28 object-cover"
                     />
                   </div>
                   
                   <div>
-                    <h3 className="text-2xl font-bold mb-3 bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
+                    <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-purple-300 to-pink-300 bg-clip-text text-transparent">
                       Mô phỏng 3D
                     </h3>
-                    <p className="text-gray-300 text-sm leading-relaxed">
+                    <p className="text-gray-300 text-base leading-relaxed max-w-xs mx-auto">
                       Mô phỏng điều trị 3D tương tác và dự đoán kết quả
                     </p>
                   </div>
                   
-                  <div className="space-y-2">
-                    <div className="flex items-center space-x-2 text-xs">
-                      <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                      <span className="text-purple-300">Mô hình 3D</span>
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3 text-sm">
+                      <div className="w-3 h-3 bg-purple-400 rounded-full animate-pulse"></div>
+                      <span className="text-purple-300 font-medium">Mô hình 3D</span>
                     </div>
-                    <div className="flex items-center space-x-2 text-xs">
-                      <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse"></div>
-                      <span className="text-pink-300">Xem trước Điều trị</span>
+                    <div className="flex items-center space-x-3 text-sm">
+                      <div className="w-3 h-3 bg-pink-400 rounded-full animate-pulse"></div>
+                      <span className="text-pink-300 font-medium">Xem trước Điều trị</span>
                     </div>
                   </div>
                 </div>
+              </div>
+            </div>
+
+            {/* Feature 4: Treatment Prediction */}
+            <div className="group cursor-pointer bg-gradient-to-br from-emerald-900 to-teal-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
+              <div className="relative p-8 pb-12 h-[380px] flex flex-col">
+                <div className="absolute top-4 right-4">
+                  <span className="bg-emerald-500/20 backdrop-blur-sm text-emerald-300 text-xs font-bold px-3 py-1 rounded-full">
+                    FEATURE #4
+                  </span>
+                </div>
                 
-                <div className="space-y-3 mt-auto">
-                  <Button 
-                    onClick={() => handleUpload('3d')}
-                    className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white font-bold py-3 rounded-xl shadow-lg"
-                  >
-                    Tải mô hình 3D
-                  </Button>
-                  <Link href="/model-3d">
-                    <Button className="w-full bg-transparent border border-purple-500 text-purple-300 hover:bg-purple-500/10 font-bold py-2 rounded-xl">
-                      Xem Demo
-                    </Button>
-                  </Link>
+                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
+                  <div className="w-28 h-28 bg-gradient-to-br from-emerald-700 to-teal-900 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl">
+                    <Brain className="text-white" size={48} />
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
+                      Dự đoán Điều trị AI
+                    </h3>
+                    <p className="text-gray-300 text-base leading-relaxed max-w-xs mx-auto">
+                      Dự đoán kết quả điều trị và đề xuất phương án tối ưu bằng AI
+                    </p>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center space-x-3 text-sm">
+                      <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                      <span className="text-emerald-300 font-medium">Dự đoán Kết quả</span>
+                    </div>
+                    <div className="flex items-center space-x-3 text-sm">
+                      <div className="w-3 h-3 bg-teal-400 rounded-full animate-pulse"></div>
+                      <span className="text-teal-300 font-medium">Phương án Tối ưu</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Call to Action */}
-          <div className="text-center mt-20">
-            <div className="bg-gradient-to-r from-yellow-500/10 to-orange-500/10 backdrop-blur-sm border border-yellow-500/20 rounded-2xl p-8 max-w-2xl mx-auto">
-              <h3 className="text-3xl font-bold mb-4 text-transparent bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text">
-                Ready to Experience the Future?
-              </h3>
-              <p className="text-gray-300 mb-6">
-                Hãy trải nghiệm AI chat và khám phá những tính năng đang được phát triển
-              </p>
-              <Link href="/chat">
-                <Button className="bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-black font-bold text-lg px-8 py-3 rounded-full shadow-xl transform hover:scale-105 transition-all duration-300">
-                  Try AI Chat Demo
-                </Button>
-              </Link>
+          {/* Enhanced Call to Action */}
+          <div className="text-center mt-24">
+            <div className="relative max-w-4xl mx-auto">
+              {/* Background effects */}
+              <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 via-purple-600/20 to-pink-600/20 rounded-3xl blur-xl"></div>
+              <div className="absolute inset-0 bg-gradient-to-r from-yellow-500/10 to-orange-500/10 backdrop-blur-sm border border-gradient rounded-3xl"></div>
+              
+              <div className="relative bg-gradient-to-br from-gray-900/50 via-blue-900/30 to-purple-900/50 backdrop-blur-md border border-white/10 rounded-3xl p-12">
+                <div className="mb-8">
+                  <h3 className="text-5xl font-black mb-6 text-transparent bg-gradient-to-r from-white via-blue-200 to-purple-200 bg-clip-text">
+                    Experience the Revolution
+                  </h3>
+                  <p className="text-xl text-gray-300 max-w-2xl mx-auto leading-relaxed">
+                    Khám phá sức mạnh của <span className="text-yellow-400 font-bold">AI Dental Analysis</span> - 
+                    Tương lai của chẩn đoán nha khoa đã có mặt
+                  </p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-8">
+                  <Link href="/demo">
+                    <Button className="group bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 hover:from-blue-600 hover:via-purple-600 hover:to-pink-600 text-white font-bold text-xl px-12 py-4 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-500 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-400 to-purple-400 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      <span className="relative flex items-center">
+                        <Box size={28} className="mr-3 group-hover:rotate-12 transition-transform duration-500" />
+                        Trải nghiệm Demo
+                      </span>
+                    </Button>
+                  </Link>
+                  
+                  <Link href="/chat">
+                    <Button className="group bg-gradient-to-r from-yellow-500 to-orange-600 hover:from-yellow-600 hover:to-orange-700 text-black font-bold text-xl px-12 py-4 rounded-2xl shadow-2xl transform hover:scale-105 transition-all duration-500 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-gradient-to-r from-yellow-400 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                      <span className="relative flex items-center">
+                        <MessageCircle size={28} className="mr-3 group-hover:scale-110 transition-transform duration-500" />
+                        AI Chat Demo
+                      </span>
+                    </Button>
+                  </Link>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -323,17 +326,17 @@ export default function Home() {
       <footer className="bg-clinical-800 text-clinical-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <div className="flex items-center justify-center space-x-3 mb-4">
+            <div className="flex items-center justify-center space-x-4 mb-4">
               <img 
                 src="/assets/leetray_logo.png" 
                 alt="LeeTray Logo" 
-                className="w-16 h-16 object-contain"
+                className="w-24 h-24 object-contain"
               />
-              <span className="text-clinical-400 font-bold text-lg">×</span>
+              <span className="text-clinical-400 font-bold text-xl">×</span>
               <img 
                 src="/assets/hiai-logo.png" 
                 alt="HiAI Logo" 
-                className="w-16 h-16 object-contain"
+                className="w-24 h-24 object-contain"
               />
             </div>
             <p className="text-clinical-400">© 2025 LeeTray × HiAI. All Rights Reserved.</p>
