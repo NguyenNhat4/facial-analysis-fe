@@ -252,7 +252,7 @@ const DemoPage = () => {
   };
 
   // Check if specific image types are available for analysis
-  const hasFaceImages = uploadedImages.frontal || uploadedImages.profile;
+  const hasFaceImages = uploadedImages.frontal && uploadedImages.profile;
   const hasXrayImages = uploadedImages.lateral || uploadedImages.general_xray;
   const has3DModel =
     uploadedImages.model_3d_upper || uploadedImages.model_3d_lower;
@@ -1033,13 +1033,13 @@ const DemoPage = () => {
                             <div className="text-sm opacity-80 mt-1">
                               {hasFaceImages
                                 ? "Cephalometric Assessment"
-                                : "Requires facial images"}
+                                : "Requires frontal & profile images"}
                             </div>
                           </div>
                         </Button>
                         {!hasFaceImages && (
                           <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                            Clinical photography required
+                            Frontal & Profile photos required
                           </div>
                         )}
                       </div>
