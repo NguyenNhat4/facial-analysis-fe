@@ -696,17 +696,17 @@ const DemoPage = () => {
                 <div>
                   <div className="flex items-center space-x-3 mb-2">
                     <h2 className="text-2xl font-bold text-white">
-                      Patient Record
+                      Demonstration Case
                     </h2>
-                    <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full">
-                      ACTIVE
+                    <span className="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded-full">
+                      DEMO
                     </span>
                   </div>
                   <p className="text-blue-100 text-lg font-medium">
-                    {patientData.name} • Male • 35 Years
+                    Sample Clinical Data
                   </p>
                   <p className="text-blue-200 text-sm">
-                    Patient ID: #PAT-2025-001 • Last Visit: 28/07/2025
+                    Case ID: #DEMO-2025-001 • Session Date: {new Date().toLocaleDateString("en-GB")}
                   </p>
                 </div>
               </div>
