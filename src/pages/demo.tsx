@@ -934,7 +934,7 @@ const DemoPage = () => {
                       <Button
                         className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${"bg-purple-600 hover:bg-purple-700 text-white shadow-md border border-purple-700"}`}
                         onClick={() =>
-                          handleAnalysisClick("3d", "/model-3d", true)
+                          handleNavigation("/model-3d", true)
                         }
                       >
                         <div
