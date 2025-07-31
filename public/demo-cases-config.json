@@ -2,9 +2,6 @@
   "demoCases": [
     {
       "id": "case_001",
-      "name": "Nguyễn Văn A",
-      "age": 25,
-      "gender": "male",
       "description": "Patient with Class II malocclusion, requiring comprehensive orthodontic treatment",
       "inputFolder": "case_001/inputs",
       "outputFolder": "case_001/outputs",
@@ -43,9 +40,6 @@
     },
     {
       "id": "case_002", 
-      "name": "Trần Thị B",
-      "age": 32,
-      "gender": "female",
       "description": "Patient with Class III malocclusion and crowding, surgical-orthodontic treatment planned",
       "inputFolder": "case_002/inputs",
       "outputFolder": "case_002/outputs",
@@ -74,9 +68,6 @@
     },
     {
       "id": "case_003",
-      "name": "Lê Văn C", 
-      "age": 18,
-      "gender": "male",
       "description": "Adolescent patient with Class I malocclusion and mild crowding",
       "inputFolder": "case_003/inputs",
       "outputFolder": "case_003/outputs",
