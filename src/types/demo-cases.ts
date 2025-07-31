@@ -1,5 +1,11 @@
 // Định nghĩa các loại ảnh input/output
-export type ImageType = 'lateral' | 'profile' | 'frontal' | 'general_xray' | 'model_3d_upper' | 'model_3d_lower';
+export type ImageType =
+  | "lateral"
+  | "profile"
+  | "frontal"
+  | "general_xray"
+  | "model_3d_upper"
+  | "model_3d_lower";
 
 // Interface cho một image trong demo case
 export interface DemoCaseImage {
@@ -13,7 +19,7 @@ export interface DemoCase {
   id: string;
   name: string;
   age: number;
-  gender: 'male' | 'female';
+  gender: "male" | "female";
   description: string;
   inputFolder: string;
   outputFolder: string;
@@ -39,39 +45,42 @@ export interface DemoCasesManager {
 }
 
 // Mapping giữa image type và display name
-export const IMAGE_TYPE_MAPPING: Record<ImageType, {
-  name: string;
-  category: string;
-  icon: string;
-}> = {
+export const IMAGE_TYPE_MAPPING: Record<
+  ImageType,
+  {
+    name?: string;
+    category?: string;
+    icon?: string;
+  }
+> = {
   lateral: {
-    name: 'Lateral Cephalometric',
-    category: 'Radiographic Imaging',
-    icon: '/assets/upload_logo/logo-lateral-xray.png'
+    name: "Lateral Cephalometric",
+    category: "Radiographic Imaging",
+    icon: "/assets/upload_logo/logo-lateral-xray.png",
   },
   general_xray: {
-    name: 'Panoramic Radiograph',
-    category: 'Radiographic Imaging', 
-    icon: '/assets/upload_logo/logo-upload-xray.png'
+    name: "Panoramic Radiograph",
+    category: "Radiographic Imaging",
+    icon: "/assets/upload_logo/logo-upload-xray.png",
   },
   frontal: {
-    name: 'Frontal Portrait',
-    category: 'Clinical Photography',
-    icon: '/assets/upload_logo/frontal-face.png'
+    name: "Frontal Portrait",
+    category: "Clinical Photography",
+    icon: "/assets/upload_logo/frontal-face.png",
   },
   profile: {
-    name: 'Lateral Profile',
-    category: 'Clinical Photography',
-    icon: '/assets/upload_logo/logo-side-face.png'
+    name: "Lateral Profile",
+    category: "Clinical Photography",
+    icon: "/assets/upload_logo/logo-side-face.png",
   },
   model_3d_upper: {
-    name: 'Upper Jaw Scan',
-    category: 'Digital Models',
-    icon: '/assets/upload_logo/3D-model.png'
+    name: "Upper Jaw Scan",
+    category: "Digital Models",
+    icon: "/assets/upload_logo/3D-model.png",
   },
   model_3d_lower: {
-    name: 'Lower Jaw Scan',
-    category: 'Digital Models',
-    icon: '/assets/upload_logo/3D-model.png'
-  }
-}; 
+    name: "Lower Jaw Scan",
+    category: "Digital Models",
+    icon: "/assets/upload_logo/3D-model.png",
+  },
+};

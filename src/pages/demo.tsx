@@ -1,21 +1,54 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'wouter';
-import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
-import { Button } from '../components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs';
-import { Badge } from '../components/ui/badge';
-import { Progress } from '../components/ui/progress';
-import { Upload, Camera, Radiation, Box, User, Calendar, Phone, Mail, MapPin, Sparkles, Target, Activity, Edit3, Save, X, Brain, Scan, Stethoscope, Loader2 } from 'lucide-react';
-import { ImageType, IMAGE_TYPE_MAPPING } from '../types/demo-cases';
-import { getFallbackImages } from '../utils/demo-cases';
-import { groupFilesByType, validateFileType } from '../utils/image-detection';
-import { findOutputPathFromAssets, extractCaseIdFromInputFile } from '../utils/case-mapping';
-import AIThinkingModal from '../components/ai-thinking-modal';
+import React, { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "../components/ui/tabs";
+import { Badge } from "../components/ui/badge";
+import { Progress } from "../components/ui/progress";
+import {
+  Upload,
+  Camera,
+  Radiation,
+  Box,
+  User,
+  Calendar,
+  Phone,
+  Mail,
+  MapPin,
+  Sparkles,
+  Target,
+  Activity,
+  Edit3,
+  Save,
+  X,
+  Brain,
+  Scan,
+  Stethoscope,
+  Loader2,
+} from "lucide-react";
+import { ImageType, IMAGE_TYPE_MAPPING } from "../types/demo-cases";
+import { getFallbackImages } from "../utils/demo-cases";
+import { groupFilesByType, validateFileType } from "../utils/image-detection";
+import {
+  findOutputPathFromAssets,
+  extractCaseIdFromInputFile,
+} from "../utils/case-mapping";
+import AIThinkingModal from "../components/ai-thinking-modal";
 
 const DemoPage = () => {
   const [location, setLocation] = useLocation();
-  const [activeTab, setActiveTab] = useState('record');
-  
+  const [activeTab, setActiveTab] = useState("record");
+
   // Local upload state
   const [localImages, setLocalImages] = useState<{
     [key in ImageType]?: {
@@ -23,50 +56,58 @@ const DemoPage = () => {
       inputPreview: string;
       outputPreview: string;
       outputFilename: string;
-    }
+    };
   }>({});
-  
+
   // Current case info
   const [currentCaseId, setCurrentCaseId] = useState<string | null>(null);
-  
-  const [uploadedImages, setUploadedImages] = useState<{[key: string]: boolean}>({
+
+  const [uploadedImages, setUploadedImages] = useState<{
+    [key: string]: boolean;
+  }>({
     lateral: false,
     profile: false,
     frontal: false,
     general_xray: false,
     model_3d_upper: false,
-    model_3d_lower: false
+    model_3d_lower: false,
   });
 
   // State to store uploaded image files
-  const [uploadedFiles, setUploadedFiles] = useState<{[key: string]: File | null}>({
+  const [uploadedFiles, setUploadedFiles] = useState<{
+    [key: string]: File | null;
+  }>({
     lateral: null,
     profile: null,
     frontal: null,
     general_xray: null,
     model_3d_upper: null,
-    model_3d_lower: null
+    model_3d_lower: null,
   });
 
   // State to store image preview URLs
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<{[key: string]: string}>({
-    lateral: '',
-    profile: '',
-    frontal: '',
-    general_xray: '',
-    model_3d_upper: '',
-    model_3d_lower: ''
+  const [imagePreviewUrls, setImagePreviewUrls] = useState<{
+    [key: string]: string;
+  }>({
+    lateral: "",
+    profile: "",
+    frontal: "",
+    general_xray: "",
+    model_3d_upper: "",
+    model_3d_lower: "",
   });
 
   // Loading state for fake upload
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingCards, setLoadingCards] = useState<{[key: string]: boolean}>({});
+  const [loadingCards, setLoadingCards] = useState<{ [key: string]: boolean }>(
+    {}
+  );
 
   // Enhanced patient data with editing states
   const [patientData, setPatientData] = useState({
     name: "NHẬT NGUYỄN",
-    firstName: "NGUYỄN", 
+    firstName: "NGUYỄN",
     lastName: "NHẬT",
     email: "635107103@st.utc2.edu.v",
     sex: "male",
@@ -77,7 +118,7 @@ const DemoPage = () => {
     chiefComplaint: "Click to edit",
     diagnose: "Click to edit",
     note: "Click to edit",
-    treatmentPlan: "Click to edit"
+    treatmentPlan: "Click to edit",
   });
 
   const [editingField, setEditingField] = useState<string | null>(null);
@@ -85,15 +126,20 @@ const DemoPage = () => {
 
   // AI Thinking Modal state
   const [showAIThinking, setShowAIThinking] = useState(false);
-  const [currentAnalysis, setCurrentAnalysis] = useState<'facial' | 'radiographic' | '3d' | 'treatment'>('facial');
-  const [pendingNavigation, setPendingNavigation] = useState<{ path: string; withImages: boolean } | null>(null);
+  const [currentAnalysis, setCurrentAnalysis] = useState<
+    "facial" | "radiographic" | "3d" | "treatment"
+  >("facial");
+  const [pendingNavigation, setPendingNavigation] = useState<{
+    path: string;
+    withImages: boolean;
+  } | null>(null);
 
   // Cleanup URLs when component unmounts
   useEffect(() => {
     return () => {
       // Cleanup all preview URLs to prevent memory leaks
-      Object.values(imagePreviewUrls).forEach(url => {
-        if (url && url.startsWith('blob:')) {
+      Object.values(imagePreviewUrls).forEach((url) => {
+        if (url && url.startsWith("blob:")) {
           URL.revokeObjectURL(url);
         }
       });
@@ -102,31 +148,41 @@ const DemoPage = () => {
 
   // Generate upload categories from IMAGE_TYPE_MAPPING
   const uploadCategories = (() => {
-    const categories: { [key: string]: { title: string; subtitle: string; items: any[] } } = {};
-    
-    Object.entries(IMAGE_TYPE_MAPPING).forEach(([type, config]: [string, any]) => {
-      if (!categories[config.category]) {
-        categories[config.category] = {
-          title: config.category,
-          subtitle: config.category === 'Radiographic Imaging' ? 'Digital X-Ray Acquisitions' : 
-                   config.category === 'Clinical Photography' ? 'Facial Analysis Images' : 
-                   '3D Dental Scans',
-          items: []
-        };
+    const categories: {
+      [key: string]: { title: string; subtitle: string; items: any[] };
+    } = {};
+
+    Object.entries(IMAGE_TYPE_MAPPING).forEach(
+      ([type, config]: [string, any]) => {
+        if (!categories[config.category]) {
+          categories[config.category] = {
+            title: config.category,
+            subtitle:
+              config.category === "Radiographic Imaging"
+                ? "Digital X-Ray Acquisitions"
+                : config.category === "Clinical Photography"
+                ? "Facial Analysis Images"
+                : "3D Dental Scans",
+            items: [],
+          };
+        }
+
+        categories[config.category].items.push({
+          id: type,
+          name: config.name,
+          icon: config.icon,
+        });
       }
-      
-      categories[config.category].items.push({
-        id: type,
-        name: config.name,
-        icon: config.icon
-      });
-    });
-    
+    );
+
     return Object.values(categories);
   })();
 
   // Handle file upload
-  const handleFileUpload = (imageId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = (
+    imageId: string,
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (file) {
       // Clean up previous URL if exists
@@ -135,22 +191,22 @@ const DemoPage = () => {
       }
 
       // Store the file
-      setUploadedFiles(prev => ({
+      setUploadedFiles((prev) => ({
         ...prev,
-        [imageId]: file
+        [imageId]: file,
       }));
 
       // Create preview URL
       const previewUrl = URL.createObjectURL(file);
-      setImagePreviewUrls(prev => ({
+      setImagePreviewUrls((prev) => ({
         ...prev,
-        [imageId]: previewUrl
+        [imageId]: previewUrl,
       }));
 
       // Mark as uploaded
-      setUploadedImages(prev => ({
+      setUploadedImages((prev) => ({
         ...prev,
-        [imageId]: true
+        [imageId]: true,
       }));
     }
   };
@@ -158,34 +214,34 @@ const DemoPage = () => {
   // Handle remove uploaded image
   const handleRemoveImage = (imageId: string, event: React.MouseEvent) => {
     event.stopPropagation(); // Prevent card click
-    
+
     // Clean up URL to prevent memory leak
     if (imagePreviewUrls[imageId]) {
       URL.revokeObjectURL(imagePreviewUrls[imageId]);
     }
 
     // Reset states
-    setUploadedFiles(prev => ({
+    setUploadedFiles((prev) => ({
       ...prev,
-      [imageId]: null
+      [imageId]: null,
     }));
 
-    setImagePreviewUrls(prev => ({
+    setImagePreviewUrls((prev) => ({
       ...prev,
-      [imageId]: ''
+      [imageId]: "",
     }));
 
-    setUploadedImages(prev => ({
+    setUploadedImages((prev) => ({
       ...prev,
-      [imageId]: false
+      [imageId]: false,
     }));
   };
 
   const handleImageUpload = (imageId: string) => {
     // Create and trigger file input for real upload
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/*";
     input.onchange = (event) => {
       const target = event.target as HTMLInputElement;
       if (target.files && target.files[0]) {
@@ -198,8 +254,13 @@ const DemoPage = () => {
   // Check if specific image types are available for analysis
   const hasFaceImages = uploadedImages.frontal || uploadedImages.profile;
   const hasXrayImages = uploadedImages.lateral || uploadedImages.general_xray;
-  const has3DModel = uploadedImages.model_3d_upper || uploadedImages.model_3d_lower;
-  const hasAllImages = uploadedImages.frontal && uploadedImages.profile && uploadedImages.lateral && (uploadedImages.model_3d_upper || uploadedImages.model_3d_lower);
+  const has3DModel =
+    uploadedImages.model_3d_upper || uploadedImages.model_3d_lower;
+  const hasAllImages =
+    uploadedImages.frontal &&
+    uploadedImages.profile &&
+    uploadedImages.lateral &&
+    (uploadedImages.model_3d_upper || uploadedImages.model_3d_lower);
 
   const handleEditStart = (field: string, currentValue: string) => {
     setEditingField(field);
@@ -207,9 +268,9 @@ const DemoPage = () => {
   };
 
   const handleEditSave = (field: string) => {
-    setPatientData(prev => ({
+    setPatientData((prev) => ({
       ...prev,
-      [field]: tempValue
+      [field]: tempValue,
     }));
     setEditingField(null);
     setTempValue("");
@@ -221,7 +282,11 @@ const DemoPage = () => {
   };
 
   // AI Thinking handlers
-  const handleAnalysisClick = (analysisType: 'facial' | 'radiographic' | '3d' | 'treatment', path: string, withImages = false) => {
+  const handleAnalysisClick = (
+    analysisType: "facial" | "radiographic" | "3d" | "treatment",
+    path: string,
+    withImages = false
+  ) => {
     setCurrentAnalysis(analysisType);
     setPendingNavigation({ path, withImages });
     setShowAIThinking(true);
@@ -229,7 +294,7 @@ const DemoPage = () => {
 
   const handleAIThinkingComplete = () => {
     setShowAIThinking(false);
-    
+
     // Navigate after thinking is complete
     if (pendingNavigation) {
       if (pendingNavigation.withImages) {
@@ -246,14 +311,14 @@ const DemoPage = () => {
     if (withImages) {
       // Create URL params with uploaded image data
       const imageParams = new URLSearchParams();
-      
+
       // Add image URLs for analysis
       Object.entries(imagePreviewUrls).forEach(([key, url]) => {
         if (url && uploadedImages[key]) {
           imageParams.set(key, url);
         }
       });
-      
+
       // Navigate with query params
       const queryString = imageParams.toString();
       setLocation(queryString ? `${path}?${queryString}` : path);
@@ -262,10 +327,14 @@ const DemoPage = () => {
     }
   };
 
-  const renderEditableField = (field: string, value: string, isTextarea = false) => {
+  const renderEditableField = (
+    field: string,
+    value: string,
+    isTextarea = false
+  ) => {
     const isEditing = editingField === field;
     const isClickToEdit = value === "Click to edit";
-    
+
     if (isEditing) {
       return (
         <div className="relative">
@@ -306,11 +375,11 @@ const DemoPage = () => {
     }
 
     return (
-      <div 
+      <div
         className={`group relative p-4 rounded-xl font-medium cursor-pointer transition-all duration-300 hover:shadow-md ${
-          isClickToEdit 
-            ? 'bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border-2 border-blue-200/60 text-blue-600 hover:from-blue-100/80 hover:to-indigo-100/80 hover:border-blue-300/60' 
-            : 'bg-white/80 border-2 border-gray-200/60 text-gray-800 hover:bg-white hover:border-gray-300/60'
+          isClickToEdit
+            ? "bg-gradient-to-r from-blue-50/80 to-indigo-50/80 border-2 border-blue-200/60 text-blue-600 hover:from-blue-100/80 hover:to-indigo-100/80 hover:border-blue-300/60"
+            : "bg-white/80 border-2 border-gray-200/60 text-gray-800 hover:bg-white hover:border-gray-300/60"
         }`}
         onClick={() => handleEditStart(field, isClickToEdit ? "" : value)}
       >
@@ -329,36 +398,36 @@ const DemoPage = () => {
       inputPreview: string;
       outputPreview: string;
       outputFilename: string;
-    }
+    };
   }) => {
     setLocalImages(processedImages);
-    
+
     // Update uploaded images state
-    const newUploadedImages: {[key: string]: boolean} = {
+    const newUploadedImages: { [key: string]: boolean } = {
       lateral: false,
       profile: false,
       frontal: false,
       general_xray: false,
       model_3d_upper: false,
-      model_3d_lower: false
+      model_3d_lower: false,
     };
-    
-    const newImagePreviewUrls: {[key: string]: string} = {
-      lateral: '',
-      profile: '',
-      frontal: '',
-      general_xray: '',
-      model_3d_upper: '',
-      model_3d_lower: ''
+
+    const newImagePreviewUrls: { [key: string]: string } = {
+      lateral: "",
+      profile: "",
+      frontal: "",
+      general_xray: "",
+      model_3d_upper: "",
+      model_3d_lower: "",
     };
-    
+
     Object.entries(processedImages).forEach(([imageType, data]) => {
       if (data) {
         newUploadedImages[imageType] = true;
         newImagePreviewUrls[imageType] = data.inputPreview;
       }
     });
-    
+
     setUploadedImages(newUploadedImages);
     setImagePreviewUrls(newImagePreviewUrls);
   };
@@ -366,21 +435,21 @@ const DemoPage = () => {
   // Handle file picker and load images (input from local, output from assets)
   const fakeLoadImages = async () => {
     // Create file input element for multiple files (not folders)
-    const input = document.createElement('input');
-    input.type = 'file';
+    const input = document.createElement("input");
+    input.type = "file";
     input.multiple = true;
-    input.accept = 'image/*,.stl,.obj,.ply';
-    
+    input.accept = "image/*,.stl,.obj,.ply";
+
     input.onchange = async (event) => {
       const target = event.target as HTMLInputElement;
       const files = Array.from(target.files || []);
-      
+
       if (files.length === 0) return;
-      
+
       setIsLoading(true);
       setLoadingProgress(0);
       setLoadingCards({});
-      
+
       // Reset all states first
       setUploadedImages({
         lateral: false,
@@ -388,100 +457,106 @@ const DemoPage = () => {
         frontal: false,
         general_xray: false,
         model_3d_upper: false,
-        model_3d_lower: false
+        model_3d_lower: false,
       });
-      
+
       setImagePreviewUrls({
-        lateral: '',
-        profile: '',
-        frontal: '',
-        general_xray: '',
-        model_3d_upper: '',
-        model_3d_lower: ''
+        lateral: "",
+        profile: "",
+        frontal: "",
+        general_xray: "",
+        model_3d_upper: "",
+        model_3d_lower: "",
       });
-      
+
       try {
         // Validate and group files by type
         const validFiles = files.filter(validateFileType);
         const { detected } = await groupFilesByType(validFiles);
-        
+
         // Extract case ID from first file (assume all files are from same case)
         let detectedCaseId: string | null = null;
         for (const file of validFiles) {
           detectedCaseId = extractCaseIdFromInputFile(file);
           if (detectedCaseId) break;
         }
-        
+
         if (detectedCaseId) {
           setCurrentCaseId(detectedCaseId);
           console.log(`Detected case: ${detectedCaseId}`);
         }
-        
+
         const allDetectedFiles = Object.values(detected).flat();
         let processedCount = 0;
-        
+
         // Process each detected file
         for (const [imageType, typeFiles] of Object.entries(detected)) {
           if (typeFiles.length > 0) {
             // Take the first file of each type
             const file = typeFiles[0];
-            
+
             // Set loading state for current card
-            setLoadingCards(prev => ({ ...prev, [imageType]: true }));
-            
+            setLoadingCards((prev) => ({ ...prev, [imageType]: true }));
+
             // Simulate loading delay
-            await new Promise(resolve => setTimeout(resolve, 500 + Math.random() * 800));
-            
+            await new Promise((resolve) =>
+              setTimeout(resolve, 500 + Math.random() * 800)
+            );
+
             // Create preview URL from uploaded input file
             const inputPreviewUrl = URL.createObjectURL(file);
-            
+
             // Generate output path from assets/outputs/
-            const outputPath = findOutputPathFromAssets(file, imageType as ImageType);
-            
+            const outputPath = findOutputPathFromAssets(
+              file,
+              imageType as ImageType
+            );
+
             console.log(`Input: ${file.name} → Output: ${outputPath}`);
-            
+
             // Set preview URL (input image)
-            setImagePreviewUrls(prev => ({
+            setImagePreviewUrls((prev) => ({
               ...prev,
-              [imageType]: inputPreviewUrl
+              [imageType]: inputPreviewUrl,
             }));
 
             // Store local image data for future processing
-            setLocalImages(prev => ({
+            setLocalImages((prev) => ({
               ...prev,
               [imageType as ImageType]: {
                 input: file,
                 inputPreview: inputPreviewUrl,
                 outputPreview: outputPath,
-                outputFilename: outputPath.split('/').pop() || 'output.png'
-              }
+                outputFilename: outputPath.split("/").pop() || "output.png",
+              },
             }));
 
             // Mark as uploaded
-            setUploadedImages(prev => ({
+            setUploadedImages((prev) => ({
               ...prev,
-              [imageType]: true
+              [imageType]: true,
             }));
 
             // Remove loading state for current card
-            setLoadingCards(prev => ({ ...prev, [imageType]: false }));
-            
+            setLoadingCards((prev) => ({ ...prev, [imageType]: false }));
+
             processedCount++;
-            setLoadingProgress((processedCount / allDetectedFiles.length) * 100);
+            setLoadingProgress(
+              (processedCount / allDetectedFiles.length) * 100
+            );
           }
         }
-        
       } catch (error) {
-        console.error('Failed to process uploaded images:', error);
+        console.error("Failed to process uploaded images:", error);
       }
-      
+
       // Finish loading
       setTimeout(() => {
         setIsLoading(false);
         setLoadingProgress(0);
       }, 300);
     };
-    
+
     // Trigger file picker
     input.click();
   };
@@ -494,10 +569,12 @@ const DemoPage = () => {
       if (!imagePath) return;
 
       // Set loading state for this card
-      setLoadingCards(prev => ({ ...prev, [imageId]: true }));
+      setLoadingCards((prev) => ({ ...prev, [imageId]: true }));
 
       // Simulate loading delay
-      await new Promise(resolve => setTimeout(resolve, 800 + Math.random() * 600));
+      await new Promise((resolve) =>
+        setTimeout(resolve, 800 + Math.random() * 600)
+      );
 
       // Clean up previous URL if exists
       if (imagePreviewUrls[imageId]) {
@@ -505,26 +582,29 @@ const DemoPage = () => {
       }
 
       // Set preview URL to demo image path
-      setImagePreviewUrls(prev => ({
+      setImagePreviewUrls((prev) => ({
         ...prev,
-        [imageId]: imagePath
+        [imageId]: imagePath,
       }));
 
       // Mark as uploaded
-      setUploadedImages(prev => ({
+      setUploadedImages((prev) => ({
         ...prev,
-        [imageId]: true
+        [imageId]: true,
       }));
 
       // Remove loading state
-      setLoadingCards(prev => ({ ...prev, [imageId]: false }));
+      setLoadingCards((prev) => ({ ...prev, [imageId]: false }));
     } catch (error) {
-      console.error('Failed to load single image:', error);
+      console.error("Failed to load single image:", error);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25" style={{backgroundColor: '#fafbfc'}}>
+    <div
+      className="min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25"
+      style={{ backgroundColor: "#fafbfc" }}
+    >
       {/* Medical Header */}
       <header className="bg-white border-b-2 border-blue-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -532,49 +612,53 @@ const DemoPage = () => {
             <div className="flex items-center space-x-6">
               <div className="flex items-center space-x-4">
                 <div className="relative">
-                  <img 
-                    src="/assets/leetray_logo.png" 
-                    alt="LeeTray Logo" 
+                  <img
+                    src="/assets/leetray_logo.png"
+                    alt="LeeTray Logo"
                     className="w-14 h-14 object-contain"
                   />
                   <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full border-2 border-white"></div>
                 </div>
                 <div className="h-8 w-px bg-gray-300"></div>
                 <div className="relative">
-                  <img 
-                    src="/assets/hiai-logo.png" 
-                    alt="HiAI Logo" 
+                  <img
+                    src="/assets/hiai-logo.png"
+                    alt="HiAI Logo"
                     className="w-14 h-14 object-contain"
                   />
                   <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-600 rounded-full border-2 border-white"></div>
                 </div>
               </div>
               <div className="border-l-2 border-blue-200 pl-6">
-                <h1 className="text-xl font-bold text-gray-800">Dental Analysis System</h1>
-                <p className="text-sm text-gray-600 font-medium">AI-Powered Clinical Diagnostics</p>
+                <h1 className="text-xl font-bold text-gray-800">
+                  Dental Analysis System
+                </h1>
+                <p className="text-sm text-gray-600 font-medium">
+                  AI-Powered Clinical Diagnostics
+                </p>
               </div>
             </div>
             <nav className="hidden md:flex items-center space-x-1">
-              <button 
-                onClick={() => handleNavigation('/')}
+              <button
+                onClick={() => handleNavigation("/")}
                 className="px-4 py-2 text-gray-700 hover:text-blue-700 hover:bg-blue-50 font-medium transition-all duration-200 rounded-lg"
               >
                 Dashboard
               </button>
-              <button 
-                onClick={() => handleNavigation('/demo')}
+              <button
+                onClick={() => handleNavigation("/demo")}
                 className="px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-lg border border-blue-200"
               >
                 Clinical Analysis
               </button>
-              <button 
-                onClick={() => handleNavigation('/facial-analysis')}
+              <button
+                onClick={() => handleNavigation("/facial-analysis")}
                 className="px-4 py-2 text-gray-700 hover:text-blue-700 hover:bg-blue-50 font-medium transition-all duration-200 rounded-lg"
               >
                 Reports
               </button>
-              <button 
-                onClick={() => handleNavigation('/chat')}
+              <button
+                onClick={() => handleNavigation("/chat")}
                 className="px-4 py-2 text-gray-700 hover:text-blue-700 hover:bg-blue-50 font-medium transition-all duration-200 rounded-lg"
               >
                 Settings
@@ -611,53 +695,82 @@ const DemoPage = () => {
                 </div>
                 <div>
                   <div className="flex items-center space-x-3 mb-2">
-                    <h2 className="text-2xl font-bold text-white">Patient Record</h2>
-                    <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full">ACTIVE</span>
+                    <h2 className="text-2xl font-bold text-white">
+                      Patient Record
+                    </h2>
+                    <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full">
+                      ACTIVE
+                    </span>
                   </div>
-                  <p className="text-blue-100 text-lg font-medium">{patientData.name} • Male • 35 Years</p>
-                  <p className="text-blue-200 text-sm">Patient ID: #PAT-2025-001 • Last Visit: 28/07/2025</p>
+                  <p className="text-blue-100 text-lg font-medium">
+                    {patientData.name} • Male • 35 Years
+                  </p>
+                  <p className="text-blue-200 text-sm">
+                    Patient ID: #PAT-2025-001 • Last Visit: 28/07/2025
+                  </p>
                 </div>
               </div>
               <div className="text-right">
                 <div className="text-blue-100 text-sm">Current Session</div>
-                <div className="text-white font-semibold">{new Date().toLocaleDateString('en-GB')}</div>
-                <div className="text-blue-200 text-sm">{new Date().toLocaleTimeString('en-GB', {hour: '2-digit', minute:'2-digit'})}</div>
+                <div className="text-white font-semibold">
+                  {new Date().toLocaleDateString("en-GB")}
+                </div>
+                <div className="text-blue-200 text-sm">
+                  {new Date().toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
               </div>
             </div>
           </div>
 
           {/* Medical Navigation Tabs */}
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-full"
+          >
             <TabsContent value="record" className="p-8">
               {/* Upload Section */}
               <div className="mb-10">
                 <div className="flex items-center justify-between mb-8">
                   <div>
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">Clinical Imaging Data</h3>
+                    <h3 className="text-2xl font-bold text-gray-800 mb-2">
+                      Clinical Imaging Data
+                    </h3>
                     <div className="flex items-center space-x-4">
                       <div className="flex items-center space-x-2">
                         <Calendar className="w-4 h-4 text-blue-600" />
-                        <p className="text-gray-700 font-medium">Session Date: {new Date().toLocaleDateString('en-GB')}</p>
+                        <p className="text-gray-700 font-medium">
+                          Session Date: {new Date().toLocaleDateString("en-GB")}
+                        </p>
                       </div>
                       <div className="h-4 w-px bg-gray-300"></div>
                       <div className="flex items-center space-x-2">
                         <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                        <p className="text-gray-700 font-medium">Status: Ready for Analysis</p>
+                        <p className="text-gray-700 font-medium">
+                          Status: Ready for Analysis
+                        </p>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
-                    <Button 
+                    <Button
                       className={`${
-                        isLoading 
-                          ? 'bg-blue-600 hover:bg-blue-700' 
-                          : 'bg-blue-600 hover:bg-blue-700'
+                        isLoading
+                          ? "bg-blue-600 hover:bg-blue-700"
+                          : "bg-blue-600 hover:bg-blue-700"
                       } shadow-md hover:shadow-lg transition-all duration-200 px-6 py-3 text-base font-semibold rounded-lg border border-blue-700`}
                       onClick={fakeLoadImages}
                       disabled={isLoading}
                     >
-                      <Upload className={`w-5 h-5 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-                      {isLoading ? 'Loading Images...' : 'Load Images'}
+                      <Upload
+                        className={`w-5 h-5 mr-2 ${
+                          isLoading ? "animate-spin" : ""
+                        }`}
+                      />
+                      {isLoading ? "Loading Images..." : "Load Images"}
                     </Button>
                   </div>
                 </div>
@@ -668,19 +781,23 @@ const DemoPage = () => {
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-2">
                         <div className="w-4 h-4 bg-blue-600 rounded-full animate-pulse"></div>
-                        <span className="text-base font-semibold text-gray-800">Processing Images</span>
+                        <span className="text-base font-semibold text-gray-800">
+                          Processing Images
+                        </span>
                       </div>
-                      <span className="text-sm font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded">{Math.round(loadingProgress)}%</span>
+                      <span className="text-sm font-mono text-gray-600 bg-gray-100 px-2 py-1 rounded">
+                        {Math.round(loadingProgress)}%
+                      </span>
                     </div>
                     <Progress value={loadingProgress} className="h-3 mb-3" />
                     <div className="text-sm text-gray-600 flex items-center justify-between">
                       <span>Processing uploaded images...</span>
-                      <span className="text-xs text-gray-500">Auto-detecting image types</span>
+                      <span className="text-xs text-gray-500">
+                        Auto-detecting image types
+                      </span>
                     </div>
                   </div>
                 )}
-
-
 
                 {/* Main Content with Sidebar Layout */}
                 <div className="flex gap-8">
@@ -692,107 +809,161 @@ const DemoPage = () => {
                           <div className="flex items-center space-x-3 mb-2">
                             <div className="w-1 h-8 bg-blue-600 rounded-full"></div>
                             <div>
-                              <h4 className="text-xl font-bold text-gray-800">{category.title}</h4>
-                              <p className="text-sm text-gray-600 font-medium">{category.subtitle}</p>
+                              <h4 className="text-xl font-bold text-gray-800">
+                                {category.title}
+                              </h4>
+                              <p className="text-sm text-gray-600 font-medium">
+                                {category.subtitle}
+                              </p>
                             </div>
                           </div>
                           <div className="h-px bg-gray-200 ml-7"></div>
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                          {category.items.map((item) => (
-                            <Card 
-                              key={item.id}
-                              className={`group cursor-pointer transition-all duration-200 hover:shadow-lg border rounded-xl ${
-                                loadingCards[item.id]
-                                  ? 'border-blue-300 bg-blue-50 shadow-md animate-pulse'
-                                  : uploadedImages[item.id] 
-                                  ? 'border-emerald-300 bg-emerald-50 shadow-md' 
-                                  : 'border-gray-200 bg-white hover:border-blue-300 hover:shadow-md'
-                              }`}
-                              onClick={() => !loadingCards[item.id] && handleImageUpload(item.id)}
-                            >
-                              <CardContent className="p-5 text-center relative">
-                                {/* Medical Status Indicator */}
-                                <div className="absolute top-3 right-3 flex items-center space-x-1">
-                                  {uploadedImages[item.id] && (
-                                    <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
-                                  )}
-                                  {uploadedImages[item.id] && (
-                                    <button
-                                      onClick={(e) => handleRemoveImage(item.id, e)}
-                                      className="w-5 h-5 bg-gray-300 hover:bg-red-400 text-gray-600 hover:text-white rounded-full flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100"
-                                      title="Remove image"
-                                    >
-                                      <X className="w-3 h-3" />
-                                    </button>
-                                  )}
-                                </div>
-                                
-                                <div className={`w-20 h-20 mx-auto mb-4 rounded-xl flex items-center justify-center overflow-hidden transition-all duration-200 ${
+                          {category.items.map((item) =>
+                            item.name !== "Upper Jaw Scan" &&
+                            item.name !== "Lower Jaw Scan" ? (
+                              <Card
+                                key={item.id}
+                                className={`group cursor-pointer transition-all duration-200 hover:shadow-lg border rounded-xl ${
                                   loadingCards[item.id]
-                                    ? 'bg-blue-100 border border-blue-200'
-                                    : uploadedImages[item.id] 
-                                    ? 'bg-emerald-100 border border-emerald-200' 
-                                    : 'bg-transparent'
-                                }`}>
-                                  {loadingCards[item.id] ? (
-                                    <Upload className="w-8 h-8 text-blue-500 animate-spin" />
-                                  ) : uploadedImages[item.id] ? (
-                                    // Check if it's a 3D model file
-                                    (item.id === 'model_3d_upper' || item.id === 'model_3d_lower') ? (
-                                      <div className="relative w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
-                                        <Box className="w-12 h-12 text-purple-600" />
-                                        <div className="absolute bottom-1 right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                                        {/* Small indicator for upper/lower */}
-                                        <div className="absolute top-1 left-1 text-xs bg-purple-600 text-white px-1 rounded">
-                                          {item.id === 'model_3d_upper' ? 'U' : 'L'}
+                                    ? "border-blue-300 bg-blue-50 shadow-md animate-pulse"
+                                    : uploadedImages[item.id]
+                                    ? "border-emerald-300 bg-emerald-50 shadow-md"
+                                    : "border-gray-200 bg-white hover:border-blue-300 hover:shadow-md"
+                                }`}
+                                onClick={() =>
+                                  !loadingCards[item.id] &&
+                                  handleImageUpload(item.id)
+                                }
+                              >
+                                <CardContent className="p-5 text-center relative">
+                                  {/* Medical Status Indicator */}
+                                  <div className="absolute top-3 right-3 flex items-center space-x-1">
+                                    {uploadedImages[item.id] && (
+                                      <div className="w-3 h-3 bg-emerald-500 rounded-full"></div>
+                                    )}
+                                    {uploadedImages[item.id] && (
+                                      <button
+                                        onClick={(e) =>
+                                          handleRemoveImage(item.id, e)
+                                        }
+                                        className="w-5 h-5 bg-gray-300 hover:bg-red-400 text-gray-600 hover:text-white rounded-full flex items-center justify-center transition-all duration-200 opacity-0 group-hover:opacity-100"
+                                        title="Remove image"
+                                      >
+                                        <X className="w-3 h-3" />
+                                      </button>
+                                    )}
+                                  </div>
+
+                                  <div
+                                    className={`w-20 h-20 mx-auto mb-4 rounded-xl flex items-center justify-center overflow-hidden transition-all duration-200 ${
+                                      loadingCards[item.id]
+                                        ? "bg-blue-100 border border-blue-200"
+                                        : uploadedImages[item.id]
+                                        ? "bg-emerald-100 border border-emerald-200"
+                                        : "bg-transparent"
+                                    }`}
+                                  >
+                                    {loadingCards[item.id] ? (
+                                      <Upload className="w-8 h-8 text-blue-500 animate-spin" />
+                                    ) : uploadedImages[item.id] ? (
+                                      item.id === "model_3d_upper" ||
+                                      item.id === "model_3d_lower" ? (
+                                        <div className="relative w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
+                                          <Box className="w-12 h-12 text-purple-600" />
+                                          <div className="absolute bottom-1 right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
+                                          <div className="absolute top-1 left-1 text-xs bg-purple-600 text-white px-1 rounded">
+                                            {item.id === "model_3d_upper"
+                                              ? "U"
+                                              : "L"}
+                                          </div>
                                         </div>
-                                      </div>
-                                    ) : imagePreviewUrls[item.id] ? (
-                                      <img 
-                                        src={imagePreviewUrls[item.id]} 
-                                        alt={item.name} 
-                                        className="w-full h-full object-cover rounded-xl"
-                                      />
+                                      ) : imagePreviewUrls[item.id] ? (
+                                        <img
+                                          src={imagePreviewUrls[item.id]}
+                                          alt={item.name}
+                                          className="w-full h-full object-cover rounded-xl"
+                                        />
+                                      ) : (
+                                        <img
+                                          src={item.icon}
+                                          alt={item.name}
+                                          className="w-16 h-16 object-contain drop-shadow-sm"
+                                        />
+                                      )
                                     ) : (
-                                      <img src={item.icon} alt={item.name} className="w-16 h-16 object-contain drop-shadow-sm" />
-                                    )
-                                  ) : (
-                                    <img src={item.icon} alt={item.name} className="w-16 h-16 object-contain drop-shadow-sm" />
-                                  )}
-                                </div>
-                                <div className="text-center">
-                                  <h5 className="text-sm font-semibold text-gray-500 mb-3">{item.name}</h5>
-                                  {loadingCards[item.id] ? (
-                                    <Badge className="bg-blue-100 text-blue-700 border border-blue-200 text-xs font-medium">
-                                      <Upload className="w-3 h-3 mr-1 animate-spin" />
-                                      Processing...
-                                    </Badge>
-                                  ) : uploadedImages[item.id] ? (
-                                    <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-medium">
-                                      <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
-                                      Ready
-                                    </Badge>
-                                  ) : (
-                                    <Badge className="bg-gray-100 text-gray-600 border border-gray-200 text-xs font-medium">
-                                      <Upload className="w-3 h-3 mr-1" />
-                                      Click to Load
-                                    </Badge>
-                                  )}
-                                </div>
-                              </CardContent>
-                            </Card>
-                          ))}
+                                      <img
+                                        src={item.icon}
+                                        alt={item.name}
+                                        className="w-16 h-16 object-contain drop-shadow-sm"
+                                      />
+                                    )}
+                                  </div>
+
+                                  <div className="text-center">
+                                    <h5 className="text-sm font-semibold text-gray-500 mb-3">
+                                      {item.name}
+                                    </h5>
+                                    {loadingCards[item.id] ? (
+                                      <Badge className="bg-blue-100 text-blue-700 border border-blue-200 text-xs font-medium">
+                                        <Upload className="w-3 h-3 mr-1 animate-spin" />
+                                        Processing...
+                                      </Badge>
+                                    ) : uploadedImages[item.id] ? (
+                                      <Badge className="bg-emerald-100 text-emerald-700 border border-emerald-200 text-xs font-medium">
+                                        <div className="w-2 h-2 bg-emerald-500 rounded-full mr-2"></div>
+                                        Ready
+                                      </Badge>
+                                    ) : (
+                                      <Badge className="bg-gray-100 text-gray-600 border border-gray-200 text-xs font-medium">
+                                        <Upload className="w-3 h-3 mr-1" />
+                                        Click to Load
+                                      </Badge>
+                                    )}
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ) : null
+                          )}
                         </div>
                       </div>
                     ))}
+                    {/* 3D Model Analysis */}
+                    <div className="relative group">
+                      <Button
+                        className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${"bg-purple-600 hover:bg-purple-700 text-white shadow-md border border-purple-700"}`}
+                        onClick={() =>
+                          handleAnalysisClick("3d", "/model-3d", true)
+                        }
+                      >
+                        <div
+                          className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${"bg-purple-500"}`}
+                        >
+                          <Box className="w-6 h-6" />
+                        </div>
+                        <div className="text-left flex-1">
+                          <div className="font-semibold text-base flex items-center justify-between">
+                            3D Model Analysis
+                            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                          </div>
+                          <div className="text-sm opacity-80 mt-1">
+                            Digital Model Assessment
+                          </div>
+                        </div>
+                      </Button>
+                    </div>
                   </div>
 
                   {/* Clinical Analysis Sidebar */}
                   <div className="w-80 space-y-6">
                     <div className="border-l-4 border-blue-600 pl-4">
-                      <h4 className="text-xl font-bold text-gray-800">Clinical Analysis</h4>
-                      <p className="text-sm text-gray-600 font-medium">AI-Powered Diagnostic Tools</p>
+                      <h4 className="text-xl font-bold text-gray-800">
+                        Clinical Analysis
+                      </h4>
+                      <p className="text-sm text-gray-600 font-medium">
+                        AI-Powered Diagnostic Tools
+                      </p>
                     </div>
 
                     {/* Analysis Status Panel */}
@@ -800,48 +971,69 @@ const DemoPage = () => {
                       <div className="flex items-center justify-between mb-4">
                         <div className="flex items-center">
                           <Activity className="w-5 h-5 mr-2 text-blue-600" />
-                          <span className="text-base font-semibold text-gray-800">Analysis Status</span>
+                          <span className="text-base font-semibold text-gray-800">
+                            Analysis Status
+                          </span>
                         </div>
                         <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full font-mono">
-                          {Object.values(uploadedImages).filter(Boolean).length} / {Object.keys(uploadedImages).length} Ready
+                          {Object.values(uploadedImages).filter(Boolean).length}{" "}
+                          / {Object.keys(uploadedImages).length} Ready
                         </span>
                       </div>
-                      <Progress 
-                        value={(Object.values(uploadedImages).filter(Boolean).length / Object.keys(uploadedImages).length) * 100} 
+                      <Progress
+                        value={
+                          (Object.values(uploadedImages).filter(Boolean)
+                            .length /
+                            Object.keys(uploadedImages).length) *
+                          100
+                        }
                         className="h-2 mb-3"
                       />
                       <div className="text-sm text-gray-700">
-                        {Object.values(uploadedImages).filter(Boolean).length === Object.keys(uploadedImages).length 
-                          ? "✅ All diagnostic tools are ready for use" 
-                          : "⏳ Load more data to enable additional analysis"
-                        }
+                        {Object.values(uploadedImages).filter(Boolean)
+                          .length === Object.keys(uploadedImages).length
+                          ? "✅ All diagnostic tools are ready for use"
+                          : "⏳ Load more data to enable additional analysis"}
                       </div>
                     </div>
 
                     <div className="space-y-4">
                       {/* Facial Analysis */}
                       <div className="relative group">
-                        <Button 
+                        <Button
                           className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${
-                            hasFaceImages 
-                              ? 'bg-blue-600 hover:bg-blue-700 text-white shadow-md border border-blue-700' 
-                              : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200'
+                            hasFaceImages
+                              ? "bg-blue-600 hover:bg-blue-700 text-white shadow-md border border-blue-700"
+                              : "bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200"
                           }`}
                           disabled={!hasFaceImages || showAIThinking}
-                          onClick={() => hasFaceImages && handleAnalysisClick('facial', '/facial-analysis', true)}
+                          onClick={() =>
+                            hasFaceImages &&
+                            handleAnalysisClick(
+                              "facial",
+                              "/facial-analysis",
+                              true
+                            )
+                          }
                         >
-                          <div className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
-                            hasFaceImages ? 'bg-blue-500' : 'bg-gray-200'
-                          }`}>
+                          <div
+                            className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
+                              hasFaceImages ? "bg-blue-500" : "bg-gray-200"
+                            }`}
+                          >
                             <Brain className="w-6 h-6" />
                           </div>
                           <div className="text-left flex-1">
                             <div className="font-semibold text-base flex items-center justify-between">
                               Facial Analysis
-                              {hasFaceImages && <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>}
+                              {hasFaceImages && (
+                                <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                              )}
                             </div>
                             <div className="text-sm opacity-80 mt-1">
-                              {hasFaceImages ? 'Cephalometric Assessment' : 'Requires facial images'}
+                              {hasFaceImages
+                                ? "Cephalometric Assessment"
+                                : "Requires facial images"}
                             </div>
                           </div>
                         </Button>
@@ -854,27 +1046,40 @@ const DemoPage = () => {
 
                       {/* Radiographic Analysis */}
                       <div className="relative group">
-                        <Button 
+                        <Button
                           className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${
-                            hasXrayImages 
-                              ? 'bg-emerald-600 hover:bg-emerald-700 text-white shadow-md border border-emerald-700' 
-                              : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200'
+                            hasXrayImages
+                              ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md border border-emerald-700"
+                              : "bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200"
                           }`}
                           disabled={!hasXrayImages || showAIThinking}
-                          onClick={() => hasXrayImages && handleAnalysisClick('radiographic', '/xray-analysis', true)}
+                          onClick={() =>
+                            hasXrayImages &&
+                            handleAnalysisClick(
+                              "radiographic",
+                              "/xray-analysis",
+                              true
+                            )
+                          }
                         >
-                          <div className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
-                            hasXrayImages ? 'bg-emerald-500' : 'bg-gray-200'
-                          }`}>
+                          <div
+                            className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
+                              hasXrayImages ? "bg-emerald-500" : "bg-gray-200"
+                            }`}
+                          >
                             <Scan className="w-6 h-6" />
                           </div>
                           <div className="text-left flex-1">
                             <div className="font-semibold text-base flex items-center justify-between">
                               Radiographic Analysis
-                              {hasXrayImages && <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>}
+                              {hasXrayImages && (
+                                <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                              )}
                             </div>
                             <div className="text-sm opacity-80 mt-1">
-                              {hasXrayImages ? 'Digital X-Ray Interpretation' : 'Requires radiographic data'}
+                              {hasXrayImages
+                                ? "Digital X-Ray Interpretation"
+                                : "Requires radiographic data"}
                             </div>
                           </div>
                         </Button>
@@ -885,29 +1090,38 @@ const DemoPage = () => {
                         )}
                       </div>
 
-                      {/* 3D Model Analysis */}
+                      {/* 3D Model Analysis
                       <div className="relative group">
-                        <Button 
+                        <Button
                           className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${
-                            has3DModel 
-                              ? 'bg-purple-600 hover:bg-purple-700 text-white shadow-md border border-purple-700' 
-                              : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200'
+                            has3DModel
+                              ? "bg-purple-600 hover:bg-purple-700 text-white shadow-md border border-purple-700"
+                              : "bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200"
                           }`}
                           disabled={!has3DModel || showAIThinking}
-                          onClick={() => has3DModel && handleAnalysisClick('3d', '/model-3d', true)}
+                          onClick={() =>
+                            has3DModel &&
+                            handleAnalysisClick("3d", "/model-3d", true)
+                          }
                         >
-                          <div className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
-                            has3DModel ? 'bg-purple-500' : 'bg-gray-200'
-                          }`}>
+                          <div
+                            className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
+                              has3DModel ? "bg-purple-500" : "bg-gray-200"
+                            }`}
+                          >
                             <Box className="w-6 h-6" />
                           </div>
                           <div className="text-left flex-1">
                             <div className="font-semibold text-base flex items-center justify-between">
                               3D Model Analysis
-                              {has3DModel && <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>}
+                              {has3DModel && (
+                                <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                              )}
                             </div>
                             <div className="text-sm opacity-80 mt-1">
-                              {has3DModel ? 'Digital Model Assessment' : 'Requires 3D scan data'}
+                              {has3DModel
+                                ? "Digital Model Assessment"
+                                : "Requires 3D scan data"}
                             </div>
                           </div>
                         </Button>
@@ -916,31 +1130,44 @@ const DemoPage = () => {
                             Intraoral scan required
                           </div>
                         )}
-                      </div>
+                      </div> */}
 
                       {/* Treatment Planning */}
                       <div className="relative group">
-                        <Button 
+                        <Button
                           className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${
-                            hasAllImages 
-                              ? 'bg-orange-600 hover:bg-orange-700 text-white shadow-md border border-orange-700' 
-                              : 'bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200'
+                            hasAllImages
+                              ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md border border-orange-700"
+                              : "bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200"
                           }`}
                           disabled={!hasAllImages || showAIThinking}
-                          onClick={() => hasAllImages && handleAnalysisClick('treatment', '/treatment-planning', true)}
+                          onClick={() =>
+                            hasAllImages &&
+                            handleAnalysisClick(
+                              "treatment",
+                              "/treatment-planning",
+                              true
+                            )
+                          }
                         >
-                          <div className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
-                            hasAllImages ? 'bg-orange-500' : 'bg-gray-200'
-                          }`}>
+                          <div
+                            className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
+                              hasAllImages ? "bg-orange-500" : "bg-gray-200"
+                            }`}
+                          >
                             <Stethoscope className="w-6 h-6" />
                           </div>
                           <div className="text-left flex-1">
                             <div className="font-semibold text-base flex items-center justify-between">
                               Treatment Planning
-                              {hasAllImages && <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>}
+                              {hasAllImages && (
+                                <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                              )}
                             </div>
                             <div className="text-sm opacity-80 mt-1">
-                              {hasAllImages ? 'AI Treatment Simulation' : 'Requires complete dataset'}
+                              {hasAllImages
+                                ? "AI Treatment Simulation"
+                                : "Requires complete dataset"}
                             </div>
                           </div>
                         </Button>
@@ -953,11 +1180,7 @@ const DemoPage = () => {
                     </div>
                   </div>
                 </div>
-
-
               </div>
-
-
             </TabsContent>
           </Tabs>
         </div>
@@ -969,25 +1192,28 @@ const DemoPage = () => {
           <div className="text-center">
             <div className="flex items-center justify-center space-x-6 mb-8">
               <div className="flex items-center space-x-4">
-                <img 
-                  src="/assets/leetray_logo.png" 
-                  alt="LeeTray Logo" 
+                <img
+                  src="/assets/leetray_logo.png"
+                  alt="LeeTray Logo"
                   className="w-16 h-16 object-contain"
                 />
                 <div className="h-8 w-px bg-gray-600"></div>
-                <img 
-                  src="/assets/hiai-logo.png" 
-                  alt="HiAI Logo" 
+                <img
+                  src="/assets/hiai-logo.png"
+                  alt="HiAI Logo"
                   className="w-16 h-16 object-contain"
                 />
               </div>
             </div>
             <div className="w-20 h-1 bg-blue-600 rounded-full mx-auto mb-6"></div>
             <div className="max-w-3xl mx-auto mb-6">
-              <h3 className="text-xl font-bold text-white mb-2">Clinical AI Diagnostic Platform</h3>
+              <h3 className="text-xl font-bold text-white mb-2">
+                Clinical AI Diagnostic Platform
+              </h3>
               <p className="text-gray-400 text-base leading-relaxed">
-                Advanced artificial intelligence for dental diagnostics and treatment planning. 
-                Empowering healthcare professionals with cutting-edge technology.
+                Advanced artificial intelligence for dental diagnostics and
+                treatment planning. Empowering healthcare professionals with
+                cutting-edge technology.
               </p>
             </div>
             <div className="flex justify-center space-x-8 text-sm text-gray-500 mb-6">
@@ -997,7 +1223,10 @@ const DemoPage = () => {
               <span>•</span>
               <span>ISO 27001 Certified</span>
             </div>
-            <p className="text-gray-500 text-sm">© 2025 LeeTray × HiAI. All Rights Reserved. Medical Device Software.</p>
+            <p className="text-gray-500 text-sm">
+              © 2025 LeeTray × HiAI. All Rights Reserved. Medical Device
+              Software.
+            </p>
           </div>
         </div>
       </footer>
@@ -1012,4 +1241,4 @@ const DemoPage = () => {
   );
 };
 
-export default DemoPage; 
+export default DemoPage;
