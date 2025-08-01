@@ -69,8 +69,6 @@ const DemoPage = () => {
     profile: false,
     frontal: false,
     general_xray: false,
-    model_3d_upper: false,
-    model_3d_lower: false,
   });
 
   // State to store uploaded image files
@@ -81,8 +79,6 @@ const DemoPage = () => {
     profile: null,
     frontal: null,
     general_xray: null,
-    model_3d_upper: null,
-    model_3d_lower: null,
   });
 
   // State to store image preview URLs
@@ -93,8 +89,6 @@ const DemoPage = () => {
     profile: "",
     frontal: "",
     general_xray: "",
-    model_3d_upper: "",
-    model_3d_lower: "",
   });
 
   // Loading state for fake upload
@@ -254,13 +248,11 @@ const DemoPage = () => {
   // Check if specific image types are available for analysis
   const hasFaceImages = uploadedImages.frontal && uploadedImages.profile;
   const hasXrayImages = uploadedImages.lateral || uploadedImages.general_xray;
-  const has3DModel =
-    uploadedImages.model_3d_upper || uploadedImages.model_3d_lower;
   const hasAllImages =
     uploadedImages.frontal &&
     uploadedImages.profile &&
     uploadedImages.lateral &&
-    (uploadedImages.model_3d_upper || uploadedImages.model_3d_lower);
+    uploadedImages.general_xray;
 
   const handleEditStart = (field: string, currentValue: string) => {
     setEditingField(field);
@@ -402,24 +394,20 @@ const DemoPage = () => {
   }) => {
     setLocalImages(processedImages);
 
-    // Update uploaded images state
-    const newUploadedImages: { [key: string]: boolean } = {
-      lateral: false,
-      profile: false,
-      frontal: false,
-      general_xray: false,
-      model_3d_upper: false,
-      model_3d_lower: false,
-    };
+          // Update uploaded images state
+      const newUploadedImages: { [key: string]: boolean } = {
+        lateral: false,
+        profile: false,
+        frontal: false,
+        general_xray: false,
+      };
 
-    const newImagePreviewUrls: { [key: string]: string } = {
-      lateral: "",
-      profile: "",
-      frontal: "",
-      general_xray: "",
-      model_3d_upper: "",
-      model_3d_lower: "",
-    };
+      const newImagePreviewUrls: { [key: string]: string } = {
+        lateral: "",
+        profile: "",
+        frontal: "",
+        general_xray: "",
+      };
 
     Object.entries(processedImages).forEach(([imageType, data]) => {
       if (data) {
@@ -456,8 +444,6 @@ const DemoPage = () => {
         profile: false,
         frontal: false,
         general_xray: false,
-        model_3d_upper: false,
-        model_3d_lower: false,
       });
 
       setImagePreviewUrls({
@@ -465,8 +451,6 @@ const DemoPage = () => {
         profile: "",
         frontal: "",
         general_xray: "",
-        model_3d_upper: "",
-        model_3d_lower: "",
       });
 
       try {
