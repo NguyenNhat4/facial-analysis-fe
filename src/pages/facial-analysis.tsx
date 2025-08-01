@@ -1,14 +1,48 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
-import { ArrowLeft, Camera, MessageCircle, Upload, CheckCircle, RotateCcw, User } from "lucide-react";
-import { Link } from "wouter";
-import { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { ArrowLeft, Camera, MessageCircle, User, ZoomIn, ZoomOut, RotateCw, Settings, Save, RefreshCw } from "lucide-react";
+
+// Interface for facial analysis data
+interface FacialAnalysisData {
+  id: {
+    [caseId: string]: {
+      facial_analysis: {
+        frontal: {
+          za_ag_me: { value: number; unit: string };
+          az_ga_me: { value: number; unit: string };
+          g_ans_me: { value: number; unit: string };
+          u6_6u_vs_zr_zl: { value: number; unit: string };
+          lower_1_3_ratio: { value: number };
+        };
+        profile: Array<{
+          indicator: string;
+          description: string;
+          value: number;
+          average: number | null;
+          unit: string;
+        }>;
+      };
+    };
+  };
+}
 
 export default function FacialAnalysisPage() {
-  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [isAnalyzed, setIsAnalyzed] = useState(false);
+  const [location] = useLocation();
+  const [activeTab, setActiveTab] = useState("frontal");
+  const [analysisData, setAnalysisData] = useState<FacialAnalysisData | null>(null);
+  const [inputImages, setInputImages] = useState<{
+    frontal?: string;
+    profile?: string;
+  }>({});
+  const [outputImages, setOutputImages] = useState<{
+    frontal?: string;
+    profile?: string;
+  }>({});
+  const [loading, setLoading] = useState(true);
 
   // Mock patient data
   const patientData = {
@@ -19,53 +53,131 @@ export default function FacialAnalysisPage() {
     gender: "Nam"
   };
 
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const imageUrl = URL.createObjectURL(file);
-      setUploadedImage(imageUrl);
-      setIsAnalyzed(false);
+  // Parse query parameters to get input images
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const frontal = urlParams.get('frontal');
+    const profile = urlParams.get('profile');
+    
+    if (frontal || profile) {
+      setInputImages({
+        frontal: frontal ? decodeURIComponent(frontal) : undefined,
+        profile: profile ? decodeURIComponent(profile) : undefined,
+      });
+    }
+  }, [location]);
+
+  // Load facial analysis data from JSON
+  useEffect(() => {
+    const loadAnalysisData = async () => {
+      try {
+        const response = await fetch('/facial-analysis-output.json');
+        const data: FacialAnalysisData = await response.json();
+        setAnalysisData(data);
+
+        // Set output images from assets/outputs (demo paths)
+        setOutputImages({
+          frontal: '/assets/outputs/case01/frontal.png',
+          profile: '/assets/outputs/case01/profile.png'
+        });
+      } catch (error) {
+        console.error('Failed to load facial analysis data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAnalysisData();
+  }, []);
+
+  // Get current case data (using first case for demo)
+  const getCurrentCaseData = () => {
+    if (!analysisData) return null;
+    const firstCaseId = Object.keys(analysisData.id)[0];
+    return analysisData.id[firstCaseId]?.facial_analysis;
+  };
+
+  const caseData = getCurrentCaseData();
+
+  // Helper function to get status badge
+  const getStatusBadge = (value: number, average: number | null, unit: string) => {
+    if (!average) return <Badge className="bg-blue-100 text-blue-800">Đo được</Badge>;
+    
+    const tolerance = unit === '°' ? 5 : 0.1;
+    const diff = Math.abs(value - average);
+    
+    if (diff <= tolerance) {
+      return <Badge className="bg-green-100 text-green-800">Bình thường</Badge>;
+    } else if (diff <= tolerance * 2) {
+      return <Badge className="bg-yellow-100 text-yellow-800">Gần chuẩn</Badge>;
+    } else {
+      return <Badge className="bg-red-100 text-red-800">Cần chú ý</Badge>;
     }
   };
 
-  const handleAnalyze = () => {
-    setIsAnalyzed(true);
-  };
-
-  const handleNewAnalysis = () => {
-    setUploadedImage(null);
-    setIsAnalyzed(false);
-  };
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Đang tải dữ liệu phân tích...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b">
+    <div className="min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25">
+      {/* Medical Header */}
+      <header className="bg-white border-b-2 border-blue-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-4">
-              <Link href="/">
-                <Button variant="ghost" size="sm" className="text-clinical-600 hover:text-clinical-700">
-                  <ArrowLeft size={20} className="mr-2" />
-                  Quay lại
-                </Button>
-              </Link>
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 bg-clinical-600 rounded-lg flex items-center justify-center">
-                  <Camera className="text-white" size={20} />
+          <div className="flex justify-between items-center h-24">
+            <div className="flex items-center space-x-6">
+              <Button 
+                onClick={() => window.history.back()}
+                variant="ghost" 
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                <ArrowLeft size={20} className="mr-2" />
+                Quay lại
+              </Button>
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <img
+                    src="/assets/leetray_logo.png"
+                    alt="LeeTray Logo"
+                    className="w-14 h-14 object-contain"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full border-2 border-white"></div>
                 </div>
-                <div>
-                  <h1 className="text-xl font-semibold text-gray-900">Phân tích Gương mặt AI</h1>
-                  <p className="text-sm text-gray-600">Đo lường và phân tích các tỷ lệ khuôn mặt chuyên nghiệp</p>
+                <div className="h-8 w-px bg-gray-300"></div>
+                <div className="relative">
+                  <img
+                    src="/assets/hiai-logo.png"
+                    alt="HiAI Logo"
+                    className="w-14 h-14 object-contain"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-600 rounded-full border-2 border-white"></div>
                 </div>
               </div>
+              <div className="border-l-2 border-blue-200 pl-6">
+                <h1 className="text-xl font-bold text-gray-800">
+                  Phân tích Gương mặt AI
+                </h1>
+                <p className="text-sm text-gray-600 font-medium">
+                  Cephalometric Analysis - Đo lường và phân tích các tỷ lệ khuôn mặt
+                </p>
+              </div>
             </div>
-            <Link href="/chat">
-              <Button className="bg-clinical-600 hover:bg-clinical-700 text-white">
-                <MessageCircle size={16} className="mr-2" />
-                Tư vấn AI
-              </Button>
-            </Link>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-semibold">Dr</span>
+              </div>
+              <div className="text-sm">
+                <p className="font-medium text-gray-800">Dr. Smith</p>
+                <p className="text-gray-500">Orthodontist</p>
+              </div>
+            </div>
           </div>
         </div>
       </header>
@@ -73,260 +185,376 @@ export default function FacialAnalysisPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Patient Info Card */}
-        <Card className="mb-8 border-l-4 border-l-clinical-500">
-          <CardHeader className="bg-gradient-to-r from-clinical-50 to-blue-50">
+        <Card className="mb-8 border border-gray-200 shadow-lg">
+          <div className="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-8 py-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-clinical-100 rounded-full flex items-center justify-center">
-                  <User className="w-6 h-6 text-clinical-600" />
+              <div className="flex items-center space-x-6">
+                <div className="relative">
+                  <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <User className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
                 </div>
                 <div>
-                  <CardTitle className="text-gray-900">{patientData.name}</CardTitle>
-                  <p className="text-sm text-gray-600">
+                  <div className="flex items-center space-x-3 mb-2">
+                    <h2 className="text-2xl font-bold text-white">{patientData.name}</h2>
+                    <span className="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded-full">
+                      ACTIVE
+                    </span>
+                  </div>
+                  <p className="text-blue-100 text-lg font-medium">
                     ID: {patientData.id} • {patientData.gender} • {patientData.age} tuổi
                   </p>
                 </div>
               </div>
               <div className="text-right">
-                <p className="text-sm font-medium text-gray-700">Ngày khám</p>
-                <p className="text-lg font-semibold text-clinical-600">{patientData.date}</p>
+                <div className="text-blue-100 text-sm">Ngày phân tích</div>
+                <div className="text-white font-semibold text-lg">{patientData.date}</div>
+                <div className="text-blue-200 text-sm">
+                  {new Date().toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
               </div>
             </div>
-          </CardHeader>
+          </div>
         </Card>
 
-        {!uploadedImage ? (
-          /* Upload Section */
-          <Card className="border-2 border-dashed border-clinical-300 bg-clinical-50/30">
-            <CardContent className="p-12">
-              <div className="text-center">
-                <div className="w-20 h-20 mx-auto mb-6 bg-clinical-100 rounded-full flex items-center justify-center">
-                  <Camera className="w-10 h-10 text-clinical-600" />
-                </div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Tải lên ảnh gương mặt để phân tích
-                </h3>
-                <p className="text-gray-600 mb-6">
-                  Chỉ phân tích ảnh chụp thẳng mặt. Hỗ trợ định dạng JPG, PNG (tối đa 10MB)
-                </p>
-                
-                <div className="space-y-4">
-                  <label className="inline-block">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      className="hidden"
-                    />
-                    <Button className="bg-clinical-600 hover:bg-clinical-700 text-white px-8 py-3 text-lg">
-                      <Upload className="w-5 h-5 mr-2" />
-                      Chọn ảnh từ máy tính
-                    </Button>
-                  </label>
-                  
-                  <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-                    <h4 className="font-semibold text-blue-900 mb-3">💡 Lưu ý để có kết quả tốt nhất:</h4>
-                    <ul className="text-sm text-blue-800 space-y-2 text-left max-w-md mx-auto">
-                      <li>• Chụp thẳng mặt, không nghiêng</li>
-                      <li>• Ánh sáng đều, không có bóng</li>
-                      <li>• Khuôn mặt rõ nét, không bị che khuất</li>
-                      <li>• Biểu cảm tự nhiên, môi khép nhẹ</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : !isAnalyzed ? (
-          /* Preview and Analyze */
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center">
-                  <CheckCircle className="w-5 h-5 text-green-600 mr-2" />
-                  Ảnh đã tải lên
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="relative">
-                  <img
-                    src={uploadedImage}
-                    alt="Uploaded face"
-                    className="w-full h-80 object-cover rounded-lg border-2 border-gray-200"
-                  />
-                  <div className="absolute top-3 right-3">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleNewAnalysis}
-                      className="bg-white/90 hover:bg-white"
-                    >
-                      <RotateCcw className="w-4 h-4 mr-1" />
-                      Đổi ảnh
-                    </Button>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+        {/* Analysis Tabs */}
+        <Card className="shadow-lg border border-gray-200">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <div className="bg-gray-50 px-6 py-4 border-b border-gray-200">
+              <TabsList className="grid w-full grid-cols-2 bg-white border border-gray-200">
+                <TabsTrigger 
+                  value="frontal" 
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold"
+                >
+                  FRONTAL FACE ANALYSIS (WIDTH: 1333PX, HEIGHT: 2000PX)
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="profile" 
+                  className="data-[state=active]:bg-blue-600 data-[state=active]:text-white font-semibold"
+                >
+                  PROFILE ANALYSIS
+                </TabsTrigger>
+              </TabsList>
+            </div>
 
-            <Card>
-              <CardHeader>
-                <CardTitle>Sẵn sàng phân tích</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="text-center py-8">
-                  <div className="w-16 h-16 mx-auto mb-4 bg-clinical-100 rounded-full flex items-center justify-center">
-                    <Camera className="w-8 h-8 text-clinical-600" />
+            {/* Frontal Analysis Tab */}
+            <TabsContent value="frontal" className="p-0">
+              <div className="flex h-[800px]">
+                {/* Left Panel - Analysis Results */}
+                <div className="w-96 bg-white border-r border-gray-200 p-6 overflow-y-auto">
+                  <div className="bg-blue-900 text-white px-4 py-3 rounded-t-lg">
+                    <h3 className="font-bold text-center">ANALYSIS RESULTS</h3>
                   </div>
-                  <p className="text-gray-600 mb-6">
-                    AI sẽ phân tích các tỷ lệ và góc độ trên khuôn mặt của bạn
-                  </p>
-                  <Button
-                    onClick={handleAnalyze}
-                    className="bg-clinical-600 hover:bg-clinical-700 text-white px-8 py-3 text-lg"
-                  >
-                    🔍 Bắt đầu phân tích
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        ) : (
-          /* Analysis Results */
-          <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
-            {/* Image with Analysis Overlay */}
-            <div className="xl:col-span-2">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center justify-between">
-                    <span>Kết quả phân tích</span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={handleNewAnalysis}
-                    >
-                      <RotateCcw className="w-4 h-4 mr-1" />
-                      Phân tích ảnh mới
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="relative bg-gray-100 rounded-lg overflow-hidden">
-                    <img
-                      src={uploadedImage}
-                      alt="Analyzed face"
-                      className="w-full h-96 object-cover"
-                    />
-                    {/* Analysis overlay would go here */}
-                    <div className="absolute inset-0 bg-black/10 flex items-center justify-center">
-                      <div className="bg-white/90 px-4 py-2 rounded-lg text-sm font-medium">
-                        Đường phân tích AI được áp dụng
+                  
+                  <div className="bg-white border border-gray-200 rounded-b-lg p-4">
+                    {caseData?.frontal && (
+                      <div className="space-y-4">
+                        {/* ZA -> AG <- Me */}
+                        <div className="border-b border-gray-100 pb-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-gray-800">ZA → AG ← Me</span>
+                            <span className="text-xl font-bold text-blue-600">
+                              {caseData.frontal.za_ag_me.value}{caseData.frontal.za_ag_me.unit}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* AZ -> GA <- Me */}
+                        <div className="border-b border-gray-100 pb-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-gray-800">AZ → GA ← Me</span>
+                            <span className="text-xl font-bold text-blue-600">
+                              {caseData.frontal.az_ga_me.value}{caseData.frontal.az_ga_me.unit}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* G' -> ANS <- Me */}
+                        <div className="border-b border-gray-100 pb-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-gray-800">G&apos; → ANS ← Me</span>
+                            <span className="text-xl font-bold text-blue-600">
+                              {caseData.frontal.g_ans_me.value}{caseData.frontal.g_ans_me.unit}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* U6-6U vs ZR-ZL */}
+                        <div className="border-b border-gray-100 pb-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-gray-800">U6-6U vs ZR-ZL</span>
+                            <span className="text-xl font-bold text-blue-600">
+                              {caseData.frontal.u6_6u_vs_zr_zl.value}{caseData.frontal.u6_6u_vs_zr_zl.unit}
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Lower 1/3 Ratio */}
+                        <div className="border-b border-gray-100 pb-3">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="font-medium text-gray-800">Lower 1/3 Ratio</span>
+                            <span className="text-xl font-bold text-blue-600">
+                              {caseData.frontal.lower_1_3_ratio.value}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Note Section */}
+                    <div className="mt-6 pt-4 border-t border-gray-200">
+                      <div className="text-center">
+                        <span className="font-medium text-gray-800">Note</span>
+                        <div className="mt-2 h-20 bg-gray-50 rounded border border-gray-200 p-2">
+                          <textarea 
+                            className="w-full h-full resize-none border-none outline-none bg-transparent text-sm"
+                            placeholder="Ghi chú cho phân tích frontal..."
+                          />
+                        </div>
                       </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-            </div>
+                </div>
 
-            {/* Analysis Metrics */}
-            <div className="space-y-6">
-              {/* Nasolabial Angle */}
-              <Card className="border-l-4 border-l-blue-500">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-semibold text-gray-800">Góc mũi môi</h3>
-                    <Badge className="bg-green-100 text-green-800">Đạt chuẩn</Badge>
-                  </div>
-                  <div className="text-3xl font-bold text-blue-600 mb-2">95°</div>
-                  <Progress value={85} className="mb-2" />
-                  <p className="text-sm text-gray-600">Khoảng chuẩn: 90°-110°</p>
-                </CardContent>
-              </Card>
-
-              {/* Mentolabial Angle */}
-              <Card className="border-l-4 border-l-purple-500">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-semibold text-gray-800">Góc cằm môi</h3>
-                    <Badge className="bg-blue-100 text-blue-800">Bình thường</Badge>
-                  </div>
-                  <div className="text-3xl font-bold text-purple-600 mb-2">132°</div>
-                  <Progress value={80} className="mb-2" />
-                  <p className="text-sm text-gray-600">Khoảng chuẩn: 120°-140°</p>
-                </CardContent>
-              </Card>
-
-              {/* Chin Projection */}
-              <Card className="border-l-4 border-l-red-500">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-semibold text-gray-800">Độ nhô cằm</h3>
-                    <Badge className="bg-red-100 text-red-800">Cần điều chỉnh</Badge>
-                  </div>
-                  <div className="text-3xl font-bold text-red-600 mb-2">4mm</div>
-                  <Progress value={45} className="mb-2" />
-                  <p className="text-sm text-gray-600">Khoảng chuẩn: 0-2mm</p>
-                </CardContent>
-              </Card>
-
-              {/* Golden Ratio */}
-              <Card className="border-l-4 border-l-yellow-500">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-center mb-3">
-                    <h3 className="font-semibold text-gray-800">Tỷ lệ vàng</h3>
-                    <Badge className="bg-yellow-100 text-yellow-800">Gần chuẩn</Badge>
-                  </div>
-                  <div className="text-3xl font-bold text-yellow-600 mb-2">1.6</div>
-                  <Progress value={75} className="mb-2" />
-                  <p className="text-sm text-gray-600">Tỷ lệ lý tưởng: 1.618</p>
-                </CardContent>
-              </Card>
-
-              {/* Overall Summary */}
-              <Card className="bg-gradient-to-br from-clinical-50 to-blue-50 border-clinical-200">
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-gray-800 mb-4">📋 Tóm tắt & Khuyến nghị</h3>
-                  <div className="space-y-3 text-sm">
-                    <div className="flex items-start space-x-2">
-                      <span className="text-green-600">✓</span>
-                      <span>Góc mũi môi trong khoảng chuẩn</span>
+                {/* Right Panel - Image Analysis */}
+                <div className="flex-1 bg-blue-900 text-white p-6">
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-bold">FRONTAL FACE ANALYSIS (WIDTH: 1333PX, HEIGHT: 2000PX)</h3>
+                      <div className="flex items-center space-x-2">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <Camera className="w-4 h-4 mr-1" />
+                          Select/Upload images
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <Settings className="w-4 h-4 mr-1" />
+                          Analyze
+                        </Button>
+                      </div>
                     </div>
-                    <div className="flex items-start space-x-2">
-                      <span className="text-blue-600">✓</span>
-                      <span>Góc cằm môi bình thường</span>
+
+                    {/* Image Display Area */}
+                    <div className="flex-1 bg-black rounded-lg overflow-hidden relative">
+                      {outputImages.frontal ? (
+                        <img
+                          src={outputImages.frontal}
+                          alt="Frontal Analysis"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : inputImages.frontal ? (
+                        <img
+                          src={inputImages.frontal}
+                          alt="Frontal Input"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <div className="text-center">
+                            <Camera className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                            <p>Không có ảnh để hiển thị</p>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-start space-x-2">
-                      <span className="text-red-600">!</span>
-                      <span>Cằm hơi nhô, có thể cần điều chỉnh</span>
-                    </div>
-                    <div className="flex items-start space-x-2">
-                      <span className="text-yellow-600">~</span>
-                      <span>Tỷ lệ vàng gần đạt chuẩn</span>
+
+                    {/* Control Panel */}
+                    <div className="mt-4 flex flex-col space-y-2">
+                      <div className="flex items-center justify-center space-x-4">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <RotateCw className="w-4 h-4 mr-1" />
+                          Rotate ▶
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <Settings className="w-4 h-4 mr-1" />
+                          Contrast ▶
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <Settings className="w-4 h-4 mr-1" />
+                          Brightness ▶
+                        </Button>
+                      </div>
+                      <div className="flex items-center justify-center space-x-4">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <ZoomIn className="w-4 h-4 mr-1" />
+                          Zoom in
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <ZoomOut className="w-4 h-4 mr-1" />
+                          Zoom out
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <Save className="w-4 h-4 mr-1" />
+                          Save analysis
+                        </Button>
+                      </div>
+                      <div className="flex items-center justify-center space-x-4">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <RefreshCw className="w-4 h-4 mr-1" />
+                          Reset
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          ℹ️ Guide ▶
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-
-              {/* Action Buttons */}
-              <div className="space-y-3">
-                <Button
-                  onClick={handleNewAnalysis}
-                  variant="outline"
-                  className="w-full"
-                >
-                  <RotateCcw className="w-4 h-4 mr-2" />
-                  Phân tích ảnh mới
-                </Button>
-                <Link href="/chat" className="block">
-                  <Button className="w-full bg-clinical-600 hover:bg-clinical-700">
-                    <MessageCircle className="w-4 h-4 mr-2" />
-                    Tư vấn với AI
-                  </Button>
-                </Link>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            </TabsContent>
+
+            {/* Profile Analysis Tab */}
+            <TabsContent value="profile" className="p-0">
+              <div className="flex h-[800px]">
+                {/* Left Panel - Analysis Results */}
+                <div className="w-96 bg-white border-r border-gray-200 p-6 overflow-y-auto">
+                  <div className="bg-blue-900 text-white px-4 py-3 rounded-t-lg">
+                    <h3 className="font-bold text-center">ANALYSIS RESULTS</h3>
+                  </div>
+                  
+                  <div className="bg-white border border-gray-200 rounded-b-lg p-4">
+                    {caseData?.profile && (
+                      <div className="space-y-4">
+                        <div className="grid grid-cols-3 gap-2 text-xs font-semibold text-gray-600 border-b border-gray-200 pb-2">
+                          <span>Indicator</span>
+                          <span className="text-center">Value</span>
+                          <span className="text-center">Average</span>
+                        </div>
+                        
+                        {caseData.profile.map((indicator, index) => (
+                          <div key={index} className="border-b border-gray-100 pb-3">
+                            <div className="grid grid-cols-3 gap-2 items-center">
+                              <div>
+                                <div className="font-medium text-gray-800 text-sm">
+                                  {indicator.description}
+                                </div>
+                              </div>
+                              <div className="text-center">
+                                <span className="text-lg font-bold text-blue-600">
+                                  {indicator.value}{indicator.unit}
+                                </span>
+                              </div>
+                              <div className="text-center">
+                                <span className="text-lg font-bold text-gray-600">
+                                  {indicator.average ? `${indicator.average}${indicator.unit}` : '-'}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="mt-2 flex justify-end">
+                              {getStatusBadge(indicator.value, indicator.average, indicator.unit)}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Note Section */}
+                    <div className="mt-6 pt-4 border-t border-gray-200">
+                      <div className="text-center">
+                        <span className="font-medium text-gray-800">Note</span>
+                        <div className="mt-2 h-20 bg-gray-50 rounded border border-gray-200 p-2">
+                          <textarea 
+                            className="w-full h-full resize-none border-none outline-none bg-transparent text-sm"
+                            placeholder="Ghi chú cho phân tích profile..."
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Right Panel - Image Analysis */}
+                <div className="flex-1 bg-blue-900 text-white p-6">
+                  <div className="h-full flex flex-col">
+                    <div className="flex items-center justify-between mb-4">
+                      <h3 className="font-bold">FRONTAL FACE ANALYSIS (WIDTH: 1333PX, HEIGHT: 2000PX)</h3>
+                      <div className="flex items-center space-x-2">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <Camera className="w-4 h-4 mr-1" />
+                          Select/Upload images
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <Settings className="w-4 h-4 mr-1" />
+                          Analyze
+                        </Button>
+                      </div>
+                    </div>
+
+                    {/* Image Display Area */}
+                    <div className="flex-1 bg-black rounded-lg overflow-hidden relative">
+                      {outputImages.profile ? (
+                        <img
+                          src={outputImages.profile}
+                          alt="Profile Analysis"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : inputImages.profile ? (
+                        <img
+                          src={inputImages.profile}
+                          alt="Profile Input"
+                          className="w-full h-full object-contain"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <div className="text-center">
+                            <Camera className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                            <p>Không có ảnh để hiển thị</p>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Control Panel */}
+                    <div className="mt-4 flex flex-col space-y-2">
+                      <div className="flex items-center justify-center space-x-4">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <RotateCw className="w-4 h-4 mr-1" />
+                          Rotate ▶
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <Settings className="w-4 h-4 mr-1" />
+                          Contrast ▶
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <Settings className="w-4 h-4 mr-1" />
+                          Brightness ▶
+                        </Button>
+                      </div>
+                      <div className="flex items-center justify-center space-x-4">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <ZoomIn className="w-4 h-4 mr-1" />
+                          Zoom in
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <ZoomOut className="w-4 h-4 mr-1" />
+                          Zoom out
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <Save className="w-4 h-4 mr-1" />
+                          Save analysis
+                        </Button>
+                      </div>
+                      <div className="flex items-center justify-center space-x-4">
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          <RefreshCw className="w-4 h-4 mr-1" />
+                          Reset
+                        </Button>
+                        <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                          ℹ️ Guide ▶
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </TabsContent>
+          </Tabs>
+        </Card>
       </div>
     </div>
   );
