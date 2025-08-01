@@ -6,28 +6,21 @@ import { Badge } from "../components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { ArrowLeft, Camera, MessageCircle, User, ZoomIn, ZoomOut, RotateCw, Settings, Save, RefreshCw } from "lucide-react";
 
-// Interface for facial analysis data
+// Interface for facial analysis data - new structure with filename as keys
 interface FacialAnalysisData {
-  id: {
-    [caseId: string]: {
-      facial_analysis: {
-        frontal: {
-          za_ag_me: { value: number; unit: string };
-          az_ga_me: { value: number; unit: string };
-          g_ans_me: { value: number; unit: string };
-          u6_6u_vs_zr_zl: { value: number; unit: string };
-          lower_1_3_ratio: { value: number };
-        };
-        profile: Array<{
-          indicator: string;
-          description: string;
-          value: number;
-          average: number | null;
-          unit: string;
-        }>;
-      };
-    };
-  };
+  [filename: string]: {
+    za_ag_me?: { value: number; unit: string };
+    az_ga_me?: { value: number; unit: string };
+    g_ans_me?: { value: number; unit: string };
+    u6_6u_vs_zr_zl?: { value: number; unit: string };
+    lower_1_3_ratio?: { value: number };
+  } | Array<{
+    indicator: string;
+    description: string;
+    value: number;
+    average: number | null;
+    unit: string;
+  }>;
 }
 
 export default function FacialAnalysisPage() {
@@ -42,6 +35,7 @@ export default function FacialAnalysisPage() {
     frontal?: string;
     profile?: string;
   }>({});
+  const [currentFolder, setCurrentFolder] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Mock patient data
@@ -53,11 +47,27 @@ export default function FacialAnalysisPage() {
     gender: "Nam"
   };
 
-  // Parse query parameters to get input images
+  // Helper function to extract filename from blob URL or file path
+  const extractFilename = (url: string): string | null => {
+    if (!url) return null;
+    
+    // If it's a blob URL, we can't extract the original filename directly
+    // We'll need to use the folder parameter or fall back to demo data
+    if (url.startsWith('blob:')) {
+      return null; // Will use folder name to find corresponding output
+    }
+    
+    // Extract filename from regular path
+    const parts = url.split('/');
+    return parts[parts.length - 1];
+  };
+
+  // Parse query parameters to get input images and folder
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const frontal = urlParams.get('frontal');
     const profile = urlParams.get('profile');
+    const folder = urlParams.get('folder');
     
     if (frontal || profile) {
       setInputImages({
@@ -65,9 +75,13 @@ export default function FacialAnalysisPage() {
         profile: profile ? decodeURIComponent(profile) : undefined,
       });
     }
+    
+    if (folder) {
+      setCurrentFolder(folder);
+    }
   }, [location]);
 
-  // Load facial analysis data from JSON
+  // Load facial analysis data from JSON and map output images
   useEffect(() => {
     const loadAnalysisData = async () => {
       try {
@@ -75,10 +89,48 @@ export default function FacialAnalysisPage() {
         const data: FacialAnalysisData = await response.json();
         setAnalysisData(data);
 
-        // Set output images from assets/outputs (demo paths)
+        // Map output images based on current folder or available data in JSON
+        let frontalOutputPath: string | undefined;
+        let profileOutputPath: string | undefined;
+        
+        if (currentFolder) {
+          // Use folder name to construct output paths  
+          // Try to find files matching the folder name pattern
+          const folderBasedFrontal = Object.keys(data).find(key => 
+            key.includes(currentFolder) && key.includes('frontal')
+          );
+          const folderBasedProfile = Object.keys(data).find(key => 
+            key.includes(currentFolder) && key.includes('profile')
+          );
+          
+          if (folderBasedFrontal || folderBasedProfile) {
+            frontalOutputPath = folderBasedFrontal ? `/assets/outputs/${folderBasedFrontal}` : undefined;
+            profileOutputPath = folderBasedProfile ? `/assets/outputs/${folderBasedProfile}` : undefined;
+            console.log(`🎯 Using folder-based mapping: ${currentFolder}`, { folderBasedFrontal, folderBasedProfile });
+          } else {
+            // Fallback: construct paths assuming direct filename mapping
+            frontalOutputPath = `/assets/outputs/${currentFolder}frontal.jpg`;
+            profileOutputPath = `/assets/outputs/${currentFolder}profile.jpg`;
+            console.log(`🎯 Using constructed paths for folder: ${currentFolder}`);
+          }
+        } else {
+          // Fallback: Find first available frontal and profile data in JSON
+          const frontalFile = Object.keys(data).find(key => key.includes('frontal'));
+          const profileFile = Object.keys(data).find(key => key.includes('profile'));
+          
+          frontalOutputPath = frontalFile ? `/assets/outputs/${frontalFile}` : undefined;
+          profileOutputPath = profileFile ? `/assets/outputs/${profileFile}` : undefined;
+          console.log(`🎯 Using JSON-based mapping`, { frontalFile, profileFile });
+        }
+        
         setOutputImages({
-          frontal: '/assets/outputs/case01/frontal.png',
-          profile: '/assets/outputs/case01/profile.png'
+          frontal: frontalOutputPath,
+          profile: profileOutputPath
+        });
+        
+        console.log(`🎯 Final output images:`, {
+          frontal: frontalOutputPath,
+          profile: profileOutputPath
         });
       } catch (error) {
         console.error('Failed to load facial analysis data:', error);
@@ -88,13 +140,43 @@ export default function FacialAnalysisPage() {
     };
 
     loadAnalysisData();
-  }, []);
+  }, [currentFolder]);
 
-  // Get current case data (using first case for demo)
+  // Get current case data based on available files
   const getCurrentCaseData = () => {
-    if (!analysisData) return null;
-    const firstCaseId = Object.keys(analysisData.id)[0];
-    return analysisData.id[firstCaseId]?.facial_analysis;
+    if (!analysisData) return { frontal: null, profile: null };
+    
+    let frontalFile: string | undefined;
+    let profileFile: string | undefined;
+    
+    if (currentFolder) {
+      // Try to find data by folder name first
+      frontalFile = Object.keys(analysisData).find(key => 
+        key.includes(currentFolder) && key.includes('frontal')
+      );
+      profileFile = Object.keys(analysisData).find(key => 
+        key.includes(currentFolder) && key.includes('profile')
+      );
+    }
+    
+    // Fallback: Find any frontal and profile data
+    if (!frontalFile) {
+      frontalFile = Object.keys(analysisData).find(key => key.includes('frontal'));
+    }
+    if (!profileFile) {
+      profileFile = Object.keys(analysisData).find(key => key.includes('profile'));
+    }
+    
+    const frontalData = frontalFile ? analysisData[frontalFile] : null;
+    const profileData = profileFile ? analysisData[profileFile] : null;
+    
+    // Type check - frontal should be object, profile should be array
+    const frontal = frontalData && !Array.isArray(frontalData) ? frontalData : null;
+    const profile = profileData && Array.isArray(profileData) ? profileData : null;
+    
+    console.log(`📊 Using data files:`, { frontalFile, profileFile });
+    
+    return { frontal, profile };
   };
 
   const caseData = getCurrentCaseData();
@@ -253,57 +335,73 @@ export default function FacialAnalysisPage() {
                   </div>
                   
                   <div className="bg-white border border-gray-200 rounded-b-lg p-4">
-                    {caseData?.frontal && (
+                    {caseData?.frontal ? (
                       <div className="space-y-4">
                         {/* ZA -> AG <- Me */}
-                        <div className="border-b border-gray-100 pb-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium text-gray-800">ZA → AG ← Me</span>
-                            <span className="text-xl font-bold text-blue-600">
-                              {caseData.frontal.za_ag_me.value}{caseData.frontal.za_ag_me.unit}
-                            </span>
+                        {caseData.frontal.za_ag_me && (
+                          <div className="border-b border-gray-100 pb-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-gray-800">ZA → AG ← Me</span>
+                              <span className="text-xl font-bold text-blue-600">
+                                {caseData.frontal.za_ag_me.value}{caseData.frontal.za_ag_me.unit}
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        )}
 
                         {/* AZ -> GA <- Me */}
-                        <div className="border-b border-gray-100 pb-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium text-gray-800">AZ → GA ← Me</span>
-                            <span className="text-xl font-bold text-blue-600">
-                              {caseData.frontal.az_ga_me.value}{caseData.frontal.az_ga_me.unit}
-                            </span>
+                        {caseData.frontal.az_ga_me && (
+                          <div className="border-b border-gray-100 pb-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-gray-800">AZ → GA ← Me</span>
+                              <span className="text-xl font-bold text-blue-600">
+                                {caseData.frontal.az_ga_me.value}{caseData.frontal.az_ga_me.unit}
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        )}
 
                         {/* G' -> ANS <- Me */}
-                        <div className="border-b border-gray-100 pb-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium text-gray-800">G&apos; → ANS ← Me</span>
-                            <span className="text-xl font-bold text-blue-600">
-                              {caseData.frontal.g_ans_me.value}{caseData.frontal.g_ans_me.unit}
-                            </span>
+                        {caseData.frontal.g_ans_me && (
+                          <div className="border-b border-gray-100 pb-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-gray-800">G&apos; → ANS ← Me</span>
+                              <span className="text-xl font-bold text-blue-600">
+                                {caseData.frontal.g_ans_me.value}{caseData.frontal.g_ans_me.unit}
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        )}
 
                         {/* U6-6U vs ZR-ZL */}
-                        <div className="border-b border-gray-100 pb-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium text-gray-800">U6-6U vs ZR-ZL</span>
-                            <span className="text-xl font-bold text-blue-600">
-                              {caseData.frontal.u6_6u_vs_zr_zl.value}{caseData.frontal.u6_6u_vs_zr_zl.unit}
-                            </span>
+                        {caseData.frontal.u6_6u_vs_zr_zl && (
+                          <div className="border-b border-gray-100 pb-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-gray-800">U6-6U vs ZR-ZL</span>
+                              <span className="text-xl font-bold text-blue-600">
+                                {caseData.frontal.u6_6u_vs_zr_zl.value}{caseData.frontal.u6_6u_vs_zr_zl.unit}
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        )}
 
                         {/* Lower 1/3 Ratio */}
-                        <div className="border-b border-gray-100 pb-3">
-                          <div className="flex items-center justify-between mb-2">
-                            <span className="font-medium text-gray-800">Lower 1/3 Ratio</span>
-                            <span className="text-xl font-bold text-blue-600">
-                              {caseData.frontal.lower_1_3_ratio.value}
-                            </span>
+                        {caseData.frontal.lower_1_3_ratio && (
+                          <div className="border-b border-gray-100 pb-3">
+                            <div className="flex items-center justify-between mb-2">
+                              <span className="font-medium text-gray-800">Lower 1/3 Ratio</span>
+                              <span className="text-xl font-bold text-blue-600">
+                                {caseData.frontal.lower_1_3_ratio.value}
+                              </span>
+                            </div>
                           </div>
-                        </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Camera className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                        <p className="text-gray-500 mb-2">Không có dữ liệu phân tích frontal</p>
+                        <p className="text-sm text-gray-400">Vui lòng upload ảnh frontal để bắt đầu phân tích</p>
                       </div>
                     )}
 
@@ -418,7 +516,7 @@ export default function FacialAnalysisPage() {
                   </div>
                   
                   <div className="bg-white border border-gray-200 rounded-b-lg p-4">
-                    {caseData?.profile && (
+                    {caseData?.profile ? (
                       <div className="space-y-4">
                         <div className="grid grid-cols-3 gap-2 text-xs font-semibold text-gray-600 border-b border-gray-200 pb-2">
                           <span>Indicator</span>
@@ -450,6 +548,12 @@ export default function FacialAnalysisPage() {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <Camera className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                        <p className="text-gray-500 mb-2">Không có dữ liệu phân tích profile</p>
+                        <p className="text-sm text-gray-400">Vui lòng upload ảnh profile để bắt đầu phân tích</p>
                       </div>
                     )}
 

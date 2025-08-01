@@ -93,44 +93,23 @@ export const isOutputFile = (filePath: string): boolean => {
 
 // Function để tìm output path từ assets/outputs/ dựa trên input file
 export const findOutputPathFromAssets = (inputFile: File, imageType: ImageType): string => {
-  // Extract case ID from input filename or path
-  const caseId = extractCaseIdFromInputFile(inputFile);
+  // For this demo, output files are stored directly in assets/outputs/ with same filename as input
+  // e.g., DaoThiDiemTrangfrontal.jpg → /assets/outputs/DaoThiDiemTrangfrontal.jpg
   
-  if (caseId) {
-    // Generate output path from assets/outputs/
-    const outputSuffixes: Record<ImageType, string> = {
-      lateral: 'seg',
-      general_xray: 'seg', 
-      frontal: 'analysis',
-      profile: 'analysis',
-      model_3d: 'analysis'
-    };
-    
-    const suffix = outputSuffixes[imageType];
-    const baseName = inputFile.name.split('.')[0];
-    
-    // Try different output filename patterns
-    const possibleOutputs = [
-      `/assets/outputs/${caseId}/${baseName}_${suffix}.png`,
-      `/assets/outputs/${caseId}/${imageType}_${suffix}.png`,
-      `/assets/outputs/${caseId}/${imageType}.png`,
-      `/assets/outputs/${caseId}/${baseName}.png`
-    ];
-    
-    // Return first possible output (in real app, you'd validate if file exists)
-    return possibleOutputs[0];
-  }
+  const inputFilename = inputFile.name;
+  const directOutputPath = `/assets/outputs/${inputFilename}`;
   
-  // Fallback to default fake output
-  return '/assets/output_xray.jpg';
+  console.log(`🔗 Output mapping: ${inputFilename} → ${directOutputPath}`);
+  return directOutputPath;
 };
 
 // Function để extract case ID từ input file (chỉ từ filename, không cần folder structure)
 export const extractCaseIdFromInputFile = (inputFile: File): string | null => {
   const filename = inputFile.name.toLowerCase();
+  const originalFilename = inputFile.name; // Keep original case for extraction
   
-  // Patterns để detect case ID từ filename
-  const patterns = [
+  // Patterns để detect case ID từ filename (numbered cases)
+  const numberedPatterns = [
     /case(\d+)/i,           // case01_lateral.jpg
     /case_(\d+)/i,          // case_01_lateral.jpg
     /patient(\d+)/i,        // patient01_lateral.jpg
@@ -141,11 +120,35 @@ export const extractCaseIdFromInputFile = (inputFile: File): string | null => {
     /_(\d+)/,               // lateral_01.jpg (number after underscore)
   ];
   
-  for (const pattern of patterns) {
+  // Try numbered patterns first
+  for (const pattern of numberedPatterns) {
     const match = filename.match(pattern);
     if (match) {
       const caseNumber = match[1].padStart(2, '0');
       return `case${caseNumber}`; // Normalize to case01, case02, etc.
+    }
+  }
+  
+  // If no numbered pattern found, try to extract name prefix before image type keywords
+  const imageTypeKeywords = [
+    'frontal', 'profile', 'lateral', 'pano', 'panoramic', 
+    'ceph', 'cephalometric', 'xray', 'general'
+  ];
+  
+  // Remove file extension first
+  const nameWithoutExt = originalFilename.replace(/\.[^/.]+$/, '');
+  
+  // Find which keyword appears in the filename
+  for (const keyword of imageTypeKeywords) {
+    const keywordIndex = nameWithoutExt.toLowerCase().indexOf(keyword);
+    if (keywordIndex > 0) { // Must have some prefix before keyword
+      const prefix = nameWithoutExt.substring(0, keywordIndex);
+      // Clean up prefix (remove trailing underscores, hyphens, etc.)
+      const cleanPrefix = prefix.replace(/[-_\s]+$/, '').trim();
+      if (cleanPrefix.length > 0) {
+        console.log(`🎯 Extracted folder name: "${cleanPrefix}" from "${originalFilename}"`);
+        return cleanPrefix;
+      }
     }
   }
   

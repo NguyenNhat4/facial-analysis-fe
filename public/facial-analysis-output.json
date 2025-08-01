@@ -1,0 +1,132 @@
+{
+  "NgocHieufrontal.jpg": {
+    "za_ag_me": {
+      "value": 131.61,
+      "unit": "°"
+    },
+    "az_ga_me": {
+      "value": 131.6,
+      "unit": "°"
+    },
+    "g_ans_me": {
+      "value": 179.99,
+      "unit": "°"
+    },
+    "u6_6u_vs_zr_zl": {
+      "value": 0.76,
+      "unit": "°"
+    },
+    "lower_1_3_ratio": {
+      "value": 0.39
+    }
+  },
+  "NgocHieuprofile.jpg": [
+    {
+      "indicator": "g_n_preprn",
+      "description": "G' -> N' <- PrePrn",
+      "value": 139.05,
+      "average": 135,
+      "unit": "°"
+    },
+    {
+      "indicator": "preli_sm_pog",
+      "description": "PreLi -> Sm <- Pog' (mentolabial angle)",
+      "value": 134.3,
+      "average": 130.5,
+      "unit": "°"
+    },
+    {
+      "indicator": "cm_sn_ls",
+      "description": "Cm -> Sn <- Ls (nasolabial angle)",
+      "value": 113.39,
+      "average": 95,
+      "unit": "°"
+    },
+    {
+      "indicator": "g_sn_pog",
+      "description": "G' -> Sn <- Pog' (facial convexity)",
+      "value": 170.48,
+      "average": 170,
+      "unit": "°"
+    },
+    {
+      "indicator": "co_go_me",
+      "description": "Co -> Go <- Me' (mandible corner)",
+      "value": 143.49,
+      "average": null,
+      "unit": "°"
+    },
+    {
+      "indicator": "po_or_vs_go_me",
+      "description": "Po-Or vs Go-Me' (mandible angle)",
+      "value": 27.1,
+      "average": null,
+      "unit": "°"
+    }
+  ],
+  "DaoThiDiemTrangfrontal.jpg": {
+    "za_ag_me": {
+      "value": 132.46,
+      "unit": "°"
+    },
+    "az_ga_me": {
+      "value": 130.96,
+      "unit": "°"
+    },
+    "g_ans_me": {
+      "value": 178.11,
+      "unit": "°"
+    },
+    "u6_6u_vs_zr_zl": {
+      "value": 1.14,
+      "unit": "°"
+    },
+    "lower_1_3_ratio": {
+      "value": 0.36
+    }
+  },
+  "DaoThiDiemTrangprofile.jpg": [
+    {
+      "indicator": "g_n_preprn",
+      "description": "G' -> N' <- PrePrn",
+      "value": 140.76,
+      "average": 135,
+      "unit": "°"
+    },
+    {
+      "indicator": "preli_sm_pog",
+      "description": "PreLi -> Sm <- Pog' (mentolabial angle)",
+      "value": 139.93,
+      "average": 130.5,
+      "unit": "°"
+    },
+    {
+      "indicator": "cm_sn_ls",
+      "description": "Cm -> Sn <- Ls (nasolabial angle)",
+      "value": 101.4,
+      "average": 95,
+      "unit": "°"
+    },
+    {
+      "indicator": "g_sn_pog",
+      "description": "G' -> Sn <- Pog' (facial convexity)",
+      "value": 170.78,
+      "average": 170,
+      "unit": "°"
+    },
+    {
+      "indicator": "co_go_me",
+      "description": "Co -> Go <- Me' (mandible corner)",
+      "value": 122.24,
+      "average": null,
+      "unit": "°"
+    },
+    {
+      "indicator": "po_or_vs_go_me",
+      "description": "Po-Or vs Go-Me' (mandible angle)",
+      "value": 26.99,
+      "average": null,
+      "unit": "°"
+    }
+  ]
+}

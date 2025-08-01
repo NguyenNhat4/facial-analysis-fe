@@ -62,6 +62,7 @@ const DemoPage = () => {
 
   // Current case info
   const [currentCaseId, setCurrentCaseId] = useState<string | null>(null);
+  const [currentFolderName, setCurrentFolderName] = useState<string | null>(null);
 
   const [uploadedImages, setUploadedImages] = useState<{
     [key: string]: boolean;
@@ -99,7 +100,18 @@ const DemoPage = () => {
     {}
   );
 
-
+  // Validation error state
+  const [validationError, setValidationError] = useState<{
+    show: boolean;
+    message: string;
+    imageId: string;
+    fileName: string;
+  }>({
+    show: false,
+    message: "",
+    imageId: "",
+    fileName: ""
+  });
 
   // Toast notification state
   const [toast, setToast] = useState<{
@@ -211,8 +223,16 @@ const DemoPage = () => {
       const isValidFileName = validateFileNameForType(file.name, imageId);
       
       if (!isValidFileName) {
-        // Show toast error only
-        showToast("Incorrect image type.", "error");
+        // Show error message
+        setValidationError({
+          show: true,
+          message: getValidationErrorMessage(imageId, file.name),
+          imageId: imageId,
+          fileName: file.name
+        });
+        
+        // Show toast error
+        showToast("Sai loại ảnh", "error");
         return;
       }
 
@@ -288,7 +308,43 @@ const DemoPage = () => {
     return patterns.some(pattern => pattern.test(fileNameLower));
   };
 
+  // Get validation error message
+  const getValidationErrorMessage = (imageId: string, fileName: string): string => {
+    const typeNames: Record<string, string> = {
+      lateral: "Lateral Cephalometric",
+      general_xray: "General X-Ray (Panoramic)",
+      frontal: "Frontal Face",
+      profile: "Profile Face"
+    };
 
+    const typeName = typeNames[imageId] || imageId;
+    
+    return `Invalid file name for ${typeName}: "${fileName}"`;
+  };
+
+  // Get keywords for specific image type
+  const getKeywordsForType = (imageId: string): string => {
+    const keywords: Record<string, string> = {
+      lateral: "• lateral, ceph, cephalometric, side x-ray, nghieng",
+      general_xray: "• pano, panoramic, general x-ray, toan canh, xquang tong",
+      frontal: "• frontal, front, face front, portrait, mat truoc, chinh dien",
+      profile: "• profile, side face, lateral face, mat nghieng, ben hong"
+    };
+    
+    return keywords[imageId] || "• Any valid keyword for this image type";
+  };
+
+  // Get example file name for specific image type
+  const getExampleFileName = (imageId: string): string => {
+    const examples: Record<string, string> = {
+      lateral: "lateral.jpg",
+      general_xray: "panoramic.jpg", 
+      frontal: "frontal.jpg",
+      profile: "profile.jpg"
+    };
+    
+    return examples[imageId] || "example.jpg";
+  };
 
   // Handle remove uploaded image
   const handleRemoveImage = (imageId: string, event: React.MouseEvent) => {
@@ -386,8 +442,13 @@ const DemoPage = () => {
   // Navigation handlers
   const handleNavigation = (path: string, withImages = false) => {
     if (withImages) {
-      // Create URL params with uploaded image data
+      // Create URL params with uploaded image data and folder name
       const imageParams = new URLSearchParams();
+
+      // Add folder name if available
+      if (currentFolderName) {
+        imageParams.set('folder', currentFolderName);
+      }
 
       // Add image URLs for analysis
       Object.entries(imagePreviewUrls).forEach(([key, url]) => {
@@ -516,7 +577,7 @@ const DemoPage = () => {
     input.onchange = async (event) => {
       const target = event.target as HTMLInputElement;
       const files = Array.from(target.files || []);
-
+      console.log('file ',files);
       if (files.length === 0) return;
 
       setIsLoading(true);
@@ -538,6 +599,10 @@ const DemoPage = () => {
         general_xray: "",
       });
 
+      // Reset folder info
+      setCurrentCaseId(null);
+      setCurrentFolderName(null);
+
       try {
         // Validate and group files by type
         const validFiles = files.filter(validateFileType);
@@ -545,14 +610,20 @@ const DemoPage = () => {
 
         // Extract case ID from first file (assume all files are from same case)
         let detectedCaseId: string | null = null;
+        let detectedFolderName: string | null = null;
+        
         for (const file of validFiles) {
           detectedCaseId = extractCaseIdFromInputFile(file);
-          if (detectedCaseId) break;
+          if (detectedCaseId) {
+            detectedFolderName = detectedCaseId; // folder name is same as case ID
+            break;
+          }
         }
 
-        if (detectedCaseId) {
+        if (detectedCaseId && detectedFolderName) {
           setCurrentCaseId(detectedCaseId);
-          console.log(`Detected case: ${detectedCaseId}`);
+          setCurrentFolderName(detectedFolderName);
+          console.log(`Detected case: ${detectedCaseId}, folder: ${detectedFolderName}`);
         }
 
         const allDetectedFiles = Object.values(detected).flat();
@@ -822,6 +893,17 @@ const DemoPage = () => {
                           Status: Ready for Analysis
                         </p>
                       </div>
+                      {currentFolderName && (
+                        <>
+                          <div className="h-4 w-px bg-gray-300"></div>
+                          <div className="flex items-center space-x-2">
+                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
+                            <p className="text-gray-700 font-medium">
+                              Current Case: {currentFolderName}
+                            </p>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center space-x-3">
@@ -1105,6 +1187,8 @@ const DemoPage = () => {
                         {!hasFaceImages && (
                           <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
                             Frontal & Profile photos required
+                            {!currentFolderName && <br />}
+                            {!currentFolderName && "Upload images to detect case folder"}
                           </div>
                         )}
                       </div>
@@ -1303,45 +1387,105 @@ const DemoPage = () => {
         onComplete={handleAIThinkingComplete}
       />
 
-
+      {/* Validation Error Modal */}
+      {validationError.show && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md mx-4 shadow-2xl">
+            <div className="flex items-center mb-4">
+              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                <X className="w-6 h-6 text-red-600" />
+              </div>
+              <h3 className="text-lg font-semibold text-gray-800">
+                Invalid File Name
+              </h3>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-gray-600 mb-3">
+                The file name doesn't match the expected format for this image type.
+              </p>
+              <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                <p className="text-sm font-mono text-gray-700">
+                  File: {validationError.fileName}
+                </p>
+              </div>
+              <div className="text-sm text-gray-700">
+                <p className="font-medium mb-2">Valid keywords for this type:</p>
+                <div className="bg-blue-50 rounded-lg p-3 mb-3">
+                  <pre className="text-xs text-blue-800 whitespace-pre-wrap">
+                    {getKeywordsForType(validationError.imageId)}
+                  </pre>
+                </div>
+                <p className="font-medium mb-2">Example file names:</p>
+                <div className="bg-green-50 rounded-lg p-3">
+                  <pre className="text-xs text-green-800 whitespace-pre-wrap">
+                    case01_{getExampleFileName(validationError.imageId)}
+                    patient02_{getExampleFileName(validationError.imageId)}
+                    {getExampleFileName(validationError.imageId)}
+                  </pre>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end space-x-3">
+              <Button
+                onClick={() => setValidationError({ show: false, message: "", imageId: "", fileName: "" })}
+                className="bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Got it
+              </Button>
+            </div>
+                     </div>
+         </div>
+       )}
 
       {/* Toast Notification */}
       {toast.show && (
-        <div className="fixed bottom-8 right-8 z-50 animate-toast-in">
-          <div className={`px-8 py-5 rounded-2xl shadow-2xl backdrop-blur-md border-2 min-w-[320px] max-w-[400px] ${
+        <div className={`fixed bottom-6 right-6 z-50 transform transition-all duration-500 ease-in-out ${
+          toast.show ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
+        }`}>
+          <div className={`px-6 py-4 rounded-lg shadow-lg max-w-sm ${
             toast.type === 'success' 
-              ? 'bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 text-white border-green-300 animate-toast-glow-success' 
+              ? 'bg-green-500 text-white' 
               : toast.type === 'error' 
-              ? 'bg-gradient-to-br from-red-500 via-red-600 to-rose-600 text-white border-red-300 animate-toast-glow-error' 
-              : 'bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white border-blue-300'
-          } animate-toast-pulse-once transform hover:scale-105 transition-transform duration-300`}>
-            <div className="flex items-center justify-center space-x-3">
+              ? 'bg-red-500 text-white' 
+              : 'bg-blue-500 text-white'
+          }`}>
+            <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
                 {toast.type === 'success' && (
-                  <div className="w-10 h-10 bg-white/25 rounded-full flex items-center justify-center animate-bounce shadow-lg">
-                    <svg className="w-6 h-6 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                     </svg>
                   </div>
                 )}
                 {toast.type === 'error' && (
-                  <div className="w-10 h-10 bg-white/25 rounded-full flex items-center justify-center animate-pulse shadow-lg">
-                    <svg className="w-6 h-6 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                     </svg>
                   </div>
                 )}
                 {toast.type === 'info' && (
-                  <div className="w-10 h-10 bg-white/25 rounded-full flex items-center justify-center animate-pulse shadow-lg">
-                    <svg className="w-6 h-6 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 20 20">
+                  <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
                   </div>
                 )}
               </div>
               <div className="flex-1">
-                <p className="text-lg font-bold tracking-wide drop-shadow-sm">{toast.message}</p>
+                <p className="text-sm font-medium">{toast.message}</p>
               </div>
+              <button
+                onClick={() => setToast({ show: false, message: "", type: "info" })}
+                className="flex-shrink-0 ml-4 text-white hover:text-gray-200 transition-colors"
+              >
+                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                </svg>
+              </button>
             </div>
           </div>
         </div>

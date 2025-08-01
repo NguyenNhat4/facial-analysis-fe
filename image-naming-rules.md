@@ -1,122 +1,90 @@
-# Image Naming Rules for Orthodontic Cases
 
-## Overview
-This document defines the standardized naming convention for orthodontic case images to ensure consistent processing and automatic categorization.
+## 🔍 **Logic Xử Lý Khi Load Nhiều Ảnh**
 
-## Image Types & Naming Convention
 
-### 1. **Lateral Cephalometric X-ray**
-- **Filename**: `lateral.jpg`
-- **Description**: Lateral cephalometric radiograph for skeletal analysis
-- **File format**: JPG/JPEG
-- **Use case**: Cephalometric analysis, growth prediction
+### **Cách Đặt Tên File Để Hệ Thống Phân Phối Đúng:**
 
-### 2. **Panoramic Radiograph** 
-- **Filename**: `pano.jpg`
-- **Description**: Panoramic X-ray showing full dental arch
-- **File format**: JPG/JPEG
-- **Use case**: General dental health assessment, impacted teeth detection
+#### **📋 Quy Tắc Đặt Tên File:**
 
-### 3. **Frontal Portrait**
-- **Filename**: `frontal.jpg` 
-- **Description**: Front-facing facial photograph
-- **File format**: JPG/JPEG
-- **Use case**: Facial symmetry analysis, smile design
+| **Loại Ảnh** | **Patterns Hợp Lệ** | **Ví Dụ** |
+|-------------|-------------------|-----------|
+| **Lateral (Cephalometric)** | `*lateral*`, `*ceph*`, `*cephalometric*`, `*side*x*ray*`, `*nghieng*` | `case01_lateral.jpg`, `ceph_side.jpg`, `nghieng_xray.png` |
+| **General X-Ray (Panoramic)** | `*pano*`, `*panoramic*`, `*general*x*ray*`, `*toan*canh*`, `*xquang*tong*` | `case01_pano.jpg`, `panoramic_xray.png`, `toan_canh.jpg` |
+| **Frontal Face** | `*frontal*`, `*front*`, `*face*front*`, `*portrait*`, `*mat*truoc*`, `*chinh*dien*` | `case01_frontal.jpg`, `face_front.png`, `mat_truoc.jpg` |
+| **Profile Face** | `*profile*`, `*side*face*`, `*lateral*face*`, `*mat*nghieng*`, `*ben*hong*` | `case01_profile.jpg`, `side_face.png`, `mat_nghieng.jpg` |
+| **3D Upper Jaw** | `*3d*upper*`, `*upper*3d*`, `*model*upper*`, `*upper*stl`, `*ham*tren*` | `case01_upper_3d.stl`, `upper_model.stl`, `ham_tren.obj` |
+| **3D Lower Jaw** | `*3d*lower*`, `*lower*3d*`, `*model*lower*`, `*lower*stl`, `*ham*duoi*` | `case01_lower_3d.stl`, `lower_model.stl`, `ham_duoi.obj` |
 
-### 4. **Profile Portrait**
-- **Filename**: `profile.jpg`
-- **Description**: Lateral facial photograph  
-- **File format**: JPG/JPEG
-- **Use case**: Profile analysis, soft tissue evaluation
+#### **�� Case ID Detection:**
+Hệ thống sẽ tự động detect case ID từ tên file:
+- `case01_lateral.jpg` → Case ID: `case01`
+- `patient02_frontal.png` → Case ID: `case02`
+- `bn03_profile.jpg` → Case ID: `case03`
 
-### 5. **3D Intraoral Scan - Upper**
-- **Filename**: `model_3d_upper.stl`
-- **Description**: 3D digital impression of upper dental arch
-- **File format**: STL
-- **Use case**: Upper jaw analysis, orthodontic planning
+### **Ví Dụ Thực Tế:**
 
-### 6. **3D Intraoral Scan - Lower**
-- **Filename**: `model_3d_lower.stl`
-- **Description**: 3D digital impression of lower dental arch
-- **File format**: STL
-- **Use case**: Lower jaw analysis, bite relationship
+#### **✅ Cách Đặt Tên File Đúng:**
 
-## Folder Structure
-
-### Input Structure (Local Storage)
 ```
-📁 orthodontic-cases/
-├── case01/
-│   ├── lateral.jpg
-│   ├── pano.jpg
-│   ├── frontal.jpg  
-│   ├── profile.jpg
-│   ├── model_3d_upper.stl
-│   └── model_3d_lower.stl
-├── case02/
-│   └── ... (same structure)
-└── case03/
-    └── ... (same structure)
+📁 Case Files:
+├── case01_lateral.jpg      → Phân vào ô "Lateral Cephalometric"
+├── case01_panoramic.jpg    → Phân vào ô "General X-Ray"  
+├── case01_frontal.jpg      → Phân vào ô "Frontal Face"
+├── case01_profile.jpg      → Phân vào ô "Profile Face"
+
 ```
 
-### Output Structure (Project Assets)
+#### **❌ Cách Đặt Tên File Sai:**
+
 ```
-📁 assets/outputs/
-├── case01/
-│   ├── analysis_results.json
-│   ├── processed_lateral.jpg
-│   ├── processed_frontal.jpg
-│   └── measurements.pdf
-├── case02/
-│   └── ... (analysis outputs)
-└── case03/
-    └── ... (analysis outputs)
+📁 Case Files:
+├── image1.jpg              → Không detect được type
+├── photo.jpg               → Không detect được type
+├── scan.stl                → Không biết upper hay lower
+└── xray.png                → Không biết lateral hay panoramic
 ```
 
-## Implementation Rules
-
-### File Detection Logic
-The system will automatically categorize images based on exact filename matching:
+### **5. Logic Xử Lý Trong Component:**
 
 ```typescript
-const IMAGE_TYPES = {
-  'lateral.jpg': 'lateral',
-  'pano.jpg': 'general_xray', 
-  'frontal.jpg': 'frontal',
-  'profile.jpg': 'profile',
-  'model_3d_upper.stl': 'model_3d_upper',
-  'model_3d_lower.stl': 'model_3d_lower'
-} as const;
+// Trong fakeLoadImages function:
+try {
+  // 1. Validate files
+  const validFiles = files.filter(validateFileType);
+  
+  // 2. Group by type
+  const { detected } = await groupFilesByType(validFiles);
+  
+  // 3. Extract case ID
+  let detectedCaseId: string | null = null;
+  for (const file of validFiles) {
+    detectedCaseId = extractCaseIdFromInputFile(file);
+    if (detectedCaseId) break;
+  }
+  
+  // 4. Process each detected type
+  for (const [imageType, typeFiles] of Object.entries(detected)) {
+    if (typeFiles.length > 0) {
+      const file = typeFiles[0]; // Lấy file đầu tiên
+      
+      // 5. Create preview URL
+      const inputPreviewUrl = URL.createObjectURL(file);
+      
+      // 6. Update states
+      setImagePreviewUrls(prev => ({ ...prev, [imageType]: inputPreviewUrl }));
+      setUploadedImages(prev => ({ ...prev, [imageType]: true }));
+    }
+  }
+} catch (error) {
+  console.error("Failed to process uploaded images:", error);
+}
 ```
 
-### Case ID Format
-- **Pattern**: `case` + zero-padded number
-- **Examples**: `case01`, `case02`, `case03`, ..., `case99`
-- **Maximum**: 99 cases supported
+### **6. Tips Cho User:**
 
-### Quality Requirements
-- **Image resolution**: Minimum 1024x768 for photos
-- **X-ray quality**: High contrast, proper positioning
-- **STL files**: Valid mesh, no corrupted geometry
-- **File size**: Maximum 10MB per image, 50MB per STL
+1. **Đặt tên file rõ ràng** với keywords như `lateral`, `frontal`, `profile`, `pano`
+2. **Thêm case ID** vào tên file: `case01_lateral.jpg`
+3. **Phân biệt upper/lower** cho 3D files: `upper_scan.stl`, `lower_scan.stl`
+4. **Sử dụng underscore** thay vì space: `case01_frontal.jpg` ✅, `case01 frontal.jpg` ❌
 
-## Usage Examples
-
-### Adding New Case
-1. Create folder: `case04/`
-2. Add images with exact filenames
-3. System automatically detects and categorizes
-4. Run analysis pipeline
-
-### Batch Processing
-```bash
-# All cases with lateral X-rays
-find ./orthodontic-cases/*/lateral.jpg
-
-# All 3D models  
-find ./orthodontic-cases/*/model_3d_*.stl
-```
-
----
-**Last Updated**: December 2024  
-**Version**: 1.1 - Added dual 3D model support
+Hệ thống sẽ tự động detect và phân phối ảnh vào đúng ô dựa trên tên file! 🎯
