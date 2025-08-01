@@ -35,6 +35,7 @@ import {
   Scan,
   Stethoscope,
   Loader2,
+  RefreshCw,
 } from "lucide-react";
 import { ImageType, IMAGE_TYPE_MAPPING } from "../types/demo-cases";
 import { getFallbackImages } from "../utils/demo-cases";
@@ -97,6 +98,33 @@ const DemoPage = () => {
   const [loadingCards, setLoadingCards] = useState<{ [key: string]: boolean }>(
     {}
   );
+
+
+
+  // Toast notification state
+  const [toast, setToast] = useState<{
+    show: boolean;
+    message: string;
+    type: "success" | "error" | "info";
+  }>({
+    show: false,
+    message: "",
+    type: "info"
+  });
+
+  // Show toast notification
+  const showToast = (message: string, type: "success" | "error" | "info" = "info") => {
+    setToast({ show: true, message, type });
+    
+    // Auto hide after 3 seconds with fade out
+    setTimeout(() => {
+      setToast(prev => ({ ...prev, show: false }));
+      // Clear message after animation completes
+      setTimeout(() => {
+        setToast({ show: false, message: "", type: "info" });
+      }, 500); // Match animation duration
+    }, 3000);
+  };
 
   // Enhanced patient data with editing states
   const [patientData, setPatientData] = useState({
@@ -172,13 +200,22 @@ const DemoPage = () => {
     return Object.values(categories);
   })();
 
-  // Handle file upload
+  // Handle file upload with validation
   const handleFileUpload = (
     imageId: string,
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
     if (file) {
+      // Validate file name for specific image type
+      const isValidFileName = validateFileNameForType(file.name, imageId);
+      
+      if (!isValidFileName) {
+        // Show toast error only
+        showToast("Incorrect image type.", "error");
+        return;
+      }
+
       // Clean up previous URL if exists
       if (imagePreviewUrls[imageId]) {
         URL.revokeObjectURL(imagePreviewUrls[imageId]);
@@ -202,8 +239,56 @@ const DemoPage = () => {
         ...prev,
         [imageId]: true,
       }));
+
+      // Show success toast
+      showToast("Upload thành công", "success");
     }
   };
+
+  // Validate file name for specific image type
+  const validateFileNameForType = (fileName: string, imageId: string): boolean => {
+    const fileNameLower = fileName.toLowerCase();
+    
+    const validationPatterns: Record<string, RegExp[]> = {
+      lateral: [
+        /lateral/i,
+        /ceph/i,
+        /cephalometric/i,
+        /side.*x.*ray/i,
+        /nghieng/i
+      ],
+      general_xray: [
+        /pano/i,
+        /panoramic/i,
+        /general.*x.*ray/i,
+        /toan.*canh/i,
+        /xquang.*tong/i,
+        /ortho.*x.*ray/i
+      ],
+      frontal: [
+        /frontal/i,
+        /front/i,
+        /face.*front/i,
+        /portrait/i,
+        /mat.*truoc/i,
+        /chinh.*dien/i
+      ],
+      profile: [
+        /profile/i,
+        /side.*face/i,
+        /lateral.*face/i,
+        /mat.*nghieng/i,
+        /ben.*hong/i
+      ]
+    };
+
+    const patterns = validationPatterns[imageId];
+    if (!patterns) return true; // Skip validation for unknown types
+
+    return patterns.some(pattern => pattern.test(fileNameLower));
+  };
+
+
 
   // Handle remove uploaded image
   const handleRemoveImage = (imageId: string, event: React.MouseEvent) => {
@@ -741,20 +826,16 @@ const DemoPage = () => {
                   </div>
                   <div className="flex items-center space-x-3">
                     <Button
-                      className={`${
-                        isLoading
-                          ? "bg-blue-600 hover:bg-blue-700"
-                          : "bg-blue-600 hover:bg-blue-700"
-                      } shadow-md hover:shadow-lg transition-all duration-200 px-6 py-3 text-base font-semibold rounded-lg border border-blue-700`}
+                      className={`bg-gradient-to-r from-purple-600 to-indigo-700 hover:from-purple-700 hover:to-indigo-800 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-300 px-6 py-3 text-base font-semibold rounded-lg border border-purple-700`}
                       onClick={fakeLoadImages}
                       disabled={isLoading}
                     >
-                      <Upload
+                      <Sparkles
                         className={`w-5 h-5 mr-2 ${
                           isLoading ? "animate-spin" : ""
                         }`}
                       />
-                      {isLoading ? "Loading Images..." : "Load Images"}
+                      {isLoading ? "Classifying..." : "Upload and Classify"}
                     </Button>
                   </div>
                 </div>
@@ -1221,6 +1302,50 @@ const DemoPage = () => {
         analysisType={currentAnalysis}
         onComplete={handleAIThinkingComplete}
       />
+
+
+
+      {/* Toast Notification */}
+      {toast.show && (
+        <div className="fixed bottom-8 right-8 z-50 animate-toast-in">
+          <div className={`px-8 py-5 rounded-2xl shadow-2xl backdrop-blur-md border-2 min-w-[320px] max-w-[400px] ${
+            toast.type === 'success' 
+              ? 'bg-gradient-to-br from-green-500 via-green-600 to-emerald-600 text-white border-green-300 animate-toast-glow-success' 
+              : toast.type === 'error' 
+              ? 'bg-gradient-to-br from-red-500 via-red-600 to-rose-600 text-white border-red-300 animate-toast-glow-error' 
+              : 'bg-gradient-to-br from-blue-500 via-blue-600 to-indigo-600 text-white border-blue-300'
+          } animate-toast-pulse-once transform hover:scale-105 transition-transform duration-300`}>
+            <div className="flex items-center justify-center space-x-3">
+              <div className="flex-shrink-0">
+                {toast.type === 'success' && (
+                  <div className="w-10 h-10 bg-white/25 rounded-full flex items-center justify-center animate-bounce shadow-lg">
+                    <svg className="w-6 h-6 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+                {toast.type === 'error' && (
+                  <div className="w-10 h-10 bg-white/25 rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                    <svg className="w-6 h-6 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+                {toast.type === 'info' && (
+                  <div className="w-10 h-10 bg-white/25 rounded-full flex items-center justify-center animate-pulse shadow-lg">
+                    <svg className="w-6 h-6 text-white drop-shadow-sm" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+              <div className="flex-1">
+                <p className="text-lg font-bold tracking-wide drop-shadow-sm">{toast.message}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
