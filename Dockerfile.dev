@@ -1,0 +1,23 @@
+# Development Dockerfile
+FROM node:18-alpine
+
+# Set working directory
+WORKDIR /app
+
+# Copy package.json and package-lock.json (if available)
+COPY package*.json ./
+
+# Install dependencies (including dev dependencies)
+RUN npm ci
+
+# Copy the rest of the application code
+COPY . .
+
+# Create .env file from example if it doesn't exist
+RUN if [ ! -f .env ]; then cp .env.example .env; fi
+
+# Expose port (Vite dev server runs on 5173 by default)
+EXPOSE 5173
+
+# Start the development server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "5173"]

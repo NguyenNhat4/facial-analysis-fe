@@ -12,7 +12,7 @@ interface TelegramButtonProps {
 
 export function TelegramButton({
   children,
-  botUsername = "your_bot_username",
+  botUsername = "AnsiudeptraiBot",
   className = "",
   size = "default",
   variant = "inline",

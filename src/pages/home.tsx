@@ -56,7 +56,7 @@ export default function Home() {
                   Tư vấn AI
                 </Button>
               </Link>
-              <TelegramButton botUsername="your_bot_username" />
+              <TelegramButton botUsername="AnsiudeptraiBot" />
             </div>
             <div className="md:hidden flex items-center space-x-2">
               <Link href="/chat">
@@ -69,7 +69,7 @@ export default function Home() {
               </Link>
               <TelegramButton
                 size="sm"
-                botUsername="@AnsiudeptraiBot"
+                botUsername="AnsiudeptraiBot"
                 className="px-2"
               />
               <button className="text-clinical-600">
@@ -404,7 +404,7 @@ export default function Home() {
               />
             </div>
             <div className="mb-4">
-              <TelegramButton botUsername="your_bot_username" className="mb-4">
+              <TelegramButton botUsername="AnsiudeptraiBot" className="mb-4">
                 Liên hệ qua Telegram Bot
               </TelegramButton>
             </div>
@@ -423,7 +423,7 @@ export default function Home() {
       <TelegramButton
         variant="floating"
         size="lg"
-        botUsername="your_bot_username"
+        botUsername="AnsiudeptraiBot"
       />
     </div>
   );

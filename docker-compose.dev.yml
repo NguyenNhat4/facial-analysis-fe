@@ -1,0 +1,25 @@
+version: "3.8"
+
+services:
+  dental-ai-ui-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_BASE_URL=http://localhost:3000/api
+      - VITE_NODE_ENV=development
+      - VITE_ENABLE_API_CHECK=true
+    volumes:
+      # Mount source code for hot reloading
+      - .:/app
+      - /app/node_modules
+    networks:
+      - dental-ai-network
+    restart: unless-stopped
+    container_name: dental-ai-ui-dev
+
+networks:
+  dental-ai-network:
+    driver: bridge
