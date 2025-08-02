@@ -72,13 +72,13 @@ export default function XrayAnalysisPage() {
   const [loading, setLoading] = useState(true);
   const [selectedTooth, setSelectedTooth] = useState<any>(null);
 
-  // Mock patient data
+  // Demo patient data for presentation
   const patientData = {
-    name: "NHẬT NGUYỄN",
-    id: "P012345",
-    date: "28/07/2025",
-    age: 35,
-    gender: "Nam"
+    name: currentFolder || "DEMO PATIENT",
+    id: "P2025-001",
+    date: new Date().toLocaleDateString("en-GB"),
+    age: 28,
+    gender: "Demo Case"
   };
 
   // Parse query parameters to get input images and folder
@@ -150,30 +150,57 @@ export default function XrayAnalysisPage() {
 
   // Get current case data based on available files
   const getCurrentCaseData = () => {
-    if (!analysisData) return null;
+    if (!analysisData) {
+      console.log(`📊 No analysis data available`);
+      return null;
+    }
     
     let xrayFile: string | undefined;
+    
+    console.log(`📊 getCurrentCaseData called with currentFolder:`, currentFolder);
+    console.log(`📊 Available keys in analysisData:`, Object.keys(analysisData));
     
     if (currentFolder) {
       // Try to find data by folder name first
       xrayFile = Object.keys(analysisData).find(key => 
-        key.includes(currentFolder) && key.includes('pano')
+        key.toLowerCase().includes(currentFolder.toLowerCase()) && key.toLowerCase().includes('pano')
       );
+      console.log(`📊 Folder-based search for "${currentFolder}":`, xrayFile);
     }
     
-    // Fallback: Find any pano data
+    // Fallback: Find any pano data (prefer DaoThiDiemTrang over NgocHieu for demo)
     if (!xrayFile) {
-      xrayFile = Object.keys(analysisData).find(key => key.includes('pano'));
+      // Try DaoThiDiemTrang first for demo
+      xrayFile = Object.keys(analysisData).find(key => 
+        key.includes('DaoThiDiemTrang') && key.includes('pano')
+      );
+      
+      // If not found, get any pano data
+      if (!xrayFile) {
+        xrayFile = Object.keys(analysisData).find(key => key.includes('pano'));
+      }
+      console.log(`📊 Fallback search found:`, xrayFile);
     }
     
     const xrayData = xrayFile ? analysisData[xrayFile] : null;
     
-    console.log(`📊 Using data file:`, { xrayFile });
+    console.log(`📊 Final selection - Using data file:`, { xrayFile, hasData: !!xrayData });
     
     return xrayData;
   };
 
   const caseData = getCurrentCaseData();
+  
+  // Debug log for caseData
+  React.useEffect(() => {
+    if (caseData) {
+      console.log(`📊 CaseData updated:`, {
+        totalTeeth: caseData.summary.total_teeth,
+        healthyTeeth: caseData.summary.healthy_teeth,
+        currentFolder
+      });
+    }
+  }, [caseData, currentFolder]);
 
   // Helper function to get status badge
   const getStatusBadge = (status: string) => {
@@ -289,12 +316,12 @@ export default function XrayAnalysisPage() {
                 <div>
                   <div className="flex items-center space-x-3 mb-2">
                     <h2 className="text-2xl font-bold text-white">{patientData.name}</h2>
-                    <span className="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded-full">
-                      ACTIVE
+                    <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full">
+                      DEMO
                     </span>
                   </div>
                   <p className="text-blue-100 text-lg font-medium">
-                    ID: {patientData.id} • {patientData.gender} • {patientData.age} tuổi
+                    ID: {patientData.id} • {patientData.gender} • Age: {patientData.age}
                   </p>
                 </div>
               </div>
