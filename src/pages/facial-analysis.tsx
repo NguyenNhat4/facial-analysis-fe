@@ -220,9 +220,9 @@ export default function FacialAnalysisPage() {
                 variant="ghost" 
                 className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
               >
-                <ArrowLeft size={20} className="mr-2" />
-                Quay lại
-              </Button>
+                  <ArrowLeft size={20} className="mr-2" />
+                  Quay lại
+                </Button>
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   <img
@@ -323,7 +323,7 @@ export default function FacialAnalysisPage() {
                   PROFILE ANALYSIS
                 </TabsTrigger>
               </TabsList>
-            </div>
+                </div>
 
             {/* Frontal Analysis Tab */}
             <TabsContent value="frontal" className="p-0">
@@ -433,9 +433,9 @@ export default function FacialAnalysisPage() {
                         <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
                           <Settings className="w-4 h-4 mr-1" />
                           Analyze
-                        </Button>
-                      </div>
-                    </div>
+                    </Button>
+                  </div>
+                </div>
 
                     {/* Image Display Area */}
                     <div className="flex-1 bg-black rounded-lg overflow-hidden relative">
@@ -459,7 +459,7 @@ export default function FacialAnalysisPage() {
                           </div>
                         </div>
                       )}
-                    </div>
+                  </div>
 
                     {/* Control Panel */}
                     <div className="mt-4 flex flex-col space-y-2">
@@ -475,8 +475,8 @@ export default function FacialAnalysisPage() {
                         <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
                           <Settings className="w-4 h-4 mr-1" />
                           Brightness ▶
-                        </Button>
-                      </div>
+                  </Button>
+                </div>
                       <div className="flex items-center justify-center space-x-4">
                         <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
                           <ZoomIn className="w-4 h-4 mr-1" />
@@ -490,7 +490,7 @@ export default function FacialAnalysisPage() {
                           <Save className="w-4 h-4 mr-1" />
                           Save analysis
                         </Button>
-                      </div>
+          </div>
                       <div className="flex items-center justify-center space-x-4">
                         <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
                           <RefreshCw className="w-4 h-4 mr-1" />
@@ -498,12 +498,12 @@ export default function FacialAnalysisPage() {
                         </Button>
                         <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
                           ℹ️ Guide ▶
-                        </Button>
+                    </Button>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
+            </div>
             </TabsContent>
 
             {/* Profile Analysis Tab */}
@@ -522,7 +522,7 @@ export default function FacialAnalysisPage() {
                           <span>Indicator</span>
                           <span className="text-center">Value</span>
                           <span className="text-center">Average</span>
-                        </div>
+                  </div>
                         
                         {caseData.profile.map((indicator, index) => (
                           <div key={index} className="border-b border-gray-100 pb-3">
@@ -554,7 +554,7 @@ export default function FacialAnalysisPage() {
                         <Camera className="w-16 h-16 mx-auto mb-4 text-gray-300" />
                         <p className="text-gray-500 mb-2">Không có dữ liệu phân tích profile</p>
                         <p className="text-sm text-gray-400">Vui lòng upload ảnh profile để bắt đầu phân tích</p>
-                      </div>
+                  </div>
                     )}
 
                     {/* Note Section */}
@@ -651,7 +651,7 @@ export default function FacialAnalysisPage() {
                         <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
                           ℹ️ Guide ▶
                         </Button>
-                      </div>
+                    </div>
                     </div>
                   </div>
                 </div>
