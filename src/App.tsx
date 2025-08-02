@@ -10,6 +10,7 @@ import XrayAnalysisPage from "@/pages/xray-analysis";
 import Model3DPage from "@/pages/model-3d";
 import DemoPage from "@/pages/demo";
 import NotFound from "@/pages/not-found";
+import ThreeDViewer from "./components/3DViewer";
 
 function Router() {
   return (
@@ -19,7 +20,7 @@ function Router() {
       <Route path="/chat" component={Chat} />
       <Route path="/facial-analysis" component={FacialAnalysisPage} />
       <Route path="/xray-analysis" component={XrayAnalysisPage} />
-      <Route path="/model-3d" component={Model3DPage} />
+      <Route path="/model-3d" component={ThreeDViewer} />
       <Route component={NotFound} />
     </Switch>
   );
