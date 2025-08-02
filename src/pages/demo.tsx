@@ -62,7 +62,9 @@ const DemoPage = () => {
 
   // Current case info
   const [currentCaseId, setCurrentCaseId] = useState<string | null>(null);
-  const [currentFolderName, setCurrentFolderName] = useState<string | null>(null);
+  const [currentFolderName, setCurrentFolderName] = useState<string | null>(
+    null
+  );
 
   const [uploadedImages, setUploadedImages] = useState<{
     [key: string]: boolean;
@@ -110,7 +112,7 @@ const DemoPage = () => {
     show: false,
     message: "",
     imageId: "",
-    fileName: ""
+    fileName: "",
   });
 
   // Toast notification state
@@ -121,16 +123,19 @@ const DemoPage = () => {
   }>({
     show: false,
     message: "",
-    type: "info"
+    type: "info",
   });
 
   // Show toast notification
-  const showToast = (message: string, type: "success" | "error" | "info" = "info") => {
+  const showToast = (
+    message: string,
+    type: "success" | "error" | "info" = "info"
+  ) => {
     setToast({ show: true, message, type });
-    
+
     // Auto hide after 3 seconds with fade out
     setTimeout(() => {
-      setToast(prev => ({ ...prev, show: false }));
+      setToast((prev) => ({ ...prev, show: false }));
       // Clear message after animation completes
       setTimeout(() => {
         setToast({ show: false, message: "", type: "info" });
@@ -221,16 +226,16 @@ const DemoPage = () => {
     if (file) {
       // Validate file name for specific image type
       const isValidFileName = validateFileNameForType(file.name, imageId);
-      
+
       if (!isValidFileName) {
         // Show error message
         setValidationError({
           show: true,
           message: getValidationErrorMessage(imageId, file.name),
           imageId: imageId,
-          fileName: file.name
+          fileName: file.name,
         });
-        
+
         // Show toast error
         showToast("Sai loại ảnh", "error");
         return;
@@ -266,16 +271,19 @@ const DemoPage = () => {
   };
 
   // Validate file name for specific image type
-  const validateFileNameForType = (fileName: string, imageId: string): boolean => {
+  const validateFileNameForType = (
+    fileName: string,
+    imageId: string
+  ): boolean => {
     const fileNameLower = fileName.toLowerCase();
-    
+
     const validationPatterns: Record<string, RegExp[]> = {
       lateral: [
         /lateral/i,
         /ceph/i,
         /cephalometric/i,
         /side.*x.*ray/i,
-        /nghieng/i
+        /nghieng/i,
       ],
       general_xray: [
         /pano/i,
@@ -283,7 +291,7 @@ const DemoPage = () => {
         /general.*x.*ray/i,
         /toan.*canh/i,
         /xquang.*tong/i,
-        /ortho.*x.*ray/i
+        /ortho.*x.*ray/i,
       ],
       frontal: [
         /frontal/i,
@@ -291,34 +299,37 @@ const DemoPage = () => {
         /face.*front/i,
         /portrait/i,
         /mat.*truoc/i,
-        /chinh.*dien/i
+        /chinh.*dien/i,
       ],
       profile: [
         /profile/i,
         /side.*face/i,
         /lateral.*face/i,
         /mat.*nghieng/i,
-        /ben.*hong/i
-      ]
+        /ben.*hong/i,
+      ],
     };
 
     const patterns = validationPatterns[imageId];
     if (!patterns) return true; // Skip validation for unknown types
 
-    return patterns.some(pattern => pattern.test(fileNameLower));
+    return patterns.some((pattern) => pattern.test(fileNameLower));
   };
 
   // Get validation error message
-  const getValidationErrorMessage = (imageId: string, fileName: string): string => {
+  const getValidationErrorMessage = (
+    imageId: string,
+    fileName: string
+  ): string => {
     const typeNames: Record<string, string> = {
       lateral: "Lateral Cephalometric",
       general_xray: "General X-Ray (Panoramic)",
       frontal: "Frontal Face",
-      profile: "Profile Face"
+      profile: "Profile Face",
     };
 
     const typeName = typeNames[imageId] || imageId;
-    
+
     return `Invalid file name for ${typeName}: "${fileName}"`;
   };
 
@@ -328,9 +339,9 @@ const DemoPage = () => {
       lateral: "• lateral, ceph, cephalometric, side x-ray, nghieng",
       general_xray: "• pano, panoramic, general x-ray, toan canh, xquang tong",
       frontal: "• frontal, front, face front, portrait, mat truoc, chinh dien",
-      profile: "• profile, side face, lateral face, mat nghieng, ben hong"
+      profile: "• profile, side face, lateral face, mat nghieng, ben hong",
     };
-    
+
     return keywords[imageId] || "• Any valid keyword for this image type";
   };
 
@@ -338,11 +349,11 @@ const DemoPage = () => {
   const getExampleFileName = (imageId: string): string => {
     const examples: Record<string, string> = {
       lateral: "lateral.jpg",
-      general_xray: "panoramic.jpg", 
+      general_xray: "panoramic.jpg",
       frontal: "frontal.jpg",
-      profile: "profile.jpg"
+      profile: "profile.jpg",
     };
-    
+
     return examples[imageId] || "example.jpg";
   };
 
@@ -447,7 +458,7 @@ const DemoPage = () => {
 
       // Add folder name if available
       if (currentFolderName) {
-        imageParams.set('folder', currentFolderName);
+        imageParams.set("folder", currentFolderName);
       }
 
       // Add image URLs for analysis
@@ -540,20 +551,20 @@ const DemoPage = () => {
   }) => {
     setLocalImages(processedImages);
 
-          // Update uploaded images state
-      const newUploadedImages: { [key: string]: boolean } = {
-        lateral: false,
-        profile: false,
-        frontal: false,
-        general_xray: false,
-      };
+    // Update uploaded images state
+    const newUploadedImages: { [key: string]: boolean } = {
+      lateral: false,
+      profile: false,
+      frontal: false,
+      general_xray: false,
+    };
 
-      const newImagePreviewUrls: { [key: string]: string } = {
-        lateral: "",
-        profile: "",
-        frontal: "",
-        general_xray: "",
-      };
+    const newImagePreviewUrls: { [key: string]: string } = {
+      lateral: "",
+      profile: "",
+      frontal: "",
+      general_xray: "",
+    };
 
     Object.entries(processedImages).forEach(([imageType, data]) => {
       if (data) {
@@ -577,7 +588,7 @@ const DemoPage = () => {
     input.onchange = async (event) => {
       const target = event.target as HTMLInputElement;
       const files = Array.from(target.files || []);
-      console.log('file ',files);
+      console.log("file ", files);
       if (files.length === 0) return;
 
       setIsLoading(true);
@@ -611,7 +622,7 @@ const DemoPage = () => {
         // Extract case ID from first file (assume all files are from same case)
         let detectedCaseId: string | null = null;
         let detectedFolderName: string | null = null;
-        
+
         for (const file of validFiles) {
           detectedCaseId = extractCaseIdFromInputFile(file);
           if (detectedCaseId) {
@@ -623,7 +634,9 @@ const DemoPage = () => {
         if (detectedCaseId && detectedFolderName) {
           setCurrentCaseId(detectedCaseId);
           setCurrentFolderName(detectedFolderName);
-          console.log(`Detected case: ${detectedCaseId}, folder: ${detectedFolderName}`);
+          console.log(
+            `Detected case: ${detectedCaseId}, folder: ${detectedFolderName}`
+          );
         }
 
         const allDetectedFiles = Object.values(detected).flat();
@@ -846,7 +859,8 @@ const DemoPage = () => {
                     Sample Clinical Data
                   </p>
                   <p className="text-blue-200 text-sm">
-                    Case ID: #DEMO-2025-001 • Session Date: {new Date().toLocaleDateString("en-GB")}
+                    Case ID: #DEMO-2025-001 • Session Date:{" "}
+                    {new Date().toLocaleDateString("en-GB")}
                   </p>
                 </div>
               </div>
@@ -1080,9 +1094,7 @@ const DemoPage = () => {
                     <div className="relative group">
                       <Button
                         className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${"bg-purple-600 hover:bg-purple-700 text-white shadow-md border border-purple-700"}`}
-                        onClick={() =>
-                          handleNavigation("/model-3d", true)
-                        }
+                        onClick={() => handleNavigation("/model-3d", true)}
                       >
                         <div
                           className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${"bg-purple-500"}`}
@@ -1188,7 +1200,8 @@ const DemoPage = () => {
                           <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
                             Frontal & Profile photos required
                             {!currentFolderName && <br />}
-                            {!currentFolderName && "Upload images to detect case folder"}
+                            {!currentFolderName &&
+                              "Upload images to detect case folder"}
                           </div>
                         )}
                       </div>
@@ -1284,25 +1297,17 @@ const DemoPage = () => {
                       {/* Treatment Planning */}
                       <div className="relative group">
                         <Button
-                          className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${
-                            hasAllImages
-                              ? "bg-orange-600 hover:bg-orange-700 text-white shadow-md border border-orange-700"
-                              : "bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200"
-                          }`}
-                          disabled={!hasAllImages || showAIThinking}
+                          className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${"bg-orange-600 hover:bg-orange-700 text-white shadow-md border border-orange-700"}`}
                           onClick={() =>
-                            hasAllImages &&
                             handleAnalysisClick(
                               "treatment",
-                              "/treatment-planning",
+                              "/treatment-plan",
                               true
                             )
                           }
                         >
                           <div
-                            className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
-                              hasAllImages ? "bg-orange-500" : "bg-gray-200"
-                            }`}
+                            className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${"bg-orange-500"}`}
                           >
                             <Stethoscope className="w-6 h-6" />
                           </div>
@@ -1399,10 +1404,11 @@ const DemoPage = () => {
                 Invalid File Name
               </h3>
             </div>
-            
+
             <div className="mb-6">
               <p className="text-gray-600 mb-3">
-                The file name doesn't match the expected format for this image type.
+                The file name doesn't match the expected format for this image
+                type.
               </p>
               <div className="bg-gray-50 rounded-lg p-3 mb-3">
                 <p className="text-sm font-mono text-gray-700">
@@ -1410,7 +1416,9 @@ const DemoPage = () => {
                 </p>
               </div>
               <div className="text-sm text-gray-700">
-                <p className="font-medium mb-2">Valid keywords for this type:</p>
+                <p className="font-medium mb-2">
+                  Valid keywords for this type:
+                </p>
                 <div className="bg-blue-50 rounded-lg p-3 mb-3">
                   <pre className="text-xs text-blue-800 whitespace-pre-wrap">
                     {getKeywordsForType(validationError.imageId)}
@@ -1426,51 +1434,88 @@ const DemoPage = () => {
                 </div>
               </div>
             </div>
-            
+
             <div className="flex justify-end space-x-3">
               <Button
-                onClick={() => setValidationError({ show: false, message: "", imageId: "", fileName: "" })}
+                onClick={() =>
+                  setValidationError({
+                    show: false,
+                    message: "",
+                    imageId: "",
+                    fileName: "",
+                  })
+                }
                 className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 Got it
               </Button>
             </div>
-                     </div>
-         </div>
-       )}
+          </div>
+        </div>
+      )}
 
       {/* Toast Notification */}
       {toast.show && (
-        <div className={`fixed bottom-6 right-6 z-50 transform transition-all duration-500 ease-in-out ${
-          toast.show ? 'translate-y-0 opacity-100' : 'translate-y-full opacity-0'
-        }`}>
-          <div className={`px-6 py-4 rounded-lg shadow-lg max-w-sm ${
-            toast.type === 'success' 
-              ? 'bg-green-500 text-white' 
-              : toast.type === 'error' 
-              ? 'bg-red-500 text-white' 
-              : 'bg-blue-500 text-white'
-          }`}>
+        <div
+          className={`fixed bottom-6 right-6 z-50 transform transition-all duration-500 ease-in-out ${
+            toast.show
+              ? "translate-y-0 opacity-100"
+              : "translate-y-full opacity-0"
+          }`}
+        >
+          <div
+            className={`px-6 py-4 rounded-lg shadow-lg max-w-sm ${
+              toast.type === "success"
+                ? "bg-green-500 text-white"
+                : toast.type === "error"
+                ? "bg-red-500 text-white"
+                : "bg-blue-500 text-white"
+            }`}
+          >
             <div className="flex items-center space-x-3">
               <div className="flex-shrink-0">
-                {toast.type === 'success' && (
+                {toast.type === "success" && (
                   <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                 )}
-                {toast.type === 'error' && (
+                {toast.type === "error" && (
                   <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                 )}
-                {toast.type === 'info' && (
+                {toast.type === "info" && (
                   <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                    <svg
+                      className="w-4 h-4"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                        clipRule="evenodd"
+                      />
                     </svg>
                   </div>
                 )}
@@ -1479,11 +1524,21 @@ const DemoPage = () => {
                 <p className="text-sm font-medium">{toast.message}</p>
               </div>
               <button
-                onClick={() => setToast({ show: false, message: "", type: "info" })}
+                onClick={() =>
+                  setToast({ show: false, message: "", type: "info" })
+                }
                 className="flex-shrink-0 ml-4 text-white hover:text-gray-200 transition-colors"
               >
-                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
+                    clipRule="evenodd"
+                  />
                 </svg>
               </button>
             </div>

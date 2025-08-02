@@ -7,6 +7,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Send, Bot, User, ArrowLeft, Image, AlertCircle } from "lucide-react";
 import { Link } from "wouter";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import TelegramButton from "@/components/telegram-button";
 
 interface Message {
   id: string;
@@ -390,6 +391,11 @@ export default function Chat() {
               <div className="ml-auto">
                 <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
               </div>
+              <TelegramButton
+                size="sm"
+                botUsername="your_bot_username"
+                className="ml-2"
+              />
             </div>
           </CardHeader>
 
@@ -652,6 +658,9 @@ export default function Chat() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Floating Telegram Button */}
+      <TelegramButton variant="floating" botUsername="your_bot_username" />
     </div>
   );
 }

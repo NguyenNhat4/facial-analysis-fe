@@ -11,6 +11,7 @@ import Model3DPage from "@/pages/model-3d";
 import DemoPage from "@/pages/demo";
 import NotFound from "@/pages/not-found";
 import ThreeDViewer from "./components/3DViewer";
+import Treatment from "./TreatmentPlan";
 
 function Router() {
   return (
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/facial-analysis" component={FacialAnalysisPage} />
       <Route path="/xray-analysis" component={XrayAnalysisPage} />
       <Route path="/model-3d" component={ThreeDViewer} />
+      <Route path="/treatment-plan" component={Treatment} />
       <Route component={NotFound} />
     </Switch>
   );
