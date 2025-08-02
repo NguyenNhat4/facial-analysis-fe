@@ -1,8 +1,9 @@
-
-import { useState } from "react";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
+import React, { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import { Button } from "../components/ui/button";
+import { Badge } from "../components/ui/badge";
+import { Progress } from "../components/ui/progress";
 import {
   ArrowLeft,
   Radiation,
@@ -11,930 +12,690 @@ import {
   AlertTriangle,
   AlertCircle,
   X,
+  User,
+  Activity,
+  ZoomIn,
+  ZoomOut,
+  RotateCw,
+  Settings,
+  Save,
+  RefreshCw,
+  Camera,
+  Target,
+  Scan,
+  FileText,
+  Clock
 } from "lucide-react";
-import { Link } from "wouter";
-import type { XrayAnalysis, ToothAnalysis } from "@shared/schema";
 
-// Mock image mapping: Maps Input image names to corresponding Output images
-const imageMapping: Record<string, string> = {
-  "input.jpeg": "assets/output.jpeg",
-  "input_xray.jpg": "assets/output_xray.jpg",
-  "leetray_logo.png": "assets/input_xray.jpg",
-  "output_xray.jpg": "assets/output_xray_processed.jpg",
-  "pananomic_xray_log...": "assets/output_pananomic.jpg",
-  "xquang.png": "assets/output_xquang.jpg",
-  "image1.jpg": "assets/output_image1.jpg",
-  "image2.jpg": "assets/output_image2.jpg",
-  "image3.jpg": "assets/output_image3.jpg",
-};
-
-// Default image if no match is found
-const defaultImage = "assets/output_xray.jpg";
-
-// Mock data sets with treatment recommendations
-const xrayAnalysis1: XrayAnalysis = {
-  healthyTeeth: 26,
-  decayedTeeth: 4,
-  treatmentNeeded: 2,
-  teeth: [
-    {
-      toothNumber: 11,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 10, y: 30, width: 8, height: 28 },
-    },
-    {
-      toothNumber: 12,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 20, y: 32, width: 8, height: 27 },
-    },
-    {
-      toothNumber: 13,
-      status: "decay",
-      condition: "Sâu răng nhẹ, cần trám",
-      position: { x: 30, y: 34, width: 8, height: 26 },
-      treatmentRecommendation: {
-        method: "Trám răng bằng composite",
-        estimatedTime: "1 giờ",
-        notes: "Kiểm tra định kỳ sau 6 tháng.",
-      },
-    },
-    {
-      toothNumber: 14,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 40, y: 35, width: 8, height: 25 },
-    },
-    {
-      toothNumber: 16,
-      status: "treatment_needed",
-      condition: "Hư hỏng nặng, cần điều trị tủy",
-      position: { x: 50, y: 36, width: 8, height: 24 },
-      treatmentRecommendation: {
-        method: "Điều trị tủy và bọc sứ",
-        estimatedTime: "2-3 buổi, mỗi buổi 1.5 giờ",
-        notes: "Cần chụp X-quang kiểm tra sau điều trị.",
-      },
-    },
-    {
-      toothNumber: 21,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 60, y: 30, width: 8, height: 28 },
-    },
-    {
-      toothNumber: 22,
-      status: "decay",
-      condition: "Sâu răng, cần trám composite",
-      position: { x: 70, y: 32, width: 8, height: 27 },
-      treatmentRecommendation: {
-        method: "Trám răng bằng composite",
-        estimatedTime: "1 giờ",
-        notes: "Tránh nhai thức ăn cứng trong 24 giờ sau trám.",
-      },
-    },
-    {
-      toothNumber: 23,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 80, y: 34, width: 8, height: 26 },
-    },
-    {
-      toothNumber: 26,
-      status: "treatment_needed",
-      condition: "Nứt răng, cần bọc sứ",
-      position: { x: 90, y: 36, width: 8, height: 24 },
-      treatmentRecommendation: {
-        method: "Bọc sứ toàn phần",
-        estimatedTime: "2 buổi, mỗi buổi 1 giờ",
-        notes: "Đảm bảo vệ sinh răng miệng tốt sau khi bọc sứ.",
-      },
-    },
-    {
-      toothNumber: 27,
-      status: "decay",
-      condition: "Sâu răng, cần trám",
-      position: { x: 100, y: 38, width: 8, height: 25 },
-      treatmentRecommendation: {
-        method: "Trám răng bằng amalgam",
-        estimatedTime: "45 phút",
-        notes: "Kiểm tra định kỳ sau 6 tháng.",
-      },
-    },
-  ],
-};
-
-const xrayAnalysis2: XrayAnalysis = {
-  healthyTeeth: 20,
-  decayedTeeth: 8,
-  treatmentNeeded: 4,
-  teeth: [
-    {
-      toothNumber: 11,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 15, y: 28, width: 8, height: 29 },
-    },
-    {
-      toothNumber: 12,
-      status: "decay",
-      condition: "Sâu răng nặng, cần trám",
-      position: { x: 25, y: 30, width: 8, height: 28 },
-      treatmentRecommendation: {
-        method: "Trám răng bằng composite",
-        estimatedTime: "1.5 giờ",
-        notes: "Cần kiểm tra sâu răng lan rộng trước khi trám.",
-      },
-    },
-    {
-      toothNumber: 13,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 35, y: 32, width: 8, height: 27 },
-    },
-    {
-      toothNumber: 15,
-      status: "treatment_needed",
-      condition: "Hư hỏng nặng, cần nhổ răng",
-      position: { x: 45, y: 35, width: 8, height: 25 },
-      treatmentRecommendation: {
-        method: "Nhổ răng và cân nhắc cấy ghép implant",
-        estimatedTime: "1 giờ cho nhổ răng, implant cần 2-3 tháng",
-        notes: "Cần chụp X-quang kiểm tra xương trước khi implant.",
-      },
-    },
-    {
-      toothNumber: 17,
-      status: "decay",
-      condition: "Sâu răng, cần trám composite",
-      position: { x: 55, y: 37, width: 8, height: 26 },
-      treatmentRecommendation: {
-        method: "Trám răng bằng composite",
-        estimatedTime: "1 giờ",
-        notes: "Tránh nhai thức ăn cứng trong 24 giờ sau trám.",
-      },
-    },
-    {
-      toothNumber: 21,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 65, y: 28, width: 8, height: 29 },
-    },
-    {
-      toothNumber: 22,
-      status: "decay",
-      condition: "Sâu răng, cần trám",
-      position: { x: 75, y: 30, width: 8, height: 28 },
-      treatmentRecommendation: {
-        method: "Trám răng bằng amalgam",
-        estimatedTime: "45 phút",
-        notes: "Kiểm tra định kỳ sau 6 tháng.",
-      },
-    },
-    {
-      toothNumber: 24,
-      status: "treatment_needed",
-      condition: "Nứt răng, cần bọc sứ",
-      position: { x: 85, y: 33, width: 8, height: 26 },
-      treatmentRecommendation: {
-        method: "Bọc sứ toàn phần",
-        estimatedTime: "2 buổi, mỗi buổi 1 giờ",
-        notes: "Đảm bảo vệ sinh răng miệng tốt sau khi bọc sứ.",
-      },
-    },
-    {
-      toothNumber: 26,
-      status: "decay",
-      condition: "Sâu răng nhẹ, cần trám",
-      position: { x: 95, y: 35, width: 8, height: 25 },
-      treatmentRecommendation: {
-        method: "Trám răng bằng composite",
-        estimatedTime: "1 giờ",
-        notes: "Kiểm tra định kỳ sau 6 tháng.",
-      },
-    },
-    {
-      toothNumber: 28,
-      status: "treatment_needed",
-      condition: "Răng khôn mọc lệch, cần nhổ",
-      position: { x: 105, y: 38, width: 8, height: 24 },
-      treatmentRecommendation: {
-        method: "Nhổ răng khôn",
-        estimatedTime: "1-1.5 giờ",
-        notes: "Nghỉ ngơi và tránh hoạt động nặng sau nhổ răng.",
-      },
-    },
-  ],
-};
-
-const xrayAnalysis3: XrayAnalysis = {
-  healthyTeeth: 28,
-  decayedTeeth: 3,
-  treatmentNeeded: 1,
-  teeth: [
-    {
-      toothNumber: 11,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 12, y: 29, width: 8, height: 28 },
-    },
-    {
-      toothNumber: 12,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 22, y: 31, width: 8, height: 27 },
-    },
-    {
-      toothNumber: 14,
-      status: "decay",
-      condition: "Sâu răng nhẹ, cần trám",
-      position: { x: 32, y: 33, width: 8, height: 26 },
-      treatmentRecommendation: {
-        method: "Trám răng bằng composite",
-        estimatedTime: "1 giờ",
-        notes: "Kiểm tra định kỳ sau 6 tháng.",
-      },
-    },
-    {
-      toothNumber: 15,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 42, y: 34, width: 8, height: 25 },
-    },
-    {
-      toothNumber: 17,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 52, y: 36, width: 8, height: 24 },
-    },
-    {
-      toothNumber: 21,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 62, y: 29, width: 8, height: 28 },
-    },
-    {
-      toothNumber: 23,
-      status: "decay",
-      condition: "Sâu răng, cần trám composite",
-      position: { x: 72, y: 31, width: 8, height: 27 },
-      treatmentRecommendation: {
-        method: "Trám răng bằng composite",
-        estimatedTime: "1 giờ",
-        notes: "Tránh nhai thức ăn cứng trong 24 giờ sau trám.",
-      },
-    },
-    {
-      toothNumber: 25,
-      status: "treatment_needed",
-      condition: "Hư hỏng nặng, cần điều trị tủy",
-      position: { x: 82, y: 33, width: 8, height: 26 },
-      treatmentRecommendation: {
-        method: "Điều trị tủy và bọc sứ",
-        estimatedTime: "2-3 buổi, mỗi buổi 1.5 giờ",
-        notes: "Cần chụp X-quang kiểm tra sau điều trị.",
-      },
-    },
-    {
-      toothNumber: 27,
-      status: "decay",
-      condition: "Sâu răng nhẹ, cần trám",
-      position: { x: 92, y: 35, width: 8, height: 25 },
-      treatmentRecommendation: {
-        method: "Trám răng bằng composite",
-        estimatedTime: "1 giờ",
-        notes: "Kiểm tra định kỳ sau 6 tháng.",
-      },
-    },
-    {
-      toothNumber: 28,
-      status: "healthy",
-      condition: "Khỏe mạnh",
-      position: { x: 102, y: 37, width: 8, height: 24 },
-    },
-  ],
-};
-
-// Mapping from input image file names to analysis data and patient info
-const dataMapping: Record<
-  string,
-  { analysis: XrayAnalysis; patientName: string; patientId: string }
-> = {
-  "hiar-logo.png": {
-    analysis: xrayAnalysis1,
-    patientName: "Nguyễn Văn A",
-    patientId: "P012345",
-  },
-  "input_xray.jpg": {
-    analysis: xrayAnalysis2,
-    patientName: "Trần Thị B",
-    patientId: "P012346",
-  },
-  "image3.jpg": {
-    analysis: xrayAnalysis3,
-    patientName: "Lê Văn C",
-    patientId: "P012347",
-  },
-};
-
-// Default analysis if no mapping found
-const defaultAnalysis: XrayAnalysis = xrayAnalysis1;
-const defaultPatientName = "Nguyễn Văn A";
-const defaultPatientId = "P012345";
-
-interface XrayAnalysisProps {
-  analysis: XrayAnalysis;
-  inputSrc: string;
-  outputSrc: string;
-}
-
-export function XrayAnalysisComponent({
-  analysis,
-  inputSrc,
-  outputSrc,
-}: XrayAnalysisProps) {
-  const [tooltip, setTooltip] = useState<{
-    show: boolean;
-    content: string;
-    x: number;
-    y: number;
-  }>({
-    show: false,
-    content: "",
-    x: 0,
-    y: 0,
-  });
-
-  const getToothColor = (status: string) => {
-    switch (status) {
-      case "healthy":
-        return "border-green-400 bg-green-400/20";
-      case "decay":
-        return "border-yellow-400 bg-yellow-400/20";
-      case "treatment_needed":
-        return "border-red-400 bg-red-400/20";
-      default:
-        return "border-gray-400 bg-gray-400/20";
-    }
+// Interface for X-ray analysis data - new structure with filename as keys
+interface XrayAnalysisData {
+  [filename: string]: {
+    summary: {
+      total_teeth: number;
+      healthy_teeth: number;
+      decayed_teeth: number;
+      treatment_needed: number;
+      overall_health: number;
+    };
+    detailed_analysis: Array<{
+      tooth_number: number;
+      status: "healthy" | "decay" | "treatment_needed";
+      condition: string;
+      position: { x: number; y: number; width: number; height: number };
+      confidence: number;
+      treatment?: {
+        priority: "low" | "medium" | "high" | "urgent";
+        method: string;
+        estimated_time: string;
+        cost_estimate: string;
+        notes: string;
+      };
+    }>;
+    ai_insights: {
+      overall_assessment: string;
+      main_concerns: string[];
+      recommendations: string[];
+    };
   };
-
-  const handleToothHover = (tooth: ToothAnalysis, event: React.MouseEvent) => {
-    const rect = event.currentTarget.getBoundingClientRect();
-    setTooltip({
-      show: true,
-      content: `Răng số ${tooth.toothNumber} | Tình trạng: ${tooth.condition}`,
-      x: rect.left + rect.width / 2,
-      y: rect.top - 10,
-    });
-  };
-
-  const handleToothLeave = () => {
-    setTooltip((prev) => ({ ...prev, show: false }));
-  };
-
-  return (
-    <div>
-      <div className="text-center mb-6">
-        <h3 className="text-lg font-semibold text-clinical-900">
-          Phân tích X-quang Panoramic
-        </h3>
-        <p className="text-clinical-600 mt-2">
-          AI đã phát hiện và phân loại tình trạng các răng
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative bg-clinical-900 rounded-lg overflow-hidden p-4 mb-8">
-        <div>
-          <p className="text-center text-white font-semibold mb-2">
-            Input Image
-          </p>
-          <img
-            src={inputSrc}
-            alt="Input Panoramic X-ray"
-            className="w-full h-auto opacity-90"
-            onError={(e) => {
-              console.error("Error loading input image:", inputSrc);
-              e.currentTarget.src = defaultImage;
-            }}
-          />
-        </div>
-        <div>
-          <p className="text-center text-white font-semibold mb-2">
-            Output Image
-          </p>
-          <img
-            src={outputSrc}
-            alt="Output Panoramic X-ray"
-            className="w-full h-auto opacity-90"
-            onError={(e) => {
-              console.error("Error loading output image:", outputSrc);
-              e.currentTarget.src = defaultImage;
-            }}
-          />
-        </div>
-
-        {tooltip.show && (
-          <div
-            className="fixed bg-clinical-900 text-white px-3 py-2 rounded-lg text-sm font-medium pointer-events-none z-10"
-            style={{
-              left: tooltip.x - 100,
-              top: tooltip.y - 40,
-              transform: "translateX(-50%)",
-            }}
-          >
-            {tooltip.content}
-            <div className="absolute top-full left-1/2 transform -translate-x-1/2 border-4 border-transparent border-t-clinical-900"></div>
-          </div>
-        )}
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="bg-green-50 border-green-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-green-900">Răng khỏe mạnh</h4>
-                <p className="text-2xl font-bold text-green-900 mt-1">
-                  {analysis.healthyTeeth}
-                </p>
-              </div>
-              <Heart className="text-green-500" size={32} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-yellow-50 border-yellow-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-yellow-900">Răng sâu</h4>
-                <p className="text-2xl font-bold text-yellow-900 mt-1">
-                  {analysis.decayedTeeth}
-                </p>
-              </div>
-              <AlertTriangle className="text-yellow-500" size={32} />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-red-50 border-red-200">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h4 className="font-semibold text-red-900">Cần điều trị</h4>
-                <p className="text-2xl font-bold text-red-900 mt-1">
-                  {analysis.treatmentNeeded}
-                </p>
-              </div>
-              <AlertCircle className="text-red-500" size={32} />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
-  );
 }
 
 export default function XrayAnalysisPage() {
-  const [analysis, setAnalysis] = useState<XrayAnalysis>(defaultAnalysis);
-  const [patientName, setPatientName] = useState<string>(defaultPatientName);
-  const [patientId, setPatientId] = useState<string>(defaultPatientId);
-  const [inputSrc, setInputSrc] = useState<string>(defaultImage);
-  const [outputSrc, setOutputSrc] = useState<string>(defaultImage);
-  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
-  const [selectedTooth, setSelectedTooth] = useState<ToothAnalysis | null>(null);
+  const [location] = useLocation();
+  const [analysisData, setAnalysisData] = useState<XrayAnalysisData | null>(null);
+  const [inputImages, setInputImages] = useState<{
+    general_xray?: string;
+  }>({});
+  const [outputImages, setOutputImages] = useState<{
+    general_xray?: string;
+  }>({});
+  const [currentFolder, setCurrentFolder] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [selectedTooth, setSelectedTooth] = useState<any>(null);
 
-  const totalTeeth =
-    analysis.healthyTeeth + analysis.decayedTeeth + analysis.treatmentNeeded;
-  const healthPercentage = (analysis.healthyTeeth / totalTeeth) * 100;
+  // Demo patient data for presentation
+  const patientData = {
+    name: currentFolder || "DEMO PATIENT",
+    id: "P2025-001",
+    date: new Date().toLocaleDateString("en-GB"),
+    age: 28,
+    gender: "Demo Case"
+  };
 
-  // Handle input image upload
-  const handleInputImageUpload = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (!file) {
-      setUploadStatus("No input file selected.");
-      return;
+  // Parse query parameters to get input images and folder
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const general_xray = urlParams.get('general_xray');
+    const folder = urlParams.get('folder');
+    
+    if (general_xray) {
+      setInputImages({
+        general_xray: general_xray ? decodeURIComponent(general_xray) : undefined,
+      });
     }
-    if (!file.type.startsWith("image/")) {
-      setUploadStatus("Please upload a valid input image file.");
-      return;
+    
+    if (folder) {
+      setCurrentFolder(folder);
     }
-    const imageUrl = URL.createObjectURL(file);
-    setInputSrc(imageUrl);
+  }, [location]);
 
-    // Look up the corresponding output image based on the input file name
-    const fileName = file.name.toLowerCase();
-    const mappedOutput = imageMapping[fileName] || defaultImage;
-    setOutputSrc(mappedOutput);
+  // Load X-ray analysis data from JSON and map output images
+  useEffect(() => {
+    const loadAnalysisData = async () => {
+      try {
+        const response = await fetch('/xray-analysis-output.json');
+        const data: XrayAnalysisData = await response.json();
+        setAnalysisData(data);
 
-    // Look up the corresponding analysis data and patient info based on the input file name
-    const mappedData = dataMapping[fileName];
-    if (mappedData) {
-      setAnalysis(mappedData.analysis);
-      setPatientName(mappedData.patientName);
-      setPatientId(mappedData.patientId);
-    } else {
-      setAnalysis(defaultAnalysis);
-      setPatientName(defaultPatientName);
-      setPatientId(defaultPatientId);
+        // Map output images based on current folder or available data in JSON
+        let xrayOutputPath: string | undefined;
+        
+        if (currentFolder) {
+          // Try to find files matching the folder name pattern
+          const folderBasedXray = Object.keys(data).find(key => 
+            key.includes(currentFolder) && key.includes('pano')
+          );
+          
+          if (folderBasedXray) {
+            xrayOutputPath = `/assets/outputs/${folderBasedXray}`;
+            console.log(`🎯 Using folder-based mapping: ${currentFolder}`, { folderBasedXray });
+          } else {
+            // Fallback: construct paths assuming direct filename mapping
+            xrayOutputPath = `/assets/outputs/${currentFolder}pano.jpg`;
+            console.log(`🎯 Using constructed paths for folder: ${currentFolder}`);
+          }
+        } else {
+          // Fallback: Find first available pano data in JSON
+          const xrayFile = Object.keys(data).find(key => key.includes('pano'));
+          
+          xrayOutputPath = xrayFile ? `/assets/outputs/${xrayFile}` : undefined;
+          console.log(`🎯 Using JSON-based mapping`, { xrayFile });
+        }
+        
+        setOutputImages({
+          general_xray: xrayOutputPath
+        });
+        
+        console.log(`🎯 Final output images:`, {
+          general_xray: xrayOutputPath
+        });
+      } catch (error) {
+        console.error('Failed to load X-ray analysis data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadAnalysisData();
+  }, [currentFolder]);
+
+  // Get current case data based on available files
+  const getCurrentCaseData = () => {
+    if (!analysisData) {
+      console.log(`📊 No analysis data available`);
+      return null;
     }
+    
+    let xrayFile: string | undefined;
+    
+    console.log(`📊 getCurrentCaseData called with currentFolder:`, currentFolder);
+    console.log(`📊 Available keys in analysisData:`, Object.keys(analysisData));
+    
+    if (currentFolder) {
+      // Try to find data by folder name first
+      xrayFile = Object.keys(analysisData).find(key => 
+        key.toLowerCase().includes(currentFolder.toLowerCase()) && key.toLowerCase().includes('pano')
+      );
+      console.log(`📊 Folder-based search for "${currentFolder}":`, xrayFile);
+    }
+    
+    // Fallback: Find any pano data (prefer DaoThiDiemTrang over NgocHieu for demo)
+    if (!xrayFile) {
+      // Try DaoThiDiemTrang first for demo
+      xrayFile = Object.keys(analysisData).find(key => 
+        key.includes('DaoThiDiemTrang') && key.includes('pano')
+      );
+      
+      // If not found, get any pano data
+      if (!xrayFile) {
+        xrayFile = Object.keys(analysisData).find(key => key.includes('pano'));
+      }
+      console.log(`📊 Fallback search found:`, xrayFile);
+    }
+    
+    const xrayData = xrayFile ? analysisData[xrayFile] : null;
+    
+    console.log(`📊 Final selection - Using data file:`, { xrayFile, hasData: !!xrayData });
+    
+    return xrayData;
+  };
 
-    setUploadStatus(
-      `Input image uploaded: ${
-        file.name
-      }, Output image set to: ${mappedOutput}, Data set for patient: ${
-        mappedData?.patientName || defaultPatientName
-      }`
+  const caseData = getCurrentCaseData();
+  
+  // Debug log for caseData
+  React.useEffect(() => {
+    if (caseData) {
+      console.log(`📊 CaseData updated:`, {
+        totalTeeth: caseData.summary.total_teeth,
+        healthyTeeth: caseData.summary.healthy_teeth,
+        currentFolder
+      });
+    }
+  }, [caseData, currentFolder]);
+
+  // Helper function to get status badge
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "healthy":
+        return <Badge className="bg-green-100 text-green-800">Khỏe mạnh</Badge>;
+      case "decay":
+        return <Badge className="bg-yellow-100 text-yellow-800">Sâu răng</Badge>;
+      case "treatment_needed":
+        return <Badge className="bg-red-100 text-red-800">Cần điều trị</Badge>;
+      default:
+        return <Badge className="bg-gray-100 text-gray-800">Không xác định</Badge>;
+    }
+  };
+
+  const getPriorityBadge = (priority: string) => {
+    switch (priority) {
+      case "urgent":
+        return <Badge className="bg-red-600 text-white animate-pulse">KHẨN CẤP</Badge>;
+      case "high":
+        return <Badge className="bg-red-100 text-red-800">Cao</Badge>;
+      case "medium":
+        return <Badge className="bg-yellow-100 text-yellow-800">Trung bình</Badge>;
+      case "low":
+        return <Badge className="bg-blue-100 text-blue-800">Thấp</Badge>;
+      default:
+        return <Badge className="bg-gray-100 text-gray-800">-</Badge>;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25 flex items-center justify-center">
+        <div className="text-center">
+          <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
+          <p className="text-gray-600">Đang tải dữ liệu phân tích X-quang...</p>
+        </div>
+      </div>
     );
-    console.log(
-      `Input file: ${file.name}, URL: ${imageUrl}, Output: ${mappedOutput}`
-    );
-    return () => URL.revokeObjectURL(imageUrl);
-  };
-
-  // Handle opening treatment recommendation modal
-  const handleShowTreatment = (tooth: ToothAnalysis) => {
-    setSelectedTooth(tooth);
-  };
-
-  // Handle closing treatment recommendation modal
-  const handleCloseTreatment = () => {
-    setSelectedTooth(null);
-  };
+  }
 
   return (
-    <div className="min-h-screen bg-clinical-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-clinical-200 sticky top-0 z-50">
+    <div className="min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25">
+      {/* Medical Header */}
+      <header className="bg-white border-b-2 border-blue-100 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-3">
-              <Link href="/">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-clinical-600 hover:text-primary"
-                >
-                  <ArrowLeft size={20} className="mr-2" />
-                  Quay lại
-                </Button>
-              </Link>
-              <div className="w-10 h-10 bg-clinical-800 rounded-lg flex items-center justify-center">
-                <Radiation className="text-white" size={20} />
+          <div className="flex justify-between items-center h-24">
+            <div className="flex items-center space-x-6">
+              <Button 
+                onClick={() => window.history.back()}
+                variant="ghost" 
+                className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+              >
+                <ArrowLeft size={20} className="mr-2" />
+                Quay lại
+              </Button>
+              <div className="flex items-center space-x-4">
+                <div className="relative">
+                  <img
+                    src="/assets/leetray_logo.png"
+                    alt="LeeTray Logo"
+                    className="w-14 h-14 object-contain"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full border-2 border-white"></div>
+                </div>
+                <div className="h-8 w-px bg-gray-300"></div>
+                <div className="relative">
+                  <img
+                    src="/assets/hiai-logo.png"
+                    alt="HiAI Logo"
+                    className="w-14 h-14 object-contain"
+                  />
+                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-600 rounded-full border-2 border-white"></div>
+                </div>
               </div>
-              <div>
-                <h1 className="text-xl font-semibold text-clinical-900">
-                  Phân tích X-quang
+              <div className="border-l-2 border-blue-200 pl-6">
+                <h1 className="text-xl font-bold text-gray-800">
+                  Phân tích X-quang AI
                 </h1>
-                <p className="text-xs text-clinical-500">
-                  Phát hiện và phân loại tình trạng răng
+                <p className="text-sm text-gray-600 font-medium">
+                  Panoramic Analysis - Phân tích X-quang toàn cảnh
                 </p>
               </div>
             </div>
-            <Link href="/chat">
-              <Button className="bg-primary hover:bg-primary/90 text-white">
-                <MessageCircle size={16} className="mr-2" />
-                Tư vấn AI
-              </Button>
-            </Link>
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                <span className="text-white text-sm font-semibold">Dr</span>
+              </div>
+              <div className="text-sm">
+                <p className="font-medium text-gray-800">Dr. Smith</p>
+                <p className="text-gray-500">Radiology</p>
+              </div>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Patient Info Bar */}
-      <section className="bg-white border-b border-clinical-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
-              <div className="text-sm">
-                <span className="text-clinical-500">Bệnh nhân:</span>
-                <span className="text-clinical-900 font-semibold ml-2">
-                  {patientName}
-                </span>
-              </div>
-              <div className="text-sm">
-                <span className="text-clinical-500">ID:</span>
-                <span className="text-clinical-900 font-mono ml-2">
-                  {patientId}
-                </span>
-              </div>
-              <div className="text-sm">
-                <span className="text-clinical-500">Ngày chụp:</span>
-                <span className="text-clinical-900 ml-2">21/07/2025</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-3">
-              <div className="text-right text-sm">
-                <p className="text-clinical-500">Tình trạng răng</p>
-                <p className="text-lg font-bold text-clinical-900">
-                  {healthPercentage.toFixed(1)}% khỏe mạnh
-                </p>
-              </div>
-              <Link href="/chat">
-                <Button variant="outline" size="sm">
-                  <MessageCircle size={14} className="mr-2" />
-                  Thảo luận kết quả
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Quick Stats */}
-      <section className="bg-clinical-50 border-b border-clinical-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <Card className="bg-white border-clinical-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-clinical-500">Tổng số răng</p>
-                    <p className="text-2xl font-bold text-clinical-900">
-                      {totalTeeth}
-                    </p>
-                  </div>
-                  <div className="w-12 h-12 bg-clinical-100 rounded-lg flex items-center justify-center">
-                    <svg
-                      className="text-clinical-600"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                    >
-                      <path d="M12 2C13.1 2 14 2.9 14 4V8C14 9.1 13.1 10 12 10S10 9.1 10 8V4C10 2.9 10.9 2 12 2M21 9V7L15 1H5C3.89 1 3 1.89 3 3V21C3 22.11 3.89 23 5 23H19C20.11 23 21 22.11 21 21V9M19 9H14V4H19V9Z" />
-                    </svg>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-green-50 border-green-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-green-600">Răng khỏe mạnh</p>
-                    <p className="text-2xl font-bold text-green-700">
-                      {analysis.healthyTeeth}
-                    </p>
-                  </div>
-                  <Heart className="text-green-500" size={24} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-yellow-50 border-yellow-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-yellow-600">Răng sâu</p>
-                    <p className="text-2xl font-bold text-yellow-700">
-                      {analysis.decayedTeeth}
-                    </p>
-                  </div>
-                  <AlertTriangle className="text-yellow-500" size={24} />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-red-50 border-red-200">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-red-600">Cần điều trị</p>
-                    <p className="text-2xl font-bold text-red-700">
-                      {analysis.treatmentNeeded}
-                    </p>
-                  </div>
-                  <AlertCircle className="text-red-500" size={24} />
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Analysis Content */}
-      <section className="bg-clinical-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Demo Notice */}
-          <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Patient Info Card */}
+        <Card className="mb-8 border border-gray-200 shadow-lg">
+          <div className="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-8 py-6">
             <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-3">
-                <div className="w-8 h-8 bg-gray-500 rounded-full flex items-center justify-center">
-                  <span className="text-white text-sm">ℹ️</span>
+              <div className="flex items-center space-x-6">
+                <div className="relative">
+                  <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+                    <User className="w-8 h-8 text-white" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 w-5 h-5 bg-emerald-500 border-2 border-white rounded-full flex items-center justify-center">
+                    <div className="w-2 h-2 bg-white rounded-full"></div>
+                  </div>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900">
-                    Demo - Tính năng đang phát triển
-                  </h4>
-                  <p className="text-sm text-gray-700">
-                    Đây là demo giao diện cho tính năng phân tích X-quang AI.
-                    Chúng tôi sẽ phát triển tính năng này trong tương lai gần.
+                  <div className="flex items-center space-x-3 mb-2">
+                    <h2 className="text-2xl font-bold text-white">{patientData.name}</h2>
+                    <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full">
+                      DEMO
+                    </span>
+                  </div>
+                  <p className="text-blue-100 text-lg font-medium">
+                    ID: {patientData.id} • {patientData.gender} • Age: {patientData.age}
                   </p>
                 </div>
               </div>
-              <div>
-                <label
-                  htmlFor="input-upload-image"
-                  className="block text-sm font-medium text-gray-700 sr-only"
-                >
-                  Tải ảnh Input
-                </label>
-                <input
-                  type="file"
-                  id="input-upload-image"
-                  accept="image/*"
-                  onChange={handleInputImageUpload}
-                  className="mt-1 block text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                />
+              <div className="text-right">
+                <div className="text-blue-100 text-sm">Ngày chụp X-quang</div>
+                <div className="text-white font-semibold text-lg">{patientData.date}</div>
+                <div className="text-blue-200 text-sm">
+                  {new Date().toLocaleTimeString("en-GB", {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  })}
+                </div>
               </div>
             </div>
-           
           </div>
+        </Card>
 
-          <Card className="bg-white shadow-sm border-clinical-200">
-            <CardHeader className="border-b border-clinical-200 bg-clinical-800 text-white">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="text-xl font-semibold">
-                    Phân tích Chi tiết (Demo)
-                  </h3>
-                  <p className="text-clinical-200 mt-1">
-                    Ví dụ minh họa kết quả phân tích X-quang
-                  </p>
+        {/* Analysis Overview Cards */}
+        {caseData && (
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <Card className="bg-white border border-gray-200 shadow-md">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-gray-600 font-medium">Tổng số răng</p>
+                    <p className="text-3xl font-bold text-gray-800">{caseData.summary.total_teeth}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                    <Target className="w-6 h-6 text-blue-600" />
+                  </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm text-clinical-300">Độ chính xác AI</p>
-                  <p className="text-2xl font-bold text-white">94.2%</p>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-green-50 border-green-200 shadow-md">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-green-700 font-medium">Răng khỏe mạnh</p>
+                    <p className="text-3xl font-bold text-green-800">{caseData.summary.healthy_teeth}</p>
+                  </div>
+                  <Heart className="w-8 h-8 text-green-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-yellow-50 border-yellow-200 shadow-md">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-yellow-700 font-medium">Răng sâu</p>
+                    <p className="text-3xl font-bold text-yellow-800">{caseData.summary.decayed_teeth}</p>
+                  </div>
+                  <AlertTriangle className="w-8 h-8 text-yellow-600" />
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="bg-red-50 border-red-200 shadow-md">
+              <CardContent className="p-6">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-red-700 font-medium">Cần điều trị</p>
+                    <p className="text-3xl font-bold text-red-800">{caseData.summary.treatment_needed}</p>
+                  </div>
+                  <AlertCircle className="w-8 h-8 text-red-600" />
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Main Analysis Content */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
+          {/* X-ray Image Display - 2/3 width */}
+          <div className="xl:col-span-2">
+            <Card className="shadow-lg border border-gray-200">
+              <div className="bg-blue-900 text-white px-6 py-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-lg">PANORAMIC X-RAY ANALYSIS</h3>
+                  <div className="flex items-center space-x-2">
+                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                      <Camera className="w-4 h-4 mr-1" />
+                      Adjust
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                      <Settings className="w-4 h-4 mr-1" />
+                      Settings
+                    </Button>
+                  </div>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="p-8">
-              <XrayAnalysisComponent
-                analysis={analysis}
-                inputSrc={inputSrc}
-                outputSrc={outputSrc}
-              />
-            </CardContent>
-          </Card>
 
-          {/* Treatment Priority */}
-          <Card className="mt-8 border-red-200 bg-red-50">
-            <CardHeader className="border-b border-red-200">
-              <div className="flex items-center space-x-3">
-                <AlertCircle className="text-red-500" size={24} />
-                <div>
-                  <h3 className="text-lg font-semibold text-red-900">
-                    Ưu tiên Điều trị
-                  </h3>
-                  <p className="text-red-700">Các răng cần được điều trị sớm</p>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {analysis.teeth
-                  .filter((tooth) => tooth.status !== "healthy")
-                  .map((tooth) => (
-                    <div
-                      key={tooth.toothNumber}
-                      className={`flex items-center justify-between p-4 bg-white rounded-lg border ${
-                        tooth.status === "treatment_needed"
-                          ? "border-red-200"
-                          : "border-yellow-200"
-                      }`}
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                            tooth.status === "treatment_needed"
-                              ? "bg-red-500"
-                              : "bg-yellow-500"
-                          }`}
-                        >
-                          {tooth.toothNumber}
-                        </div>
-                        <div>
-                          <h4
-                            className={`font-semibold ${
-                              tooth.status === "treatment_needed"
-                                ? "text-red-900"
-                                : "text-yellow-900"
-                            }`}
-                          >
-                            Răng số {tooth.toothNumber}
-                          </h4>
-                          <p
-                            className={`text-sm ${
-                              tooth.status === "treatment_needed"
-                                ? "text-red-700"
-                                : "text-yellow-700"
-                            }`}
-                          >
-                            {tooth.condition}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
-                            tooth.status === "treatment_needed"
-                              ? "bg-red-100 text-red-700"
-                              : "bg-yellow-100 text-yellow-700"
-                          }`}
-                        >
-                          {tooth.status === "treatment_needed"
-                            ? "Khẩn cấp"
-                            : "Trung bình"}
-                        </span>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className={`border-${
-                            tooth.status === "treatment_needed"
-                              ? "red"
-                              : "yellow"
-                          }-300 text-${
-                            tooth.status === "treatment_needed"
-                              ? "red"
-                              : "yellow"
-                          }-700 hover:bg-${
-                            tooth.status === "treatment_needed" ? "red" : "yellow"
-                          }-50`}
-                          onClick={() => handleShowTreatment(tooth)}
-                        >
-                          Tư vấn điều trị
-                        </Button>
+              {/* Image Display Area */}
+              <div className="bg-black p-6">
+                <div className="relative bg-gray-900 rounded-lg overflow-hidden">
+                  {outputImages.general_xray ? (
+                    <img
+                      src={outputImages.general_xray}
+                      alt="X-ray Analysis"
+                      className="w-full h-96 object-contain bg-black"
+                    />
+                  ) : inputImages.general_xray ? (
+                    <img
+                      src={inputImages.general_xray}
+                      alt="X-ray Input"
+                      className="w-full h-96 object-contain bg-black"
+                    />
+                  ) : (
+                    <div className="w-full h-96 flex items-center justify-center text-gray-400 bg-black">
+                      <div className="text-center">
+                        <Radiation className="w-16 h-16 mx-auto mb-4 opacity-50" />
+                        <p>Không có ảnh X-quang để hiển thị</p>
                       </div>
                     </div>
+                  )}
+                </div>
+
+                {/* Control Panel */}
+                <div className="mt-4 flex flex-col space-y-2">
+                  <div className="flex items-center justify-center space-x-4">
+                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                      <RotateCw className="w-4 h-4 mr-1" />
+                      Rotate
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                      <Settings className="w-4 h-4 mr-1" />
+                      Contrast
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                      <Settings className="w-4 h-4 mr-1" />
+                      Brightness
+                    </Button>
+                  </div>
+                  <div className="flex items-center justify-center space-x-4">
+                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                      <ZoomIn className="w-4 h-4 mr-1" />
+                      Zoom in
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                      <ZoomOut className="w-4 h-4 mr-1" />
+                      Zoom out
+                    </Button>
+                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                      <Save className="w-4 h-4 mr-1" />
+                      Save analysis
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Analysis Results Panel - 1/3 width */}
+          <div className="space-y-6">
+            {/* AI Insights */}
+            {caseData && (
+              <Card className="shadow-lg border border-gray-200">
+                <CardHeader className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white">
+                  <CardTitle className="flex items-center">
+                    <Scan className="w-5 h-5 mr-2" />
+                    AI INSIGHTS
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="space-y-4">
+                    <div>
+                      <h4 className="font-semibold text-gray-800 mb-2">Đánh giá tổng thể</h4>
+                      <p className="text-sm text-gray-600">{caseData.ai_insights.overall_assessment}</p>
+                    </div>
+                    
+                    <div>
+                      <h4 className="font-semibold text-gray-800 mb-2">Vấn đề chính</h4>
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        {caseData.ai_insights.main_concerns.map((concern, index) => (
+                          <li key={index} className="flex items-start">
+                            <AlertTriangle className="w-4 h-4 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
+                            {concern}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+
+                    <div>
+                      <h4 className="font-semibold text-gray-800 mb-2">Khuyến nghị</h4>
+                      <ul className="text-sm text-gray-600 space-y-1">
+                        {caseData.ai_insights.recommendations.map((recommendation, index) => (
+                          <li key={index} className="flex items-start">
+                            <div className="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0">•</div>
+                            {recommendation}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Health Progress */}
+            {caseData && (
+              <Card className="shadow-lg border border-gray-200">
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Activity className="w-5 h-5 mr-2 text-green-600" />
+                    Tình trạng sức khỏe răng miệng
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-6">
+                  <div className="text-center mb-4">
+                    <div className="text-3xl font-bold text-green-600">
+                      {caseData.summary.overall_health.toFixed(1)}%
+                    </div>
+                    <p className="text-sm text-gray-600">Tổng thể</p>
+                  </div>
+                  <Progress 
+                    value={caseData.summary.overall_health} 
+                    className="h-3 mb-4"
+                  />
+                  <div className="space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Răng khỏe mạnh:</span>
+                      <span className="font-semibold text-green-600">
+                        {((caseData.summary.healthy_teeth / caseData.summary.total_teeth) * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Cần chú ý:</span>
+                      <span className="font-semibold text-yellow-600">
+                        {(((caseData.summary.decayed_teeth + caseData.summary.treatment_needed) / caseData.summary.total_teeth) * 100).toFixed(1)}%
+                      </span>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+
+        {/* Detailed Tooth Analysis */}
+        {caseData && (
+          <Card className="mt-8 shadow-lg border border-gray-200">
+            <CardHeader className="bg-gradient-to-r from-gray-700 to-gray-800 text-white">
+              <CardTitle className="flex items-center">
+                <FileText className="w-5 h-5 mr-2" />
+                CHI TIẾT PHÂN TÍCH TỪNG RĂNG
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {caseData.detailed_analysis
+                  .filter(tooth => tooth.status !== "healthy")
+                  .map((tooth) => (
+                    <Card 
+                      key={tooth.tooth_number}
+                      className={`cursor-pointer transition-all hover:shadow-md ${
+                        tooth.status === "treatment_needed" 
+                          ? "border-red-200 bg-red-50" 
+                          : "border-yellow-200 bg-yellow-50"
+                      }`}
+                      onClick={() => setSelectedTooth(tooth)}
+                    >
+                      <CardContent className="p-4">
+                        <div className="flex items-center justify-between mb-3">
+                          <div 
+                            className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
+                              tooth.status === "treatment_needed" ? "bg-red-500" : "bg-yellow-500"
+                            }`}
+                          >
+                            {tooth.tooth_number}
+                          </div>
+                          {getStatusBadge(tooth.status)}
+                        </div>
+                        
+                        <h4 className="font-semibold text-gray-800 mb-2">
+                          Răng số {tooth.tooth_number}
+                        </h4>
+                        <p className="text-sm text-gray-600 mb-3">{tooth.condition}</p>
+                        
+                        {tooth.treatment && (
+                          <div className="space-y-2">
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-gray-500">Ưu tiên:</span>
+                              {getPriorityBadge(tooth.treatment.priority)}
+                            </div>
+                            <div className="flex items-center text-xs text-gray-500">
+                              <Clock className="w-3 h-3 mr-1" />
+                              {tooth.treatment.estimated_time}
+                            </div>
+                          </div>
+                        )}
+                        
+                        <div className="mt-3 pt-3 border-t border-gray-200">
+                          <div className="flex justify-between items-center text-xs">
+                            <span className="text-gray-500">Độ tin cậy AI:</span>
+                            <span className="font-semibold text-blue-600">
+                              {(tooth.confidence * 100).toFixed(1)}%
+                            </span>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   ))}
               </div>
             </CardContent>
           </Card>
-        </div>
-      </section>
+        )}
+      </div>
 
-      {/* Treatment Recommendation Modal */}
+      {/* Treatment Detail Modal */}
       {selectedTooth && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full">
-            <div className="flex justify-between items-center mb-4">
-              <h3 className="text-lg font-semibold text-clinical-900">
-                Tư vấn Điều trị - Răng số {selectedTooth.toothNumber}
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl max-w-md w-full shadow-2xl">
+            <div className="flex justify-between items-center p-6 border-b border-gray-200">
+              <h3 className="text-xl font-bold text-gray-800">
+                Chi tiết điều trị - Răng số {selectedTooth.tooth_number}
               </h3>
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={handleCloseTreatment}
-                className="text-clinical-600"
+                onClick={() => setSelectedTooth(null)}
+                className="text-gray-500 hover:text-gray-700"
               >
                 <X size={20} />
               </Button>
             </div>
-            <div className="space-y-4">
+            
+            <div className="p-6 space-y-4">
               <div>
-                <p className="text-sm font-medium text-clinical-500">
-                  Tình trạng
-                </p>
-                <p className="text-clinical-900">{selectedTooth.condition}</p>
+                <h4 className="font-semibold text-gray-800 mb-2">Tình trạng</h4>
+                <p className="text-gray-600">{selectedTooth.condition}</p>
               </div>
-              <div>
-                <p className="text-sm font-medium text-clinical-500">
-                  Phương pháp điều trị
-                </p>
-                <p className="text-clinical-900">
-                  {selectedTooth.treatmentRecommendation?.method ||
-                    "Không có thông tin"}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-clinical-500">
-                  Thời gian dự kiến
-                </p>
-                <p className="text-clinical-900">
-                  {selectedTooth.treatmentRecommendation?.estimatedTime ||
-                    "Không có thông tin"}
-                </p>
-              </div>
-              <div>
-                <p className="text-sm font-medium text-clinical-500">Lưu ý</p>
-                <p className="text-clinical-900">
-                  {selectedTooth.treatmentRecommendation?.notes ||
-                    "Không có thông tin"}
-                </p>
-              </div>
+              
+              {selectedTooth.treatment && (
+                <>
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Phương pháp điều trị</h4>
+                    <p className="text-gray-600">{selectedTooth.treatment.method}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Thời gian dự kiến</h4>
+                    <p className="text-gray-600">{selectedTooth.treatment.estimated_time}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Chi phí ước tính</h4>
+                    <p className="text-gray-600 font-semibold text-green-600">{selectedTooth.treatment.cost_estimate}</p>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">Ghi chú</h4>
+                    <p className="text-gray-600">{selectedTooth.treatment.notes}</p>
+                  </div>
+                  
+                  <div className="pt-4 border-t border-gray-200">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-gray-500">Độ ưu tiên:</span>
+                      {getPriorityBadge(selectedTooth.treatment.priority)}
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
-            <div className="mt-6 flex justify-end">
+            
+            <div className="flex justify-end space-x-3 p-6 border-t border-gray-200">
               <Button
                 variant="outline"
-                onClick={handleCloseTreatment}
-                className="text-clinical-600 border-clinical-300"
+                onClick={() => setSelectedTooth(null)}
               >
                 Đóng
+              </Button>
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+                Lên lịch điều trị
               </Button>
             </div>
           </div>
