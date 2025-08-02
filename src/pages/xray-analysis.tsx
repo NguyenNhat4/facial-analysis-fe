@@ -232,15 +232,15 @@ export default function XrayAnalysisPage() {
   };
 
   if (loading) {
-    return (
+  return (
       <div className="min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Đang tải dữ liệu phân tích X-quang...</p>
-        </div>
       </div>
-    );
-  }
+    </div>
+  );
+}
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25">
@@ -249,14 +249,14 @@ export default function XrayAnalysisPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-24">
             <div className="flex items-center space-x-6">
-              <Button 
+                <Button
                 onClick={() => window.history.back()}
-                variant="ghost" 
+                  variant="ghost"
                 className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-              >
-                <ArrowLeft size={20} className="mr-2" />
-                Quay lại
-              </Button>
+                >
+                  <ArrowLeft size={20} className="mr-2" />
+                  Quay lại
+                </Button>
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   <img
@@ -303,8 +303,8 @@ export default function XrayAnalysisPage() {
         {/* Patient Info Card */}
         <Card className="mb-8 border border-gray-200 shadow-lg">
           <div className="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-8 py-6">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-6">
                 <div className="relative">
                   <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                     <User className="w-8 h-8 text-white" />
@@ -318,12 +318,12 @@ export default function XrayAnalysisPage() {
                     <h2 className="text-2xl font-bold text-white">{patientData.name}</h2>
                     <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full">
                       DEMO
-                    </span>
-                  </div>
+                </span>
+              </div>
                   <p className="text-blue-100 text-lg font-medium">
-                    ID: {patientData.id} • {patientData.gender} • Age: {patientData.age}
+                    ID: {patientData.id} • {patientData.gender}
                   </p>
-                </div>
+              </div>
               </div>
               <div className="text-right">
                 <div className="text-blue-100 text-sm">Ngày chụp X-quang</div>
@@ -333,7 +333,7 @@ export default function XrayAnalysisPage() {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
-                </div>
+            </div>
               </div>
             </div>
           </div>
@@ -400,7 +400,7 @@ export default function XrayAnalysisPage() {
           <div className="xl:col-span-2">
             <Card className="shadow-lg border border-gray-200">
               <div className="bg-blue-900 text-white px-6 py-4">
-                <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between">
                   <h3 className="font-bold text-lg">PANORAMIC X-RAY ANALYSIS</h3>
                   <div className="flex items-center space-x-2">
                     <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
@@ -411,7 +411,7 @@ export default function XrayAnalysisPage() {
                       <Settings className="w-4 h-4 mr-1" />
                       Settings
                     </Button>
-                  </div>
+                </div>
                 </div>
               </div>
 
@@ -435,8 +435,8 @@ export default function XrayAnalysisPage() {
                       <div className="text-center">
                         <Radiation className="w-16 h-16 mx-auto mb-4 opacity-50" />
                         <p>Không có ảnh X-quang để hiển thị</p>
-                      </div>
-                    </div>
+              </div>
+            </div>
                   )}
                 </div>
 
@@ -529,7 +529,7 @@ export default function XrayAnalysisPage() {
                     <Activity className="w-5 h-5 mr-2 text-green-600" />
                     Tình trạng sức khỏe răng miệng
                   </CardTitle>
-                </CardHeader>
+            </CardHeader>
                 <CardContent className="p-6">
                   <div className="text-center mb-4">
                     <div className="text-3xl font-bold text-green-600">
@@ -555,11 +555,11 @@ export default function XrayAnalysisPage() {
                       </span>
                     </div>
                   </div>
-                </CardContent>
-              </Card>
+            </CardContent>
+          </Card>
             )}
-          </div>
-        </div>
+                </div>
+              </div>
 
         {/* Detailed Tooth Analysis */}
         {caseData && (
@@ -578,7 +578,7 @@ export default function XrayAnalysisPage() {
                     <Card 
                       key={tooth.tooth_number}
                       className={`cursor-pointer transition-all hover:shadow-md ${
-                        tooth.status === "treatment_needed" 
+                        tooth.status === "treatment_needed"
                           ? "border-red-200 bg-red-50" 
                           : "border-yellow-200 bg-yellow-50"
                       }`}
@@ -586,8 +586,8 @@ export default function XrayAnalysisPage() {
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
-                          <div 
-                            className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
+                        <div
+                          className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
                               tooth.status === "treatment_needed" ? "bg-red-500" : "bg-yellow-500"
                             }`}
                           >
@@ -610,8 +610,8 @@ export default function XrayAnalysisPage() {
                             <div className="flex items-center text-xs text-gray-500">
                               <Clock className="w-3 h-3 mr-1" />
                               {tooth.treatment.estimated_time}
-                            </div>
-                          </div>
+                        </div>
+                      </div>
                         )}
                         
                         <div className="mt-3 pt-3 border-t border-gray-200">
@@ -619,9 +619,9 @@ export default function XrayAnalysisPage() {
                             <span className="text-gray-500">Độ tin cậy AI:</span>
                             <span className="font-semibold text-blue-600">
                               {(tooth.confidence * 100).toFixed(1)}%
-                            </span>
-                          </div>
-                        </div>
+                        </span>
+                      </div>
+                    </div>
                       </CardContent>
                     </Card>
                   ))}
@@ -629,7 +629,7 @@ export default function XrayAnalysisPage() {
             </CardContent>
           </Card>
         )}
-      </div>
+        </div>
 
       {/* Treatment Detail Modal */}
       {selectedTooth && (
@@ -662,17 +662,17 @@ export default function XrayAnalysisPage() {
                     <p className="text-gray-600">{selectedTooth.treatment.method}</p>
                   </div>
                   
-                  <div>
+              <div>
                     <h4 className="font-semibold text-gray-800 mb-2">Thời gian dự kiến</h4>
                     <p className="text-gray-600">{selectedTooth.treatment.estimated_time}</p>
-                  </div>
+              </div>
                   
-                  <div>
+              <div>
                     <h4 className="font-semibold text-gray-800 mb-2">Chi phí ước tính</h4>
                     <p className="text-gray-600 font-semibold text-green-600">{selectedTooth.treatment.cost_estimate}</p>
-                  </div>
+              </div>
                   
-                  <div>
+              <div>
                     <h4 className="font-semibold text-gray-800 mb-2">Ghi chú</h4>
                     <p className="text-gray-600">{selectedTooth.treatment.notes}</p>
                   </div>
@@ -682,7 +682,7 @@ export default function XrayAnalysisPage() {
                       <span className="text-sm text-gray-500">Độ ưu tiên:</span>
                       {getPriorityBadge(selectedTooth.treatment.priority)}
                     </div>
-                  </div>
+              </div>
                 </>
               )}
             </div>
