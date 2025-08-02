@@ -10,7 +10,7 @@ function Treatment() {
   const [loading, setLoading] = useState<boolean>(false);
   const [models, setModels] = useState<Model[]>([]);
 
-  const API_BASE_URL = "http://localhost:8001";
+  const API_BASE_URL = import.meta.env.VITE_DENTAL_TREATMENT_API_URL;
 
   useEffect(() => {
     fetchModels();
