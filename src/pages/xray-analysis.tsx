@@ -106,10 +106,37 @@ export default function XrayAnalysisPage() {
         const data: XrayAnalysisData = await response.json();
         setAnalysisData(data);
 
-        // Map output images based on current folder or available data in JSON
+        // Map output images based on input image filename
         let xrayOutputPath: string | undefined;
         
-        if (currentFolder) {
+        if (inputImages.general_xray) {
+          // Extract filename from the input image path
+          const inputPath = inputImages.general_xray;
+          const inputFilename = inputPath.split('/').pop()?.split('?')[0]; // Remove query params if any
+          
+          console.log(`🎯 Using JSON-based mapping`, { xrayFile: inputFilename });
+          
+          // Try to find exact match in analysis data
+          if (inputFilename && data[inputFilename]) {
+            xrayOutputPath = `/assets/outputs/${inputFilename}`;
+          } else if (currentFolder) {
+            // Try to find files matching the folder name pattern
+            const folderBasedXray = Object.keys(data).find(key => 
+              key.includes(currentFolder) && key.includes('pano')
+            );
+            
+            if (folderBasedXray) {
+              xrayOutputPath = `/assets/outputs/${folderBasedXray}`;
+            } else {
+              // Fallback: construct paths assuming direct filename mapping
+              xrayOutputPath = `/assets/outputs/${currentFolder}pano.jpg`;
+            }
+          } else {
+            // Final fallback: Find first available pano data in JSON
+            const xrayFile = Object.keys(data).find(key => key.includes('pano'));
+            xrayOutputPath = xrayFile ? `/assets/outputs/${xrayFile}` : undefined;
+          }
+        } else if (currentFolder) {
           // Try to find files matching the folder name pattern
           const folderBasedXray = Object.keys(data).find(key => 
             key.includes(currentFolder) && key.includes('pano')
@@ -117,27 +144,22 @@ export default function XrayAnalysisPage() {
           
           if (folderBasedXray) {
             xrayOutputPath = `/assets/outputs/${folderBasedXray}`;
-            console.log(`🎯 Using folder-based mapping: ${currentFolder}`, { folderBasedXray });
           } else {
             // Fallback: construct paths assuming direct filename mapping
             xrayOutputPath = `/assets/outputs/${currentFolder}pano.jpg`;
-            console.log(`🎯 Using constructed paths for folder: ${currentFolder}`);
           }
         } else {
           // Fallback: Find first available pano data in JSON
           const xrayFile = Object.keys(data).find(key => key.includes('pano'));
-          
           xrayOutputPath = xrayFile ? `/assets/outputs/${xrayFile}` : undefined;
-          console.log(`🎯 Using JSON-based mapping`, { xrayFile });
         }
+        
+        console.log(`🎯 Final output images:`, { general_xray: xrayOutputPath });
         
         setOutputImages({
           general_xray: xrayOutputPath
         });
-        
-        console.log(`🎯 Final output images:`, {
-          general_xray: xrayOutputPath
-        });
+     
       } catch (error) {
         console.error('Failed to load X-ray analysis data:', error);
       } finally {
@@ -146,40 +168,58 @@ export default function XrayAnalysisPage() {
     };
 
     loadAnalysisData();
-  }, [currentFolder]);
+  }, [currentFolder, inputImages.general_xray]);
 
   // Get current case data based on available files
   const getCurrentCaseData = () => {
+    console.log(`📊 getCurrentCaseData called with currentFolder:`, currentFolder);
     if (!analysisData) {
       console.log(`📊 No analysis data available`);
       return null;
     }
     
-    let xrayFile: string | undefined;
-    
-    console.log(`📊 getCurrentCaseData called with currentFolder:`, currentFolder);
     console.log(`📊 Available keys in analysisData:`, Object.keys(analysisData));
     
-    if (currentFolder) {
-      // Try to find data by folder name first
+    let xrayFile: string | undefined;
+    
+    // Priority 1: Try to match by input image filename
+    if (inputImages.general_xray) {
+      const inputPath = inputImages.general_xray;
+      const inputFilename = inputPath.split('/').pop()?.split('?')[0]; // Remove query params if any
+      
+      console.log(`📊 Checking input filename:`, inputFilename);
+      
+      if (inputFilename && analysisData[inputFilename]) {
+        xrayFile = inputFilename;
+        console.log(`📊 Found exact match for input file:`, xrayFile);
+      }
+    }
+    
+    // Priority 2: Try to find data by folder name if no direct match
+    if (!xrayFile && currentFolder) {
       xrayFile = Object.keys(analysisData).find(key => 
         key.toLowerCase().includes(currentFolder.toLowerCase()) && key.toLowerCase().includes('pano')
       );
-      console.log(`📊 Folder-based search for "${currentFolder}":`, xrayFile);
+      console.log(`📊 Folder-based search result:`, xrayFile);
     }
     
-    // Fallback: Find any pano data (prefer DaoThiDiemTrang over NgocHieu for demo)
+    // Priority 3: Final fallback - get any available pano data
     if (!xrayFile) {
-      // Try DaoThiDiemTrang first for demo
-      xrayFile = Object.keys(analysisData).find(key => 
-        key.includes('DaoThiDiemTrang') && key.includes('pano')
-      );
+      // Get the first available pano data (preferably match with output image if any)
+      if (outputImages.general_xray) {
+        const outputPath = outputImages.general_xray;
+        const outputFilename = outputPath.split('/').pop()?.split('?')[0];
+        if (outputFilename && analysisData[outputFilename]) {
+          xrayFile = outputFilename;
+          console.log(`📊 Matched by output filename:`, xrayFile);
+        }
+      }
       
-      // If not found, get any pano data
+      // If still no match, get any pano data
       if (!xrayFile) {
         xrayFile = Object.keys(analysisData).find(key => key.includes('pano'));
+        console.log(`📊 Final fallback search found:`, xrayFile);
       }
-      console.log(`📊 Fallback search found:`, xrayFile);
     }
     
     const xrayData = xrayFile ? analysisData[xrayFile] : null;
@@ -189,7 +229,9 @@ export default function XrayAnalysisPage() {
     return xrayData;
   };
 
-  const caseData = getCurrentCaseData();
+  const caseData = React.useMemo(() => {
+    return getCurrentCaseData();
+  }, [analysisData, currentFolder, inputImages.general_xray, outputImages.general_xray]);
   
   // Debug log for caseData
   React.useEffect(() => {

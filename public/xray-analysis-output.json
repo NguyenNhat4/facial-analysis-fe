@@ -1,134 +1,108 @@
 {
-  "NgocHieupano.jpg": {
+ "NgocHieupano.jpg": {
     "summary": {
-      "total_teeth": 28,
-      "healthy_teeth": 24,
-      "decayed_teeth": 3,
-      "treatment_needed": 1,
-      "overall_health": 85.7
+      "total_teeth": 31,
+      "healthy_teeth": 26,
+      "decayed_teeth": 2,
+      "treatment_needed": 3,
+      "overall_health": 83.9
     },
     "detailed_analysis": [
       {
-        "tooth_number": 11,
-        "status": "healthy",
-        "condition": "Khỏe mạnh",
-        "position": { "x": 45, "y": 25, "width": 8, "height": 25 },
-        "confidence": 0.96
-      },
-      {
-        "tooth_number": 12,
-        "status": "healthy", 
-        "condition": "Khỏe mạnh",
-        "position": { "x": 55, "y": 27, "width": 8, "height": 24 },
-        "confidence": 0.94
-      },
-      {
-        "tooth_number": 13,
+        "tooth_number": 17,
         "status": "decay",
-        "condition": "Sâu răng nhẹ - cần trám composite",
-        "position": { "x": 65, "y": 30, "width": 8, "height": 22 },
-        "confidence": 0.89,
+        "condition": "Nghi sâu kẽ, cần chụp phim cánh cắn và trám composite nếu sâu",
+        "position": { "x": 88, "y": 28, "width": 8, "height": 18 },
+        "confidence": 0.82,
         "treatment": {
           "priority": "medium",
-          "method": "Trám răng composite",
-          "estimated_time": "60 phút",
-          "cost_estimate": "800,000 - 1,200,000 VNĐ",
-          "notes": "Sâu răng ở mặt nhai, cần làm sạch và trám ngay để tránh lan rộng"
+          "method": "Trám răng composite sau khi xác định sâu",
+          "estimated_time": "20–30 phút",
+          "cost_estimate": "700,000 – 1,200,000 VNĐ",
+          "notes": "Điều trị sớm tránh viêm tủy"
         }
       },
       {
-        "tooth_number": 14,
-        "status": "healthy",
-        "condition": "Khỏe mạnh",
-        "position": { "x": 75, "y": 32, "width": 8, "height": 20 },
-        "confidence": 0.97
-      },
-      {
-        "tooth_number": 15,
+        "tooth_number": 37,
         "status": "decay",
-        "condition": "Sâu răng vừa - cần trám",
-        "position": { "x": 85, "y": 34, "width": 8, "height": 18 },
-        "confidence": 0.92,
+        "condition": "Có thể sâu/viêm do 38 chèn ép, sẽ đánh giá lại sau khi nhổ 38",
+        "position": { "x": 92, "y": 52, "width": 8, "height": 18 },
+        "confidence": 0.79,
         "treatment": {
           "priority": "medium",
-          "method": "Trám răng GIC hoặc composite",
-          "estimated_time": "75 phút",
-          "cost_estimate": "900,000 - 1,500,000 VNĐ",
-          "notes": "Sâu răng gần tủy, cần theo dõi sau trám"
+          "method": "Trám hoặc điều trị tủy tùy mức độ tổn thương",
+          "estimated_time": "30–60 phút",
+          "cost_estimate": "900,000 – 2,500,000 VNĐ",
+          "notes": "Theo dõi sát sau khi nhổ 38"
         }
       },
       {
-        "tooth_number": 16,
+        "tooth_number": 28,
         "status": "treatment_needed",
-        "condition": "Hư hỏng nặng - cần điều trị tủy",
-        "position": { "x": 95, "y": 36, "width": 8, "height": 16 },
-        "confidence": 0.91,
-        "treatment": {
-          "priority": "high",
-          "method": "Điều trị tủy + bọc sứ",
-          "estimated_time": "3 buổi x 90 phút",
-          "cost_estimate": "3,500,000 - 5,500,000 VNĐ",
-          "notes": "Viêm tủy không hồi phục, cần điều trị khẩn cấp"
-        }
-      },
-      {
-        "tooth_number": 21,
-        "status": "healthy",
-        "condition": "Khỏe mạnh",
-        "position": { "x": 105, "y": 25, "width": 8, "height": 25 },
-        "confidence": 0.95
-      },
-      {
-        "tooth_number": 22,
-        "status": "healthy",
-        "condition": "Khỏe mạnh",
-        "position": { "x": 115, "y": 27, "width": 8, "height": 24 },
-        "confidence": 0.97
-      },
-      {
-        "tooth_number": 23,
-        "status": "decay",
-        "condition": "Sâu răng nhẹ ở cổ răng",
-        "position": { "x": 125, "y": 30, "width": 8, "height": 22 },
-        "confidence": 0.88,
+        "condition": "Răng khôn hàm trên trái mọc lệch nhẹ, theo dõi định kỳ; nhổ nếu đau/viêm",
+        "position": { "x": 134, "y": 16, "width": 8, "height": 16 },
+        "confidence": 0.86,
         "treatment": {
           "priority": "low",
-          "method": "Trám composite",
-          "estimated_time": "45 phút",
-          "cost_estimate": "600,000 - 1,000,000 VNĐ",
-          "notes": "Sâu cổ răng do mảng bám, cần vệ sinh kỹ"
+          "method": "Nhổ tiểu phẫu (15–30 phút) khi có chỉ định",
+          "estimated_time": "15–30 phút",
+          "cost_estimate": "1,200,000 – 2,000,000 VNĐ",
+          "notes": "Hồi phục nhanh (3–5 ngày); vệ sinh vùng răng khôn kỹ"
         }
       },
       {
-        "tooth_number": 24,
-        "status": "healthy",
-        "condition": "Khỏe mạnh",
-        "position": { "x": 135, "y": 32, "width": 8, "height": 20 },
-        "confidence": 0.96
+        "tooth_number": 38,
+        "status": "treatment_needed",
+        "condition": "Răng khôn hàm dưới trái mọc ngang, chèn ép răng 37, gây nguy cơ sâu & viêm",
+        "position": { "x": 40, "y": 60, "width": 8, "height": 14 },
+        "confidence": 0.93,
+        "treatment": {
+          "priority": "high",
+          "method": "Nhổ tiểu phẫu răng khôn mọc lệch",
+          "estimated_time": "30–45 phút",
+          "cost_estimate": "2,000,000 – 3,500,000 VNĐ",
+          "notes": "Nên nhổ sớm; hồi phục 5–7 ngày; kiêng thức ăn cứng/nóng"
+        }
+      },
+      {
+        "tooth_number": 48,
+        "status": "treatment_needed",
+        "condition": "Răng khôn hàm dưới phải mọc lệch/ngầm, tiếp xúc răng 47",
+        "position": { "x": 150, "y": 60, "width": 8, "height": 14 },
+        "confidence": 0.92,
+        "treatment": {
+          "priority": "high",
+          "method": "Nhổ tiểu phẫu răng khôn mọc lệch",
+          "estimated_time": "30–45 phút",
+          "cost_estimate": "2,000,000 – 3,500,000 VNĐ",
+          "notes": "Chụp CBCT để đánh giá dây thần kinh hàm dưới trước nhổ"
+        }
       }
     ],
     "ai_insights": {
-      "overall_assessment": "Tình trạng răng miệng tương đối tốt với 85.7% răng khỏe mạnh",
+      "overall_assessment": "Tình trạng răng miệng khá tốt với 83.9% răng khỏe mạnh, tuy nhiên có 3 răng khôn mọc lệch cần nhổ và 2 răng nghi sâu cần can thiệp sớm",
       "main_concerns": [
-        "Răng số 16 cần điều trị tủy khẩn cấp",
-        "3 răng sâu cần được trám trong 2-3 tuần tới",
-        "Cần cải thiện vệ sinh răng miệng để ngăn ngừa sâu răng mới"
+        "3 răng khôn (28, 38, 48) mọc lệch/ngầm gây nguy cơ đau, sâu răng kế cận và viêm lợi",
+        "Răng số 17 và 37 nghi sâu, cần chẩn đoán hình ảnh và trám kịp thời",
+        "Chen chúc nhẹ răng cửa dưới – cân nhắc chỉnh nha nếu ảnh hưởng thẩm mỹ/khớp cắn"
       ],
       "recommendations": [
-        "Ưu tiên điều trị răng số 16 trước",
-        "Trám các răng sâu còn lại",
-        "Tái khám sau 6 tháng",
-        "Vệ sinh răng miệng 2 lần/ngày với kem đánh răng có fluoride"
+        "Ưu tiên nhổ răng khôn 38 và 48 bằng tiểu phẫu trong 1–2 tuần tới",
+        "Theo dõi răng khôn 28; nhổ sớm nếu có triệu chứng",
+        "Chụp phim cánh cắn cho răng 17, 37 và trám khi cần",
+        "Giữ vệ sinh răng miệng kỹ, súc miệng chlorhexidine sau nhổ",
+        "Tái khám sau 1 tuần và định kỳ 6 tháng/lần"
       ]
     }
-  },
-  "DaoThiDiemTrangpano.jpg": {
+  }
+,
+ "DaoThiDiemTrangpano.jpg": {
     "summary": {
-      "total_teeth": 32,
-      "healthy_teeth": 26,
-      "decayed_teeth": 4,
-      "treatment_needed": 2,
-      "overall_health": 81.25
+      "total_teeth": 28,
+      "healthy_teeth": 27,
+      "decayed_teeth": 0,
+      "treatment_needed": 1,
+      "overall_health": 96.4
     },
     "detailed_analysis": [
       {
@@ -139,90 +113,6 @@
         "confidence": 0.97
       },
       {
-        "tooth_number": 12,
-        "status": "decay",
-        "condition": "Sâu răng mặt xa - cần trám",
-        "position": { "x": 52, "y": 30, "width": 8, "height": 25 },
-        "confidence": 0.93,
-        "treatment": {
-          "priority": "medium",
-          "method": "Trám composite thẩm mỹ",
-          "estimated_time": "90 phút",
-          "cost_estimate": "1,200,000 - 1,800,000 VNĐ",
-          "notes": "Sâu răng cửa, cần trám thẩm mỹ để đảm bảo màu sắc"
-        }
-      },
-      {
-        "tooth_number": 13,
-        "status": "healthy",
-        "condition": "Khỏe mạnh",
-        "position": { "x": 62, "y": 32, "width": 8, "height": 23 },
-        "confidence": 0.94
-      },
-      {
-        "tooth_number": 14,
-        "status": "decay",
-        "condition": "Sâu răng sâu - gần tủy",
-        "position": { "x": 72, "y": 34, "width": 8, "height": 21 },
-        "confidence": 0.90,
-        "treatment": {
-          "priority": "high",
-          "method": "Trám sâu + lót tủy",
-          "estimated_time": "120 phút",
-          "cost_estimate": "1,500,000 - 2,200,000 VNĐ",
-          "notes": "Sâu răng gần tủy, có thể cần điều trị tủy nếu đau"
-        }
-      },
-      {
-        "tooth_number": 15,
-        "status": "healthy",
-        "condition": "Khỏe mạnh",
-        "position": { "x": 82, "y": 35, "width": 8, "height": 19 },
-        "confidence": 0.95
-      },
-      {
-        "tooth_number": 16,
-        "status": "decay",
-        "condition": "Sâu răng nhiều mặt",
-        "position": { "x": 92, "y": 37, "width": 8, "height": 17 },
-        "confidence": 0.89,
-        "treatment": {
-          "priority": "medium",
-          "method": "Trám amalgam hoặc inlay",
-          "estimated_time": "105 phút",
-          "cost_estimate": "1,800,000 - 3,500,000 VNĐ",
-          "notes": "Sâu nhiều mặt răng hàm, cần trám bền chắc"
-        }
-      },
-      {
-        "tooth_number": 17,
-        "status": "treatment_needed",
-        "condition": "Viêm tủy cấp - cần điều trị khẩn cấp",
-        "position": { "x": 102, "y": 38, "width": 8, "height": 15 },
-        "confidence": 0.94,
-        "treatment": {
-          "priority": "urgent",
-          "method": "Điều trị tủy 3 ống + bọc sứ",
-          "estimated_time": "4 buổi x 90 phút",
-          "cost_estimate": "4,500,000 - 7,000,000 VNĐ",
-          "notes": "Viêm tủy cấp có triệu chứng, cần điều trị ngay"
-        }
-      },
-      {
-        "tooth_number": 18,
-        "status": "treatment_needed",
-        "condition": "Răng khôn mọc lệch - khuyến nghị nhổ",
-        "position": { "x": 112, "y": 40, "width": 8, "height": 13 },
-        "confidence": 0.87,
-        "treatment": {
-          "priority": "low",
-          "method": "Nhổ răng khôn phẫu thuật",
-          "estimated_time": "45-90 phút",
-          "cost_estimate": "800,000 - 1,500,000 VNĐ",
-          "notes": "Răng khôn mọc lệch, có thể gây đau và viêm nướu"
-        }
-      },
-      {
         "tooth_number": 21,
         "status": "healthy",
         "condition": "Khỏe mạnh",
@@ -230,42 +120,39 @@
         "confidence": 0.96
       },
       {
-        "tooth_number": 22,
+        "tooth_number": 31,
         "status": "healthy",
         "condition": "Khỏe mạnh",
-        "position": { "x": 132, "y": 30, "width": 8, "height": 25 },
+        "position": { "x": 72, "y": 62, "width": 8, "height": 18 },
         "confidence": 0.95
       },
       {
-        "tooth_number": 23,
-        "status": "decay",
-        "condition": "Sâu răng nhẹ ở cổ răng",
-        "position": { "x": 142, "y": 32, "width": 8, "height": 23 },
-        "confidence": 0.91,
+        "tooth_number": 41,
+        "status": "treatment_needed",
+        "condition": "Miếng trám cũ rò rỉ/bong vỡ – cần thay thế",
+        "position": { "x": 132, "y": 62, "width": 8, "height": 18 },
+        "confidence": 0.90,
         "treatment": {
-          "priority": "low",
-          "method": "Trám GIC",
-          "estimated_time": "30 phút",
-          "cost_estimate": "400,000 - 800,000 VNĐ",
-          "notes": "Sâu cổ răng nhẹ, trám đơn giản"
+          "priority": "medium",
+          "method": "Thay trám mới hoặc phục hồi inlay/onlay, bọc sứ",
+          "estimated_time": "1–2 lần hẹn",
+          "cost_estimate": "800,000 – 2,500,000 VNĐ",
+          "notes": "Miếng trám cũ rò rỉ dễ gây sâu tái phát; cần kiểm tra định kỳ"
         }
       }
     ],
     "ai_insights": {
-      "overall_assessment": "Tình trạng răng miệng cần chú ý với một số vấn đề cần điều trị",
+      "overall_assessment": "Hàm răng khỏe mạnh (96.4% răng khỏe), chỉ còn 1 răng 41 cần phục hồi và khớp cắn hở nhẹ cần theo dõi",
       "main_concerns": [
-        "Răng số 17 viêm tủy cấp cần điều trị khẩn cấp",
-        "Răng số 14 sâu sâu gần tủy",
-        "4 răng sâu khác cần trám trong thời gian sớm",
-        "Răng khôn số 18 mọc lệch"
+        "Răng số 41 miếng trám cũ rò rỉ cần thay thế",
+        "Khớp cắn hở nhẹ vùng răng cửa – cân nhắc tư vấn chỉnh nha nếu ảnh hưởng chức năng/thẩm mỹ",
+        "Một số khe hở nhỏ quanh răng gợi ý viêm quanh răng nhẹ – cần vệ sinh tốt và khám định kỳ"
       ],
       "recommendations": [
-        "Điều trị khẩn cấp răng số 17 (viêm tủy)",
-        "Theo dõi sát răng số 14",
-        "Lên kế hoạch trám các răng sâu còn lại",
-        "Cân nhắc nhổ răng khôn số 18",
-        "Cải thiện vệ sinh răng miệng",
-        "Tái khám sau 3 tháng"
+        "Phục hồi răng 41 trong 1–2 lần hẹn",
+        "Đánh giá khớp cắn hở và tham khảo bác sĩ chỉnh nha nếu cần",
+        "Vệ sinh răng miệng kỹ, lấy cao răng định kỳ",
+        "Tái khám và chụp phim kiểm tra sau 6 tháng"
       ]
     }
   }
