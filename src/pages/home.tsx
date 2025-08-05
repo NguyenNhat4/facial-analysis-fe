@@ -194,7 +194,7 @@ export default function Home() {
             </div>
 
             {/* Feature 2: X-ray Analysis */}
-            <div className="group cursor-pointer bg-gradient-to-br from-gray-900 to-blue-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
+            <div className="group cursor-pointer bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
               <div className="relative p-8 pb-12 h-[380px] flex flex-col">
                 <div className="absolute top-4 right-4">
                   <span className="bg-blue-500/20 backdrop-blur-sm text-blue-300 text-xs font-bold px-3 py-1 rounded-full">
@@ -239,7 +239,7 @@ export default function Home() {
             </div>
 
             {/* Feature 3: 3D Simulation */}
-            <div className="group cursor-pointer bg-gradient-to-br from-purple-900 to-pink-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
+            <div className="group cursor-pointer bg-gradient-to-br from-gray-900 to-purple-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
               <div className="relative p-8 pb-12 h-[380px] flex flex-col">
                 <div className="absolute top-4 right-4">
                   <span className="bg-purple-500/20 backdrop-blur-sm text-purple-300 text-xs font-bold px-3 py-1 rounded-full">

@@ -5,7 +5,7 @@ vite.config.ts.*
 *.tar.gz
 .replit
 replit.md 
-
+.github
 # Environment variables
 .env
 .env.local
