@@ -468,6 +468,11 @@ const DemoPage = () => {
         }
       });
 
+      // Add original filename for the xray to ensure correct data mapping
+      if (localImages.general_xray?.outputFilename) {
+        imageParams.set('xrayFile', localImages.general_xray.outputFilename);
+      }
+
       // Navigate with query params
       const queryString = imageParams.toString();
       setLocation(queryString ? `${path}?${queryString}` : path);
