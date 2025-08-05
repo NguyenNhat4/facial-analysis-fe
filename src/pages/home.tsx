@@ -240,7 +240,7 @@ export default function Home() {
 
             {/* Feature 3: 3D Simulation */}
             <div className="group cursor-pointer bg-gradient-to-br from-gray-900 to-purple-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
-              <div className="relative p-8 pb-12 h-[380px] flex flex-col">
+              <div className="relative p-8 pb-12 h-[450px] flex flex-col">
                 <div className="absolute top-4 right-4">
                   <span className="bg-purple-500/20 backdrop-blur-sm text-purple-300 text-xs font-bold px-3 py-1 rounded-full">
                     FEATURE #3
