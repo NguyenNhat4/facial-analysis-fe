@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "wouter";
-import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import { Progress } from "../components/ui/progress";
@@ -24,7 +29,7 @@ import {
   Target,
   Scan,
   FileText,
-  Clock
+  Clock,
 } from "lucide-react";
 
 // Interface for X-ray analysis data - new structure with filename as keys
@@ -61,7 +66,9 @@ interface XrayAnalysisData {
 
 export default function XrayAnalysisPage() {
   const [location] = useLocation();
-  const [analysisData, setAnalysisData] = useState<XrayAnalysisData | null>(null);
+  const [analysisData, setAnalysisData] = useState<XrayAnalysisData | null>(
+    null
+  );
   const [inputImages, setInputImages] = useState<{
     general_xray?: string;
   }>({});
@@ -78,28 +85,33 @@ export default function XrayAnalysisPage() {
     id: "P2025-001",
     date: new Date().toLocaleDateString("en-GB"),
     age: 28,
-    gender: "Demo Case"
+    gender: "Demo Case",
   };
 
   // Parse query parameters to get input images and folder
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
-    const general_xray = urlParams.get('general_xray');
-    const folder = urlParams.get('folder');
-    const xrayFile = urlParams.get('xrayFile'); // Get original filename
-    
+    const general_xray = urlParams.get("general_xray");
+    const folder = urlParams.get("folder");
+    const xrayFile = urlParams.get("xrayFile"); // Get original filename
+
     if (general_xray) {
       setInputImages({
-        general_xray: general_xray ? decodeURIComponent(general_xray) : undefined,
+        general_xray: general_xray
+          ? decodeURIComponent(general_xray)
+          : undefined,
       });
     }
-    
+
     if (folder) {
       setCurrentFolder(folder);
     } else if (xrayFile) {
       // If we have an xrayFile, we can derive the case/folder name from it
       // This helps link the data correctly even without an explicit folder
-      const caseName = xrayFile.replace(/pano\.jpg/i, '').replace(/frontal\.jpg/i, '').replace(/profile\.jpg/i, '');
+      const caseName = xrayFile
+        .replace(/pano\.jpg/i, "")
+        .replace(/frontal\.jpg/i, "")
+        .replace(/profile\.jpg/i, "");
       setCurrentFolder(caseName);
     }
   }, [location]);
@@ -108,53 +120,66 @@ export default function XrayAnalysisPage() {
   useEffect(() => {
     const loadAnalysisData = async () => {
       try {
-        const response = await fetch('/xray-analysis-output.json');
+        const response = await fetch("/xray-analysis-output.json");
         const data: XrayAnalysisData = await response.json();
         setAnalysisData(data);
 
         // Map output images based on input image filename
         let xrayOutputPath: string | undefined;
         const urlParams = new URLSearchParams(window.location.search);
-        const xrayFileFromParams = urlParams.get('xrayFile');
-        
+        const xrayFileFromParams = urlParams.get("xrayFile");
+
         if (xrayFileFromParams && data[xrayFileFromParams]) {
-            xrayOutputPath = `/assets/outputs/${xrayFileFromParams}`;
-            console.log(`🎯 Using xrayFile from URL params for output:`, { xrayFile: xrayFileFromParams });
+          xrayOutputPath = `/assets/outputs/${xrayFileFromParams}`;
+          console.log(`🎯 Using xrayFile from URL params for output:`, {
+            xrayFile: xrayFileFromParams,
+          });
         } else if (inputImages.general_xray) {
           // This part might now be redundant or a fallback
           const inputPath = inputImages.general_xray;
-          const inputFilename = inputPath.split('/').pop()?.split('?')[0];
-          
-          console.log(`🎯 Using JSON-based mapping from input image`, { xrayFile: inputFilename });
-          
+          const inputFilename = inputPath.split("/").pop()?.split("?")[0];
+
+          console.log(`🎯 Using JSON-based mapping from input image`, {
+            xrayFile: inputFilename,
+          });
+
           if (inputFilename && data[inputFilename]) {
             xrayOutputPath = `/assets/outputs/${inputFilename}`;
           }
         } else if (currentFolder) {
-          const folderBasedXray = Object.keys(data).find(key => 
-            key.toLowerCase().includes(currentFolder.toLowerCase()) && key.toLowerCase().includes('pano')
+          const folderBasedXray = Object.keys(data).find(
+            (key) =>
+              key.toLowerCase().includes(currentFolder.toLowerCase()) &&
+              key.toLowerCase().includes("pano")
           );
-          
+
           if (folderBasedXray) {
             xrayOutputPath = `/assets/outputs/${folderBasedXray}`;
           }
         }
-        
+
         if (!xrayOutputPath) {
-            // Final fallback
-            const firstPano = Object.keys(data).find(key => key.includes('pano'));
-            xrayOutputPath = firstPano ? `/assets/outputs/${firstPano}` : undefined;
-            console.log(`🎯 Using fallback output image:`, { xrayFile: firstPano });
+          // Final fallback
+          const firstPano = Object.keys(data).find((key) =>
+            key.includes("pano")
+          );
+          xrayOutputPath = firstPano
+            ? `/assets/outputs/${firstPano}`
+            : undefined;
+          console.log(`🎯 Using fallback output image:`, {
+            xrayFile: firstPano,
+          });
         }
-        
-        console.log(`🎯 Final output images:`, { general_xray: xrayOutputPath });
-        
-        setOutputImages({
-          general_xray: xrayOutputPath
+
+        console.log(`🎯 Final output images:`, {
+          general_xray: xrayOutputPath,
         });
-     
+
+        setOutputImages({
+          general_xray: xrayOutputPath,
+        });
       } catch (error) {
-        console.error('Failed to load X-ray analysis data:', error);
+        console.error("Failed to load X-ray analysis data:", error);
       } finally {
         setLoading(false);
       }
@@ -165,35 +190,43 @@ export default function XrayAnalysisPage() {
 
   // Get current case data based on available files
   const getCurrentCaseData = () => {
-    console.log(`📊 getCurrentCaseData called with currentFolder:`, currentFolder);
+    console.log(
+      `📊 getCurrentCaseData called with currentFolder:`,
+      currentFolder
+    );
     if (!analysisData) {
       console.log(`📊 No analysis data available`);
       return null;
     }
-    
-    console.log(`📊 Available keys in analysisData:`, Object.keys(analysisData));
-    
+
+    console.log(
+      `📊 Available keys in analysisData:`,
+      Object.keys(analysisData)
+    );
+
     let xrayFile: string | undefined;
     const urlParams = new URLSearchParams(window.location.search);
-    const xrayFileFromParams = urlParams.get('xrayFile');
+    const xrayFileFromParams = urlParams.get("xrayFile");
 
     // Priority 1: Use xrayFile from URL parameters if it exists and is valid
     if (xrayFileFromParams && analysisData[xrayFileFromParams]) {
       xrayFile = xrayFileFromParams;
       console.log(`📊 Found exact match from URL params:`, xrayFile);
     }
-    
+
     // Priority 2: Try to find data by folder name if no match from params
     if (!xrayFile && currentFolder) {
-      xrayFile = Object.keys(analysisData).find(key => 
-        key.toLowerCase().startsWith(currentFolder.toLowerCase()) && key.toLowerCase().includes('pano')
+      xrayFile = Object.keys(analysisData).find(
+        (key) =>
+          key.toLowerCase().startsWith(currentFolder.toLowerCase()) &&
+          key.toLowerCase().includes("pano")
       );
       console.log(`📊 Folder-based search result:`, xrayFile);
     }
-    
+
     // Priority 3: Match based on output image (which should be correctly set now)
     if (!xrayFile && outputImages.general_xray) {
-      const outputFilename = outputImages.general_xray.split('/').pop();
+      const outputFilename = outputImages.general_xray.split("/").pop();
       if (outputFilename && analysisData[outputFilename]) {
         xrayFile = outputFilename;
         console.log(`📊 Matched by output filename:`, xrayFile);
@@ -202,28 +235,36 @@ export default function XrayAnalysisPage() {
 
     // Final fallback
     if (!xrayFile) {
-      xrayFile = Object.keys(analysisData).find(key => key.includes('pano'));
+      xrayFile = Object.keys(analysisData).find((key) => key.includes("pano"));
       console.log(`📊 Final fallback search found:`, xrayFile);
     }
-    
+
     const xrayData = xrayFile ? analysisData[xrayFile] : null;
-    
-    console.log(`📊 Final selection - Using data file:`, { xrayFile, hasData: !!xrayData });
-    
+
+    console.log(`📊 Final selection - Using data file:`, {
+      xrayFile,
+      hasData: !!xrayData,
+    });
+
     return xrayData;
   };
 
   const caseData = React.useMemo(() => {
     return getCurrentCaseData();
-  }, [analysisData, currentFolder, inputImages.general_xray, outputImages.general_xray]);
-  
+  }, [
+    analysisData,
+    currentFolder,
+    inputImages.general_xray,
+    outputImages.general_xray,
+  ]);
+
   // Debug log for caseData
   React.useEffect(() => {
     if (caseData) {
       console.log(`📊 CaseData updated:`, {
         totalTeeth: caseData.summary.total_teeth,
         healthyTeeth: caseData.summary.healthy_teeth,
-        currentFolder
+        currentFolder,
       });
     }
   }, [caseData, currentFolder]);
@@ -234,22 +275,32 @@ export default function XrayAnalysisPage() {
       case "healthy":
         return <Badge className="bg-green-100 text-green-800">Khỏe mạnh</Badge>;
       case "decay":
-        return <Badge className="bg-yellow-100 text-yellow-800">Sâu răng</Badge>;
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">Sâu răng</Badge>
+        );
       case "treatment_needed":
         return <Badge className="bg-red-100 text-red-800">Cần điều trị</Badge>;
       default:
-        return <Badge className="bg-gray-100 text-gray-800">Không xác định</Badge>;
+        return (
+          <Badge className="bg-gray-100 text-gray-800">Không xác định</Badge>
+        );
     }
   };
 
   const getPriorityBadge = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return <Badge className="bg-red-600 text-white animate-pulse">KHẨN CẤP</Badge>;
+        return (
+          <Badge className="bg-red-600 text-white animate-pulse">
+            KHẨN CẤP
+          </Badge>
+        );
       case "high":
         return <Badge className="bg-red-100 text-red-800">Cao</Badge>;
       case "medium":
-        return <Badge className="bg-yellow-100 text-yellow-800">Trung bình</Badge>;
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">Trung bình</Badge>
+        );
       case "low":
         return <Badge className="bg-blue-100 text-blue-800">Thấp</Badge>;
       default:
@@ -258,15 +309,15 @@ export default function XrayAnalysisPage() {
   };
 
   if (loading) {
-  return (
+    return (
       <div className="min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 text-blue-600 animate-spin mx-auto mb-4" />
           <p className="text-gray-600">Đang tải dữ liệu phân tích X-quang...</p>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25">
@@ -275,14 +326,14 @@ export default function XrayAnalysisPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-24">
             <div className="flex items-center space-x-6">
-                <Button
+              <Button
                 onClick={() => window.history.back()}
-                  variant="ghost"
+                variant="ghost"
                 className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
-                >
-                  <ArrowLeft size={20} className="mr-2" />
-                  Quay lại
-                </Button>
+              >
+                <ArrowLeft size={20} className="mr-2" />
+                Quay lại
+              </Button>
               <div className="flex items-center space-x-4">
                 <div className="relative">
                   <img
@@ -329,8 +380,8 @@ export default function XrayAnalysisPage() {
         {/* Patient Info Card */}
         <Card className="mb-8 border border-gray-200 shadow-lg">
           <div className="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-8 py-6">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-6">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-6">
                 <div className="relative">
                   <div className="w-16 h-16 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
                     <User className="w-8 h-8 text-white" />
@@ -341,25 +392,29 @@ export default function XrayAnalysisPage() {
                 </div>
                 <div>
                   <div className="flex items-center space-x-3 mb-2">
-                    <h2 className="text-2xl font-bold text-white">{patientData.name}</h2>
+                    <h2 className="text-2xl font-bold text-white">
+                      {patientData.name}
+                    </h2>
                     <span className="px-3 py-1 bg-emerald-500 text-white text-xs font-semibold rounded-full">
                       DEMO
-                </span>
-              </div>
+                    </span>
+                  </div>
                   <p className="text-blue-100 text-lg font-medium">
                     ID: {patientData.id} • {patientData.gender}
                   </p>
-              </div>
+                </div>
               </div>
               <div className="text-right">
                 <div className="text-blue-100 text-sm">Ngày chụp X-quang</div>
-                <div className="text-white font-semibold text-lg">{patientData.date}</div>
+                <div className="text-white font-semibold text-lg">
+                  {patientData.date}
+                </div>
                 <div className="text-blue-200 text-sm">
                   {new Date().toLocaleTimeString("en-GB", {
                     hour: "2-digit",
                     minute: "2-digit",
                   })}
-            </div>
+                </div>
               </div>
             </div>
           </div>
@@ -372,8 +427,12 @@ export default function XrayAnalysisPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 font-medium">Tổng số răng</p>
-                    <p className="text-3xl font-bold text-gray-800">{caseData.summary.total_teeth}</p>
+                    <p className="text-sm text-gray-600 font-medium">
+                      Tổng số răng
+                    </p>
+                    <p className="text-3xl font-bold text-gray-800">
+                      {caseData.summary.total_teeth}
+                    </p>
                   </div>
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
                     <Target className="w-6 h-6 text-blue-600" />
@@ -386,8 +445,12 @@ export default function XrayAnalysisPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-green-700 font-medium">Răng khỏe mạnh</p>
-                    <p className="text-3xl font-bold text-green-800">{caseData.summary.healthy_teeth}</p>
+                    <p className="text-sm text-green-700 font-medium">
+                      Răng khỏe mạnh
+                    </p>
+                    <p className="text-3xl font-bold text-green-800">
+                      {caseData.summary.healthy_teeth}
+                    </p>
                   </div>
                   <Heart className="w-8 h-8 text-green-600" />
                 </div>
@@ -398,8 +461,12 @@ export default function XrayAnalysisPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-yellow-700 font-medium">Răng sâu</p>
-                    <p className="text-3xl font-bold text-yellow-800">{caseData.summary.decayed_teeth}</p>
+                    <p className="text-sm text-yellow-700 font-medium">
+                      Răng sâu
+                    </p>
+                    <p className="text-3xl font-bold text-yellow-800">
+                      {caseData.summary.decayed_teeth}
+                    </p>
                   </div>
                   <AlertTriangle className="w-8 h-8 text-yellow-600" />
                 </div>
@@ -410,8 +477,12 @@ export default function XrayAnalysisPage() {
               <CardContent className="p-6">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-red-700 font-medium">Cần điều trị</p>
-                    <p className="text-3xl font-bold text-red-800">{caseData.summary.treatment_needed}</p>
+                    <p className="text-sm text-red-700 font-medium">
+                      Cần điều trị
+                    </p>
+                    <p className="text-3xl font-bold text-red-800">
+                      {caseData.summary.treatment_needed}
+                    </p>
                   </div>
                   <AlertCircle className="w-8 h-8 text-red-600" />
                 </div>
@@ -426,18 +497,28 @@ export default function XrayAnalysisPage() {
           <div className="xl:col-span-2">
             <Card className="shadow-lg border border-gray-200">
               <div className="bg-blue-900 text-white px-6 py-4">
-            <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-lg">PANORAMIC X-RAY ANALYSIS</h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-lg">
+                    PANORAMIC X-RAY ANALYSIS
+                  </h3>
                   <div className="flex items-center space-x-2">
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/20"
+                    >
                       <Camera className="w-4 h-4 mr-1" />
                       Adjust
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/20"
+                    >
                       <Settings className="w-4 h-4 mr-1" />
                       Settings
                     </Button>
-                </div>
+                  </div>
                 </div>
               </div>
 
@@ -461,37 +542,61 @@ export default function XrayAnalysisPage() {
                       <div className="text-center">
                         <Radiation className="w-16 h-16 mx-auto mb-4 opacity-50" />
                         <p>Không có ảnh X-quang để hiển thị</p>
-              </div>
-            </div>
+                      </div>
+                    </div>
                   )}
                 </div>
 
                 {/* Control Panel */}
                 <div className="mt-4 flex flex-col space-y-2">
                   <div className="flex items-center justify-center space-x-4">
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/20"
+                    >
                       <RotateCw className="w-4 h-4 mr-1" />
                       Rotate
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/20"
+                    >
                       <Settings className="w-4 h-4 mr-1" />
                       Contrast
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/20"
+                    >
                       <Settings className="w-4 h-4 mr-1" />
                       Brightness
                     </Button>
                   </div>
                   <div className="flex items-center justify-center space-x-4">
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/20"
+                    >
                       <ZoomIn className="w-4 h-4 mr-1" />
                       Zoom in
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/20"
+                    >
                       <ZoomOut className="w-4 h-4 mr-1" />
                       Zoom out
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-white hover:bg-white/20">
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-white hover:bg-white/20"
+                    >
                       <Save className="w-4 h-4 mr-1" />
                       Save analysis
                     </Button>
@@ -515,31 +620,45 @@ export default function XrayAnalysisPage() {
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div>
-                      <h4 className="font-semibold text-gray-800 mb-2">Đánh giá tổng thể</h4>
-                      <p className="text-sm text-gray-600">{caseData.ai_insights.overall_assessment}</p>
+                      <h4 className="font-semibold text-gray-800 mb-2">
+                        Đánh giá tổng thể
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {caseData.ai_insights.overall_assessment}
+                      </p>
                     </div>
-                    
+
                     <div>
-                      <h4 className="font-semibold text-gray-800 mb-2">Vấn đề chính</h4>
+                      <h4 className="font-semibold text-gray-800 mb-2">
+                        Vấn đề chính
+                      </h4>
                       <ul className="text-sm text-gray-600 space-y-1">
-                        {caseData.ai_insights.main_concerns.map((concern, index) => (
-                          <li key={index} className="flex items-start">
-                            <AlertTriangle className="w-4 h-4 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
-                            {concern}
-                          </li>
-                        ))}
+                        {caseData.ai_insights.main_concerns.map(
+                          (concern, index) => (
+                            <li key={index} className="flex items-start">
+                              <AlertTriangle className="w-4 h-4 text-yellow-500 mr-2 mt-0.5 flex-shrink-0" />
+                              {concern}
+                            </li>
+                          )
+                        )}
                       </ul>
                     </div>
 
                     <div>
-                      <h4 className="font-semibold text-gray-800 mb-2">Khuyến nghị</h4>
+                      <h4 className="font-semibold text-gray-800 mb-2">
+                        Khuyến nghị
+                      </h4>
                       <ul className="text-sm text-gray-600 space-y-1">
-                        {caseData.ai_insights.recommendations.map((recommendation, index) => (
-                          <li key={index} className="flex items-start">
-                            <div className="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0">•</div>
-                            {recommendation}
-                          </li>
-                        ))}
+                        {caseData.ai_insights.recommendations.map(
+                          (recommendation, index) => (
+                            <li key={index} className="flex items-start">
+                              <div className="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0">
+                                •
+                              </div>
+                              {recommendation}
+                            </li>
+                          )
+                        )}
                       </ul>
                     </div>
                   </div>
@@ -555,7 +674,7 @@ export default function XrayAnalysisPage() {
                     <Activity className="w-5 h-5 mr-2 text-green-600" />
                     Tình trạng sức khỏe răng miệng
                   </CardTitle>
-            </CardHeader>
+                </CardHeader>
                 <CardContent className="p-6">
                   <div className="text-center mb-4">
                     <div className="text-3xl font-bold text-green-600">
@@ -563,29 +682,40 @@ export default function XrayAnalysisPage() {
                     </div>
                     <p className="text-sm text-gray-600">Tổng thể</p>
                   </div>
-                  <Progress 
-                    value={caseData.summary.overall_health} 
+                  <Progress
+                    value={caseData.summary.overall_health}
                     className="h-3 mb-4"
                   />
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span className="text-gray-600">Răng khỏe mạnh:</span>
                       <span className="font-semibold text-green-600">
-                        {((caseData.summary.healthy_teeth / caseData.summary.total_teeth) * 100).toFixed(1)}%
+                        {(
+                          (caseData.summary.healthy_teeth /
+                            caseData.summary.total_teeth) *
+                          100
+                        ).toFixed(1)}
+                        %
                       </span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-600">Cần chú ý:</span>
                       <span className="font-semibold text-yellow-600">
-                        {(((caseData.summary.decayed_teeth + caseData.summary.treatment_needed) / caseData.summary.total_teeth) * 100).toFixed(1)}%
+                        {(
+                          ((caseData.summary.decayed_teeth +
+                            caseData.summary.treatment_needed) /
+                            caseData.summary.total_teeth) *
+                          100
+                        ).toFixed(1)}
+                        %
                       </span>
                     </div>
                   </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
             )}
-                </div>
-              </div>
+          </div>
+        </div>
 
         {/* Detailed Tooth Analysis */}
         {caseData && (
@@ -599,55 +729,63 @@ export default function XrayAnalysisPage() {
             <CardContent className="p-6">
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {caseData.detailed_analysis
-                  .filter(tooth => tooth.status !== "healthy")
+                  .filter((tooth) => tooth.status !== "healthy")
                   .map((tooth) => (
-                    <Card 
+                    <Card
                       key={tooth.tooth_number}
                       className={`cursor-pointer transition-all hover:shadow-md ${
                         tooth.status === "treatment_needed"
-                          ? "border-red-200 bg-red-50" 
+                          ? "border-red-200 bg-red-50"
                           : "border-yellow-200 bg-yellow-50"
                       }`}
                       onClick={() => setSelectedTooth(tooth)}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                              tooth.status === "treatment_needed" ? "bg-red-500" : "bg-yellow-500"
+                          <div
+                            className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
+                              tooth.status === "treatment_needed"
+                                ? "bg-red-500"
+                                : "bg-yellow-500"
                             }`}
                           >
                             {tooth.tooth_number}
                           </div>
                           {getStatusBadge(tooth.status)}
                         </div>
-                        
+
                         <h4 className="font-semibold text-gray-800 mb-2">
                           Răng số {tooth.tooth_number}
                         </h4>
-                        <p className="text-sm text-gray-600 mb-3">{tooth.condition}</p>
-                        
+                        <p className="text-sm text-gray-600 mb-3">
+                          {tooth.condition}
+                        </p>
+
                         {tooth.treatment && (
                           <div className="space-y-2">
                             <div className="flex justify-between items-center">
-                              <span className="text-xs text-gray-500">Ưu tiên:</span>
+                              <span className="text-xs text-gray-500">
+                                Ưu tiên:
+                              </span>
                               {getPriorityBadge(tooth.treatment.priority)}
                             </div>
                             <div className="flex items-center text-xs text-gray-500">
                               <Clock className="w-3 h-3 mr-1" />
                               {tooth.treatment.estimated_time}
-                        </div>
-                      </div>
+                            </div>
+                          </div>
                         )}
-                        
+
                         <div className="mt-3 pt-3 border-t border-gray-200">
                           <div className="flex justify-between items-center text-xs">
-                            <span className="text-gray-500">Độ tin cậy AI:</span>
+                            <span className="text-gray-500">
+                              Mức độ nghiêm trọng của bệnh
+                            </span>
                             <span className="font-semibold text-blue-600">
                               {(tooth.confidence * 100).toFixed(1)}%
-                        </span>
-                      </div>
-                    </div>
+                            </span>
+                          </div>
+                        </div>
                       </CardContent>
                     </Card>
                   ))}
@@ -655,7 +793,7 @@ export default function XrayAnalysisPage() {
             </CardContent>
           </Card>
         )}
-        </div>
+      </div>
 
       {/* Treatment Detail Modal */}
       {selectedTooth && (
@@ -674,50 +812,63 @@ export default function XrayAnalysisPage() {
                 <X size={20} />
               </Button>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div>
                 <h4 className="font-semibold text-gray-800 mb-2">Tình trạng</h4>
                 <p className="text-gray-600">{selectedTooth.condition}</p>
               </div>
-              
+
               {selectedTooth.treatment && (
                 <>
                   <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">Phương pháp điều trị</h4>
-                    <p className="text-gray-600">{selectedTooth.treatment.method}</p>
+                    <h4 className="font-semibold text-gray-800 mb-2">
+                      Phương pháp điều trị
+                    </h4>
+                    <p className="text-gray-600">
+                      {selectedTooth.treatment.method}
+                    </p>
                   </div>
-                  
-              <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">Thời gian dự kiến</h4>
-                    <p className="text-gray-600">{selectedTooth.treatment.estimated_time}</p>
-              </div>
-                  
-              <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">Chi phí ước tính</h4>
-                    <p className="text-gray-600 font-semibold text-green-600">{selectedTooth.treatment.cost_estimate}</p>
-              </div>
-                  
-              <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">Ghi chú</h4>
-                    <p className="text-gray-600">{selectedTooth.treatment.notes}</p>
+
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">
+                      Thời gian dự kiến
+                    </h4>
+                    <p className="text-gray-600">
+                      {selectedTooth.treatment.estimated_time}
+                    </p>
                   </div>
-                  
+
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">
+                      Chi phí ước tính
+                    </h4>
+                    <p className="text-gray-600 font-semibold text-green-600">
+                      {selectedTooth.treatment.cost_estimate}
+                    </p>
+                  </div>
+
+                  <div>
+                    <h4 className="font-semibold text-gray-800 mb-2">
+                      Ghi chú
+                    </h4>
+                    <p className="text-gray-600">
+                      {selectedTooth.treatment.notes}
+                    </p>
+                  </div>
+
                   <div className="pt-4 border-t border-gray-200">
                     <div className="flex justify-between items-center">
                       <span className="text-sm text-gray-500">Độ ưu tiên:</span>
                       {getPriorityBadge(selectedTooth.treatment.priority)}
                     </div>
-              </div>
+                  </div>
                 </>
               )}
             </div>
-            
+
             <div className="flex justify-end space-x-3 p-6 border-t border-gray-200">
-              <Button
-                variant="outline"
-                onClick={() => setSelectedTooth(null)}
-              >
+              <Button variant="outline" onClick={() => setSelectedTooth(null)}>
                 Đóng
               </Button>
               <Button className="bg-blue-600 hover:bg-blue-700 text-white">

@@ -1,0 +1,462 @@
+import { FieldTab } from "../types";
+
+export const fieldTabs: FieldTab[] = [
+  {
+    title: "Thông tin cơ bản",
+    icon: "👤",
+    sections: [
+      {
+        title: "Thông tin bệnh nhân",
+        fields: [
+          {
+            name: "gender",
+            label: "Giới",
+            type: "select",
+            options: [
+              { value: 1, label: "Nam" },
+              { value: 2, label: "Nữ" },
+            ],
+            help: "Giới tính",
+          },
+          {
+            name: "age",
+            label: "Tuổi",
+            type: "number",
+            min: 10,
+            max: 100,
+            help: "Tuổi năm sinh",
+          },
+        ],
+      },
+      {
+        title: "Than phiền chính",
+        fields: [
+          {
+            name: "complaint_1",
+            label: "Hô nhẹ",
+            type: "select",
+            options: [
+              { value: 0, label: "Không" },
+              { value: 1, label: "Có" },
+            ],
+            help: "Than phiền của BN",
+          },
+          {
+            name: "complaint_2",
+            label: "Hô nhiều",
+            type: "select",
+            options: [
+              { value: 0, label: "Không" },
+              { value: 1, label: "Có" },
+            ],
+            help: "Than phiền của BN",
+          },
+          {
+            name: "complaint_3",
+            label: "Móm nhẹ",
+            type: "select",
+            options: [
+              { value: 0, label: "Không" },
+              { value: 1, label: "Có" },
+            ],
+            help: "Than phiền của BN",
+          },
+          {
+            name: "complaint_4",
+            label: "Móm nặng",
+            type: "select",
+            options: [
+              { value: 0, label: "Không" },
+              { value: 1, label: "Có" },
+            ],
+            help: "Than phiền của BN",
+          },
+          {
+            name: "complaint_5",
+            label: "Răng lộn xộn nhiều",
+            type: "select",
+            options: [
+              { value: 0, label: "Không" },
+              { value: 1, label: "Có" },
+            ],
+            help: "Than phiền của BN",
+          },
+          {
+            name: "complaint_6",
+            label: "Cười lộ nướu nhiều",
+            type: "select",
+            options: [
+              { value: 0, label: "Không" },
+              { value: 1, label: "Có" },
+            ],
+            help: "Than phiền của BN",
+          },
+          {
+            name: "complaint_7",
+            label: "Cắn hở",
+            type: "select",
+            options: [
+              { value: 0, label: "Không" },
+              { value: 1, label: "Có" },
+            ],
+            help: "Than phiền của BN",
+          },
+          {
+            name: "complaint_8",
+            label: "Cắn lệch",
+            type: "select",
+            options: [
+              { value: 0, label: "Không" },
+              { value: 1, label: "Có" },
+            ],
+            help: "Than phiền của BN",
+          },
+          {
+            name: "complaint_9",
+            label: "Thưa răng",
+            type: "select",
+            options: [
+              { value: 0, label: "Không" },
+              { value: 1, label: "Có" },
+            ],
+            help: "Than phiền của BN",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Đo đạc răng miệng",
+    icon: "🦷",
+    sections: [
+      {
+        title: "Đo đạc răng cơ bản",
+        fields: [
+          {
+            name: "c_u",
+            label: "C – U (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Độ dư/thiếu khoảng hàm trên",
+          },
+          {
+            name: "c_l",
+            label: "C – L (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Độ dư/thiếu khoảng hàm dưới",
+          },
+          {
+            name: "t_u",
+            label: "T – U (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Thiếu khoảng hàm trên",
+          },
+          {
+            name: "t_l",
+            label: "T – L (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Thiếu khoảng hàm dưới",
+          },
+          {
+            name: "ob",
+            label: "OB (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Cắn chìa dọc",
+          },
+          {
+            name: "oj",
+            label: "OJ (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Cắn chìa ngang",
+          },
+        ],
+      },
+      {
+        title: "Phân loại Angle & Đường cong Spee",
+        fields: [
+          {
+            name: "angle_r",
+            label: "Angle – R",
+            type: "select",
+            options: [
+              { value: 1, label: "Class I" },
+              { value: 2, label: "Class II" },
+              { value: 3, label: "Class III" },
+            ],
+            help: "Phân loại cắn khớp theo Angle bên phải",
+          },
+          {
+            name: "angle_l",
+            label: "Angle – L",
+            type: "select",
+            options: [
+              { value: 1, label: "Class I" },
+              { value: 2, label: "Class II" },
+              { value: 3, label: "Class III" },
+            ],
+            help: "Phân loại cắn khớp theo Angle bên trái",
+          },
+          {
+            name: "spee_r",
+            label: "Spee_R (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Chiều sâu đường cong Spee bên phải",
+          },
+          {
+            name: "spee_l",
+            label: "Spee - L (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Chiều sâu đường cong Spee bên trái",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Phân tích X-quang",
+    icon: "📸",
+    sections: [
+      {
+        title: "Góc đo cephalometric cơ bản",
+        fields: [
+          {
+            name: "sna",
+            label: "SNA (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc đánh giá vị trí tiền sau xương hàm trên so với nền sọ",
+          },
+          {
+            name: "snb",
+            label: "SNB (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc đánh giá vị trí tiền sau xương hàm dưới so với nền sọ",
+          },
+          {
+            name: "anb",
+            label: "ANB (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc đánh giá mối quan hệ xương giữa hàm trên và hàm dưới",
+          },
+          {
+            name: "wits",
+            label: "Wits (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Đánh giá mối quan hệ giữa hàm trên và hàm dưới tại mặt phẳng khớp cắn",
+          },
+          {
+            name: "fma",
+            label: "FMA (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc nghiêng của mặt phẳng hàm dưới",
+          },
+          {
+            name: "fa",
+            label: "FA (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc mặt",
+          },
+        ],
+      },
+      {
+        title: "Tỷ lệ khuôn mặt",
+        fields: [
+          {
+            name: "pfh_afh",
+            label: "PFH/AFH (%)",
+            type: "number",
+            step: 0.01,
+            help: "Tỷ lệ chiều cao mặt sau và trước",
+          },
+          {
+            name: "gn_gn_sn",
+            label: "SN - GoGn (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc giữa mặt phẳng nền sọ trước và mặt phẳng hàm dưới",
+          },
+          {
+            name: "fd",
+            label: "FD (°)",
+            type: "number",
+            step: 0.1,
+            help: "Độ sâu mặt",
+          },
+          {
+            name: "lfh",
+            label: "LFH (%)",
+            type: "number",
+            step: 0.1,
+            help: "Chiều cao mặt dưới",
+          },
+        ],
+      },
+      {
+        title: "Phân tích răng",
+        fields: [
+          {
+            name: "u1_na_mm",
+            label: "U1 - NA (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Khoảng cách từ răng cửa trên đến đường NA",
+          },
+          {
+            name: "l1_nb_mm",
+            label: "L1 - NB (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Khoảng cách từ răng cửa dưới đến đường NB",
+          },
+          {
+            name: "u1_na_deg",
+            label: "Góc (U1- NA) (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc nghiêng của răng cửa trên so với đường NA",
+          },
+          {
+            name: "l1_nb_deg",
+            label: "Góc (L1- NB) (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc nghiêng của răng cửa dưới so với đường NB",
+          },
+          {
+            name: "u1_apog_mm",
+            label: "U1- APog (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Khoảng cách từ răng cửa trên đến điểm APog",
+          },
+          {
+            name: "l1_apog_mm",
+            label: "L1- APog (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Khoảng cách từ răng cửa dưới đến điểm APog",
+          },
+          {
+            name: "u1_l1_deg",
+            label: "Góc (U1 – L1) (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc giữa trục dài răng cửa trên và răng cửa dưới",
+          },
+          {
+            name: "impa",
+            label: "IMPA (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc giữa trục dài răng cửa dưới và mặt phẳng hàm dưới",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    title: "Phân tích nâng cao",
+    icon: "⚙️",
+    sections: [
+      {
+        title: "Đo đạc X quang nâng cao",
+        fields: [
+          {
+            name: "tr_me_za_zaza",
+            label: "Tr-Me/Za-Za",
+            type: "number",
+            step: 0.1,
+            help: "Tỷ lệ chiều dài mặt và chiều rộng gò má",
+          },
+          {
+            name: "za_ag_me_right",
+            label: "Za -> Ag <- Me (bên phải) (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc gò má - hàm dưới phía bên phải",
+          },
+          {
+            name: "za_ag_me_left",
+            label: "Za -> Ag <- Me (bên trái) (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc gò má - hàm dưới phía bên trái",
+          },
+          {
+            name: "lower_1_3_ratio",
+            label: "Tỉ lệ 1/3 dưới",
+            type: "number",
+            step: 0.01,
+            help: "Tỷ lệ 1/3 dưới của khuôn mặt",
+          },
+          {
+            name: "g_prime_n_prime_preprn",
+            label: "G' -> N' <- PrePrn (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc độ lồi của mũi",
+          },
+          {
+            name: "preli_sm_pog_prime",
+            label: "PreLi -> Sm <- Pog' (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc độ lồi của môi",
+          },
+        ],
+      },
+      {
+        title: "Phân tích mô mềm",
+        fields: [
+          {
+            name: "cm_sn_ls",
+            label: "Cm -> Sn <- Ls (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc độ lồi của môi trên",
+          },
+          {
+            name: "fh_soft_tissue_angle_ab",
+            label: "Góc FH mô mềm – A'B' (°)",
+            type: "number",
+            step: 0.1,
+            help: "Góc mô mềm của profile",
+          },
+          {
+            name: "ul_e_plane",
+            label: "UL – E Line (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Khoảng cách môi trên đến đường thẩm mỹ E",
+          },
+          {
+            name: "ll_e_plane",
+            label: "LL – E Line (mm)",
+            type: "number",
+            step: 0.1,
+            help: "Khoảng cách môi dưới đến đường thẩm mỹ E",
+          },
+          {
+            name: "ei",
+            label: "EI (°)",
+            type: "number",
+            step: 0.1,
+            help: "Chỉ số thẩm mỹ",
+          },
+        ],
+      },
+    ],
+  },
+];

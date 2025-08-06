@@ -1,5 +1,5 @@
 {
- "NgocHieupano.jpg": {
+  "NgocHieupano.jpg": {
     "summary": {
       "total_teeth": 31,
       "healthy_teeth": 26,
@@ -13,7 +13,7 @@
         "status": "decay",
         "condition": "Nghi sâu kẽ, cần chụp phim cánh cắn và trám composite nếu sâu",
         "position": { "x": 88, "y": 28, "width": 8, "height": 18 },
-        "confidence": 0.82,
+        "confidence": 0.35,
         "treatment": {
           "priority": "medium",
           "method": "Trám răng composite sau khi xác định sâu",
@@ -27,7 +27,7 @@
         "status": "decay",
         "condition": "Có thể sâu/viêm do 38 chèn ép, sẽ đánh giá lại sau khi nhổ 38",
         "position": { "x": 92, "y": 52, "width": 8, "height": 18 },
-        "confidence": 0.79,
+        "confidence": 0.36,
         "treatment": {
           "priority": "medium",
           "method": "Trám hoặc điều trị tủy tùy mức độ tổn thương",
@@ -94,9 +94,8 @@
         "Tái khám sau 1 tuần và định kỳ 6 tháng/lần"
       ]
     }
-  }
-,
- "DaoThiDiemTrangpano.jpg": {
+  },
+  "DaoThiDiemTrangpano.jpg": {
     "summary": {
       "total_teeth": 28,
       "healthy_teeth": 27,
@@ -131,7 +130,7 @@
         "status": "treatment_needed",
         "condition": "Miếng trám cũ rò rỉ/bong vỡ – cần thay thế",
         "position": { "x": 132, "y": 62, "width": 8, "height": 18 },
-        "confidence": 0.90,
+        "confidence": 0.9,
         "treatment": {
           "priority": "medium",
           "method": "Thay trám mới hoặc phục hồi inlay/onlay, bọc sứ",
