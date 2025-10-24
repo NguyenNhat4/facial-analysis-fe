@@ -399,8 +399,8 @@ const DemoPage = () => {
 
   // Check if specific image types are available for analysis
   const hasFaceImages = uploadedImages.frontal && uploadedImages.profile;
-  const hasXrayImages = uploadedImages.lateral || uploadedImages.general_xray;
-  const hasCephImages = uploadedImages.lateral;
+  const hasXrayImages = uploadedImages.general_xray; // Only panoramic X-ray, not lateral
+  const hasCephImages = uploadedImages.lateral; // Lateral ceph for Ceph Analysis
   const hasAllImages =
     uploadedImages.frontal &&
     uploadedImages.profile &&
@@ -409,9 +409,9 @@ const DemoPage = () => {
 
   // Count available analysis buttons
   const availableAnalysisCount = [
-    hasFaceImages,    // Facial Analysis
-    hasXrayImages,    // Radiographic Analysis
-    hasCephImages,    // Ceph Analysis
+    hasFaceImages,    // Facial Analysis (frontal + profile)
+    hasXrayImages,    // Radiographic Analysis (general_xray only)
+    hasCephImages,    // Ceph Analysis (lateral only)
     true,             // 3D Model (always available)
     true,             // Treatment Planning (always available)
   ].filter(Boolean).length;
