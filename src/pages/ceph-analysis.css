@@ -1,0 +1,327 @@
+/* Scoped Ceph Analysis Styles - Wrapped to prevent global leakage */
+
+/* Scope all reference styles within .ceph-analysis-page */
+.ceph-analysis-page {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.ceph-analysis-page * {
+  box-sizing: border-box;
+}
+
+/* Content Wrapper */
+.ceph-analysis-page .content-wrapper {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+  padding: 0;
+  margin-top: 20px;
+}
+
+@media (max-width: 1400px) {
+  .ceph-analysis-page .content-wrapper {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Canvas Section */
+.ceph-analysis-page .canvas-section {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.ceph-analysis-page .canvas-section h2 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.8em;
+  border-bottom: 3px solid #667eea;
+  padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.ceph-analysis-page .canvas-container {
+  background: #000;
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 15px;
+  min-height: 400px;
+}
+
+.ceph-analysis-page #cephCanvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.ceph-analysis-page .canvas-controls {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Buttons */
+.ceph-analysis-page .btn-primary,
+.ceph-analysis-page .btn-secondary {
+  padding: 12px 30px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin: 5px;
+}
+
+.ceph-analysis-page .btn-primary {
+  background: #4CAF50;
+  color: white;
+}
+
+.ceph-analysis-page .btn-primary:hover {
+  background: #45a049;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.4);
+}
+
+.ceph-analysis-page .btn-primary:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ceph-analysis-page .btn-secondary {
+  background: #2196F3;
+  color: white;
+  display: inline-block;
+}
+
+.ceph-analysis-page .btn-secondary:hover {
+  background: #0b7dda;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(33, 150, 243, 0.4);
+}
+
+/* Toggle Switch Styles */
+.ceph-analysis-page .toggle-container {
+  margin: 5px;
+}
+
+.ceph-analysis-page .toggle-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  gap: 10px;
+}
+
+.ceph-analysis-page .toggle-checkbox {
+  display: none;
+}
+
+.ceph-analysis-page .toggle-slider {
+  position: relative;
+  width: 50px;
+  height: 26px;
+  background-color: #ccc;
+  border-radius: 26px;
+  transition: background-color 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ceph-analysis-page .toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  left: 3px;
+  top: 3px;
+  background-color: white;
+  border-radius: 50%;
+  transition: transform 0.3s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.ceph-analysis-page .toggle-checkbox:checked + .toggle-slider {
+  background-color: #4CAF50;
+}
+
+.ceph-analysis-page .toggle-checkbox:checked + .toggle-slider::before {
+  transform: translateX(24px);
+}
+
+.ceph-analysis-page .toggle-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+/* Table Section */
+.ceph-analysis-page .table-section {
+  background: #f8f9fa;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.ceph-analysis-page .table-section h2 {
+  color: #333;
+  margin-bottom: 15px;
+  font-size: 1.8em;
+  border-bottom: 3px solid #764ba2;
+  padding-bottom: 10px;
+  display: flex;
+  align-items: center;
+}
+
+.ceph-analysis-page .table-container {
+  overflow-x: auto;
+  max-height: 900px;
+  overflow-y: auto;
+  border-radius: 8px;
+  background: white;
+}
+
+/* Table Styles */
+.ceph-analysis-page #measurementsTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.ceph-analysis-page #measurementsTable thead {
+  position: sticky;
+  top: 0;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  z-index: 10;
+}
+
+.ceph-analysis-page #measurementsTable th {
+  padding: 15px 10px;
+  text-align: left;
+  font-weight: 600;
+  border-bottom: 2px solid #dee2e6;
+}
+
+.ceph-analysis-page #measurementsTable tbody tr {
+  border-bottom: 1px solid #dee2e6;
+  transition: all 0.2s ease;
+}
+
+.ceph-analysis-page #measurementsTable tbody tr:hover {
+  background: #e3f2fd;
+  cursor: pointer;
+}
+
+.ceph-analysis-page #measurementsTable tbody tr.row-highlight {
+  background: #fff3cd !important;
+  box-shadow: 0 0 10px rgba(255, 193, 7, 0.5);
+}
+
+.ceph-analysis-page #measurementsTable td {
+  padding: 12px 10px;
+}
+
+.ceph-analysis-page .measurement-name {
+  font-weight: 500;
+  color: #2c3e50;
+  min-width: 200px;
+}
+
+/* Text Alignment */
+.ceph-analysis-page .text-center {
+  text-align: center;
+}
+
+.ceph-analysis-page .font-bold {
+  font-weight: 700;
+}
+
+/* Color Coding */
+.ceph-analysis-page .color-normal {
+  color: #28a745;
+  font-weight: 600;
+}
+
+.ceph-analysis-page .color-moderate {
+  color: #fd7e14;
+  font-weight: 600;
+}
+
+.ceph-analysis-page .color-severe {
+  color: #dc3545;
+  font-weight: 700;
+}
+
+/* Scrollbar Styling */
+.ceph-analysis-page .table-container::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.ceph-analysis-page .table-container::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 10px;
+}
+
+.ceph-analysis-page .table-container::-webkit-scrollbar-thumb {
+  background: #667eea;
+  border-radius: 10px;
+}
+
+.ceph-analysis-page .table-container::-webkit-scrollbar-thumb:hover {
+  background: #764ba2;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .ceph-analysis-page .content-wrapper {
+    padding: 15px;
+  }
+
+  .ceph-analysis-page .canvas-section,
+  .ceph-analysis-page .table-section {
+    padding: 15px;
+  }
+
+  .ceph-analysis-page #measurementsTable {
+    font-size: 12px;
+  }
+
+  .ceph-analysis-page #measurementsTable th,
+  .ceph-analysis-page #measurementsTable td {
+    padding: 8px 5px;
+  }
+
+  .ceph-analysis-page .measurement-name {
+    min-width: 150px;
+  }
+}
+
+/* Loading Animation */
+@keyframes ceph-pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+.ceph-analysis-page .loading {
+  animation: ceph-pulse 1.5s ease-in-out infinite;
+}
+
+/* Tooltip for measurements */
+.ceph-analysis-page .measurement-row:hover .measurement-name::after {
+  content: " 🔍";
+  animation: ceph-pulse 1s ease-in-out infinite;
+}

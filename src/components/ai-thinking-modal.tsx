@@ -14,7 +14,7 @@ import {
 
 interface AIThinkingModalProps {
   isOpen: boolean;
-  analysisType: 'facial' | 'radiographic' | '3d' | 'treatment';
+  analysisType: 'facial' | 'radiographic' | 'ceph' | '3d' | 'treatment';
   onComplete: () => void;
 }
 
@@ -53,6 +53,19 @@ const AIThinkingModal: React.FC<AIThinkingModalProps> = ({
         'Detecting dental structures...',
         'Analyzing bone density patterns...',
         'Generating diagnostic insights...'
+      ]
+    },
+    ceph: {
+      title: 'Cephalometric Analysis AI',
+      icon: Scan,
+      color: 'teal',
+      steps: [
+        'Initializing cephalometric engine...',
+        'Loading landmark detection models...',
+        'Processing lateral X-ray data...',
+        'Detecting anatomical landmarks...',
+        'Computing angular measurements...',
+        'Generating cephalometric report...'
       ]
     },
     '3d': {
@@ -148,12 +161,14 @@ const AIThinkingModal: React.FC<AIThinkingModalProps> = ({
             <div className={`w-20 h-20 mx-auto mb-4 rounded-full flex items-center justify-center relative ${
               config.color === 'blue' ? 'bg-blue-100' :
               config.color === 'emerald' ? 'bg-emerald-100' :
+              config.color === 'teal' ? 'bg-teal-100' :
               config.color === 'purple' ? 'bg-purple-100' :
               'bg-orange-100'
             }`}>
               <Icon className={`w-10 h-10 ${
                 config.color === 'blue' ? 'text-blue-600' :
                 config.color === 'emerald' ? 'text-emerald-600' :
+                config.color === 'teal' ? 'text-teal-600' :
                 config.color === 'purple' ? 'text-purple-600' :
                 'text-orange-600'
               }`} />

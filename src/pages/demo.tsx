@@ -166,7 +166,7 @@ const DemoPage = () => {
   // AI Thinking Modal state
   const [showAIThinking, setShowAIThinking] = useState(false);
   const [currentAnalysis, setCurrentAnalysis] = useState<
-    "facial" | "radiographic" | "3d" | "treatment"
+    "facial" | "radiographic" | "ceph" | "3d" | "treatment"
   >("facial");
   const [pendingNavigation, setPendingNavigation] = useState<{
     path: string;
@@ -400,11 +400,23 @@ const DemoPage = () => {
   // Check if specific image types are available for analysis
   const hasFaceImages = uploadedImages.frontal && uploadedImages.profile;
   const hasXrayImages = uploadedImages.lateral || uploadedImages.general_xray;
+  const hasCephImages = uploadedImages.lateral;
   const hasAllImages =
     uploadedImages.frontal &&
     uploadedImages.profile &&
     uploadedImages.lateral &&
     uploadedImages.general_xray;
+
+  // Count available analysis buttons
+  const availableAnalysisCount = [
+    hasFaceImages,    // Facial Analysis
+    hasXrayImages,    // Radiographic Analysis
+    hasCephImages,    // Ceph Analysis
+    true,             // 3D Model (always available)
+    true,             // Treatment Planning (always available)
+  ].filter(Boolean).length;
+
+  const totalAnalysisCount = 5; // Total number of analysis buttons
 
   const handleEditStart = (field: string, currentValue: string) => {
     setEditingField(field);
@@ -427,7 +439,7 @@ const DemoPage = () => {
 
   // AI Thinking handlers
   const handleAnalysisClick = (
-    analysisType: "facial" | "radiographic" | "3d" | "treatment",
+    analysisType: "facial" | "radiographic" | "ceph" | "3d" | "treatment",
     path: string,
     withImages = false
   ) => {
@@ -1140,24 +1152,17 @@ const DemoPage = () => {
                           </span>
                         </div>
                         <span className="text-xs text-gray-600 bg-gray-100 px-2 py-1 rounded-full font-mono">
-                          {Object.values(uploadedImages).filter(Boolean).length}{" "}
-                          / {Object.keys(uploadedImages).length} Ready
+                          {availableAnalysisCount} / {totalAnalysisCount} Available
                         </span>
                       </div>
                       <Progress
-                        value={
-                          (Object.values(uploadedImages).filter(Boolean)
-                            .length /
-                            Object.keys(uploadedImages).length) *
-                          100
-                        }
+                        value={(availableAnalysisCount / totalAnalysisCount) * 100}
                         className="h-2 mb-3"
                       />
                       <div className="text-sm text-gray-700">
-                        {Object.values(uploadedImages).filter(Boolean)
-                          .length === Object.keys(uploadedImages).length
+                        {availableAnalysisCount === totalAnalysisCount
                           ? "✅ All diagnostic tools are ready for use"
-                          : "⏳ Load more data to enable additional analysis"}
+                          : `⏳ ${availableAnalysisCount} of ${totalAnalysisCount} analysis tools available`}
                       </div>
                     </div>
 
@@ -1253,6 +1258,48 @@ const DemoPage = () => {
                         {!hasXrayImages && (
                           <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
                             Digital radiographs required
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Ceph Analysis */}
+                      <div className="relative group">
+                        <Button
+                          className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${
+                            uploadedImages.lateral
+                              ? "bg-teal-600 hover:bg-teal-700 text-white shadow-md border border-teal-700"
+                              : "bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200"
+                          }`}
+                          disabled={!uploadedImages.lateral || showAIThinking}
+                          onClick={() =>
+                            uploadedImages.lateral &&
+                            handleAnalysisClick("ceph", "/ceph-analysis", true)
+                          }
+                        >
+                          <div
+                            className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
+                              uploadedImages.lateral ? "bg-teal-500" : "bg-gray-200"
+                            }`}
+                          >
+                            <Target className="w-6 h-6" />
+                          </div>
+                          <div className="text-left flex-1">
+                            <div className="font-semibold text-base flex items-center justify-between">
+                              Ceph Analysis
+                              {uploadedImages.lateral && (
+                                <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
+                              )}
+                            </div>
+                            <div className="text-sm opacity-80 mt-1">
+                              {uploadedImages.lateral
+                                ? "Cephalometric Measurements"
+                                : "Requires lateral ceph X-ray"}
+                            </div>
+                          </div>
+                        </Button>
+                        {!uploadedImages.lateral && (
+                          <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
+                            Lateral ceph X-ray required
                           </div>
                         )}
                       </div>
