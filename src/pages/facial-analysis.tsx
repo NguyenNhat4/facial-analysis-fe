@@ -223,25 +223,6 @@ export default function FacialAnalysisPage() {
                   <ArrowLeft size={20} className="mr-2" />
                   Quay lại
                 </Button>
-              <div className="flex items-center space-x-4">
-                <div className="relative">
-                  <img
-                    src="/assets/leetray_logo.png"
-                    alt="LeeTray Logo"
-                    className="w-14 h-14 object-contain"
-                  />
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full border-2 border-white"></div>
-                </div>
-                <div className="h-8 w-px bg-gray-300"></div>
-                <div className="relative">
-                  <img
-                    src="/assets/hiai-logo.png"
-                    alt="HiAI Logo"
-                    className="w-14 h-14 object-contain"
-                  />
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-600 rounded-full border-2 border-white"></div>
-                </div>
-              </div>
               <div className="border-l-2 border-blue-200 pl-6">
                 <h1 className="text-xl font-bold text-gray-800">
                   Phân tích Gương mặt AI

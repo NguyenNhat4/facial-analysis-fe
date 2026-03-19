@@ -45,6 +45,8 @@ import {
   extractCaseIdFromInputFile,
 } from "../utils/case-mapping";
 import AIThinkingModal from "../components/ai-thinking-modal";
+import ValidationErrorModal from "../components/validation-error-modal";
+import ToastNotification from "../components/toast-notification";
 
 const DemoPage = () => {
   const [location, setLocation] = useLocation();
@@ -754,26 +756,7 @@ const DemoPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-24">
             <div className="flex items-center space-x-6">
-              <div className="flex items-center space-x-4">
-                <div className="relative">
-                  <img
-                    src="/assets/leetray_logo.png"
-                    alt="LeeTray Logo"
-                    className="w-14 h-14 object-contain"
-                  />
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-600 rounded-full border-2 border-white"></div>
-                </div>
-                <div className="h-8 w-px bg-gray-300"></div>
-                <div className="relative">
-                  <img
-                    src="/assets/hiai-logo.png"
-                    alt="HiAI Logo"
-                    className="w-14 h-14 object-contain"
-                  />
-                  <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-emerald-600 rounded-full border-2 border-white"></div>
-                </div>
-              </div>
-              <div className="border-l-2 border-blue-200 pl-6">
+              <div className="border-l-2 border-blue-200 pl-6 border-l-0">
                 <h1 className="text-xl font-bold text-gray-800">
                   Dental Analysis System
                 </h1>
@@ -1292,19 +1275,6 @@ const DemoPage = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-6 mb-8">
-              <div className="flex items-center space-x-4">
-                <img
-                  src="/assets/leetray_logo.png"
-                  alt="LeeTray Logo"
-                  className="w-16 h-16 object-contain"
-                />
-                <div className="h-8 w-px bg-gray-600"></div>
-                <img
-                  src="/assets/hiai-logo.png"
-                  alt="HiAI Logo"
-                  className="w-16 h-16 object-contain"
-                />
-              </div>
             </div>
             <div className="w-20 h-1 bg-blue-600 rounded-full mx-auto mb-6"></div>
             <div className="max-w-3xl mx-auto mb-6">
@@ -1340,158 +1310,30 @@ const DemoPage = () => {
       />
 
       {/* Validation Error Modal */}
-      {validationError.show && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md mx-4 shadow-2xl">
-            <div className="flex items-center mb-4">
-              <div className="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
-                <X className="w-6 h-6 text-red-600" />
-              </div>
-              <h3 className="text-lg font-semibold text-gray-800">
-                Invalid File Name
-              </h3>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-gray-600 mb-3">
-                The file name doesn't match the expected format for this image
-                type.
-              </p>
-              <div className="bg-gray-50 rounded-lg p-3 mb-3">
-                <p className="text-sm font-mono text-gray-700">
-                  File: {validationError.fileName}
-                </p>
-              </div>
-              <div className="text-sm text-gray-700">
-                <p className="font-medium mb-2">
-                  Valid keywords for this type:
-                </p>
-                <div className="bg-blue-50 rounded-lg p-3 mb-3">
-                  <pre className="text-xs text-blue-800 whitespace-pre-wrap">
-                    {getKeywordsForType(validationError.imageId)}
-                  </pre>
-                </div>
-                <p className="font-medium mb-2">Example file names:</p>
-                <div className="bg-green-50 rounded-lg p-3">
-                  <pre className="text-xs text-green-800 whitespace-pre-wrap">
-                    case01_{getExampleFileName(validationError.imageId)}
-                    patient02_{getExampleFileName(validationError.imageId)}
-                    {getExampleFileName(validationError.imageId)}
-                  </pre>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end space-x-3">
-              <Button
-                onClick={() =>
-                  setValidationError({
-                    show: false,
-                    message: "",
-                    imageId: "",
-                    fileName: "",
-                  })
-                }
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Got it
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ValidationErrorModal
+        show={validationError.show}
+        message={validationError.message}
+        imageId={validationError.imageId}
+        fileName={validationError.fileName}
+        onClose={() =>
+          setValidationError({
+            show: false,
+            message: "",
+            imageId: "",
+            fileName: "",
+          })
+        }
+        getKeywordsForType={getKeywordsForType}
+        getExampleFileName={getExampleFileName}
+      />
 
       {/* Toast Notification */}
-      {toast.show && (
-        <div
-          className={`fixed bottom-6 right-6 z-50 transform transition-all duration-500 ease-in-out ${
-            toast.show
-              ? "translate-y-0 opacity-100"
-              : "translate-y-full opacity-0"
-          }`}
-        >
-          <div
-            className={`px-6 py-4 rounded-lg shadow-lg max-w-sm ${
-              toast.type === "success"
-                ? "bg-green-500 text-white"
-                : toast.type === "error"
-                ? "bg-red-500 text-white"
-                : "bg-blue-500 text-white"
-            }`}
-          >
-            <div className="flex items-center space-x-3">
-              <div className="flex-shrink-0">
-                {toast.type === "success" && (
-                  <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                )}
-                {toast.type === "error" && (
-                  <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                )}
-                {toast.type === "info" && (
-                  <div className="w-6 h-6 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                    <svg
-                      className="w-4 h-4"
-                      fill="currentColor"
-                      viewBox="0 0 20 20"
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                  </div>
-                )}
-              </div>
-              <div className="flex-1">
-                <p className="text-sm font-medium">{toast.message}</p>
-              </div>
-              <button
-                onClick={() =>
-                  setToast({ show: false, message: "", type: "info" })
-                }
-                className="flex-shrink-0 ml-4 text-white hover:text-gray-200 transition-colors"
-              >
-                <svg
-                  className="w-4 h-4"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ToastNotification
+        show={toast.show}
+        message={toast.message}
+        type={toast.type}
+        onClose={() => setToast({ show: false, message: "", type: "info" })}
+      />
     </div>
   );
 };

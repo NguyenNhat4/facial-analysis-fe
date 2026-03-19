@@ -76,16 +76,6 @@ export default function HeaderBar({
           borderRight: "1px solid rgba(203, 213, 225, 0.4)",
         }}
       >
-        <img
-          src="../../assets/hiai-logo.png"
-          alt="Logo"
-          style={{
-            height: "44px",
-            borderRadius: "8px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.12)",
-            border: "1px solid rgba(255, 255, 255, 0.8)",
-          }}
-        />
         <div
           style={{
             fontSize: "18px",

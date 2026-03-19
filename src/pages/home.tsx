@@ -10,19 +10,7 @@ export default function Home() {
       <header className="bg-white shadow-sm border-b border-clinical-200 sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-20">
-            <div className="flex items-center space-x-4">
-              <img
-                src="/assets/leetray_logo.png"
-                alt="LeeTray Logo"
-                className="w-28 h-28 object-contain"
-              />
-              <span className="text-clinical-400 font-bold text-2xl">×</span>
-              <img
-                src="/assets/hiai-logo.png"
-                alt="HiAI Logo"
-                className="w-28 h-28 object-contain"
-              />
-            </div>
+            <div></div>
             <div className="flex items-center space-x-4">
               <nav className="hidden md:flex space-x-8">
                 <a
@@ -390,19 +378,6 @@ export default function Home() {
       <footer className="bg-clinical-800 text-clinical-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="text-center">
-            <div className="flex items-center justify-center space-x-4 mb-4">
-              <img
-                src="/assets/leetray_logo.png"
-                alt="LeeTray Logo"
-                className="w-24 h-24 object-contain"
-              />
-              <span className="text-clinical-400 font-bold text-xl">×</span>
-              <img
-                src="/assets/hiai-logo.png"
-                alt="HiAI Logo"
-                className="w-24 h-24 object-contain"
-              />
-            </div>
             <div className="mb-4">
               <TelegramButton botUsername="AnsiudeptraiBot" className="mb-4">
                 Liên hệ qua Telegram Bot
