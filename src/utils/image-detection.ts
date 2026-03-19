@@ -9,14 +9,6 @@ const IMAGE_PATTERNS: Record<ImageType, RegExp[]> = {
     /side.*x.*ray/i,
     /nghieng/i
   ],
-  general_xray: [
-    /pano/i,
-    /panoramic/i,
-    /general.*x.*ray/i,
-    /toan.*canh/i,
-    /xquang.*tong/i,
-    /ortho.*x.*ray/i
-  ],
   frontal: [
     /frontal/i,
     /front/i,
@@ -31,37 +23,14 @@ const IMAGE_PATTERNS: Record<ImageType, RegExp[]> = {
     /lateral.*face/i,
     /mat.*nghieng/i,
     /ben.*hong/i
-  ],
-  model_3d_upper: [
-    /3d.*upper/i,
-    /upper.*3d/i,
-    /model.*upper/i,
-    /upper.*model/i,
-    /scan.*upper/i,
-    /upper.*scan/i,
-    /upper.*stl$/i,
-    /ham.*tren/i
-  ],
-  model_3d_lower: [
-    /3d.*lower/i,
-    /lower.*3d/i,
-    /model.*lower/i,
-    /lower.*model/i,  
-    /scan.*lower/i,
-    /lower.*scan/i,
-    /lower.*stl$/i,
-    /ham.*duoi/i
   ]
 };
 
 // Keywords để detect từ EXIF/metadata
 const METADATA_KEYWORDS: Record<ImageType, string[]> = {
   lateral: ['lateral', 'cephalometric', 'side x-ray'],
-  general_xray: ['panoramic', 'general x-ray', 'ortho x-ray'],
   frontal: ['frontal face', 'front portrait', 'face front'],
-  profile: ['profile', 'side face', 'lateral face'],
-  model_3d_upper: ['3d model upper', 'upper jaw scan', 'upper intraoral'],
-  model_3d_lower: ['3d model lower', 'lower jaw scan', 'lower intraoral']
+  profile: ['profile', 'side face', 'lateral face']
 };
 
 // Function để detect image type từ filename
@@ -87,13 +56,6 @@ export const detectImageTypeFromFile = async (file: File): Promise<ImageType | n
     return filenameDetection;
   }
 
-  // Try to detect from file type - fallback for STL files without upper/lower in name
-  if (file.type.includes('model') || file.name.endsWith('.stl') || file.name.endsWith('.obj')) {
-    // If no upper/lower specified, suggest it could be either
-    // In real implementation, you might want to prompt user to choose
-    console.warn(`STL file ${file.name} detected but no upper/lower specified. Please rename with _upper or _lower suffix.`);
-    return null; // Force user to be explicit
-  }
 
   // Could add EXIF reading here if needed
   // For now, return null if can't detect
@@ -124,11 +86,8 @@ export const groupFilesByType = async (files: File[]): Promise<{
 }> => {
   const detected: Record<ImageType, File[]> = {
     lateral: [],
-    general_xray: [],
     frontal: [],
-    profile: [],
-    model_3d_upper: [],
-    model_3d_lower: []
+    profile: []
   };
   const undetected: File[] = [];
 
@@ -155,11 +114,8 @@ export const generateOutputFilename = (inputFile: File, imageType: ImageType): s
 const getOutputSuffix = (imageType: ImageType): string => {
   const suffixes: Record<ImageType, string> = {
     lateral: 'ceph_analysis',
-    general_xray: 'pano_seg',
     frontal: 'face_analysis',
-    profile: 'profile_analysis',
-    model_3d_upper: '3d_upper_analysis',
-    model_3d_lower: '3d_lower_analysis'
+    profile: 'profile_analysis'
   };
   return suffixes[imageType];
 };
@@ -167,11 +123,6 @@ const getOutputSuffix = (imageType: ImageType): string => {
 // Function để validate file types
 export const validateFileType = (file: File): boolean => {
   const validImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/bmp', 'image/tiff'];
-  const valid3DTypes = ['application/octet-stream']; // For .stl files
   
-  return validImageTypes.includes(file.type) || 
-         valid3DTypes.includes(file.type) ||
-         file.name.toLowerCase().endsWith('.stl') ||
-         file.name.toLowerCase().endsWith('.obj') ||
-         file.name.toLowerCase().endsWith('.ply');
+  return validImageTypes.includes(file.type);
 };

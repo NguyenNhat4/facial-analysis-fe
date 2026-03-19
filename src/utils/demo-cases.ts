@@ -24,10 +24,7 @@ const getDefaultConfig = (): DemoCasesConfig => ({
     fallbackImages: {
       lateral: '',
       profile: '', 
-      frontal: '',
-      general_xray: '',
-      model_3d_upper: '',
-      model_3d_lower: ''
+      frontal: ''
     }
   }
 });
