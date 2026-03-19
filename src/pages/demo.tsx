@@ -72,7 +72,6 @@ const DemoPage = () => {
     lateral: false,
     profile: false,
     frontal: false,
-    general_xray: false,
   });
 
   // State to store uploaded image files
@@ -82,7 +81,6 @@ const DemoPage = () => {
     lateral: null,
     profile: null,
     frontal: null,
-    general_xray: null,
   });
 
   // State to store image preview URLs
@@ -92,7 +90,6 @@ const DemoPage = () => {
     lateral: "",
     profile: "",
     frontal: "",
-    general_xray: "",
   });
 
   // Loading state for fake upload
@@ -166,7 +163,7 @@ const DemoPage = () => {
   // AI Thinking Modal state
   const [showAIThinking, setShowAIThinking] = useState(false);
   const [currentAnalysis, setCurrentAnalysis] = useState<
-    "facial" | "radiographic" | "ceph" | "3d" | "treatment"
+    "facial" | "ceph" | "treatment"
   >("facial");
   const [pendingNavigation, setPendingNavigation] = useState<{
     path: string;
@@ -285,14 +282,6 @@ const DemoPage = () => {
         /side.*x.*ray/i,
         /nghieng/i,
       ],
-      general_xray: [
-        /pano/i,
-        /panoramic/i,
-        /general.*x.*ray/i,
-        /toan.*canh/i,
-        /xquang.*tong/i,
-        /ortho.*x.*ray/i,
-      ],
       frontal: [
         /frontal/i,
         /front/i,
@@ -323,7 +312,6 @@ const DemoPage = () => {
   ): string => {
     const typeNames: Record<string, string> = {
       lateral: "Lateral Cephalometric",
-      general_xray: "General X-Ray (Panoramic)",
       frontal: "Frontal Face",
       profile: "Profile Face",
     };
@@ -337,7 +325,6 @@ const DemoPage = () => {
   const getKeywordsForType = (imageId: string): string => {
     const keywords: Record<string, string> = {
       lateral: "• lateral, ceph, cephalometric, side x-ray, nghieng",
-      general_xray: "• pano, panoramic, general x-ray, toan canh, xquang tong",
       frontal: "• frontal, front, face front, portrait, mat truoc, chinh dien",
       profile: "• profile, side face, lateral face, mat nghieng, ben hong",
     };
@@ -349,7 +336,6 @@ const DemoPage = () => {
   const getExampleFileName = (imageId: string): string => {
     const examples: Record<string, string> = {
       lateral: "lateral.jpg",
-      general_xray: "panoramic.jpg",
       frontal: "frontal.jpg",
       profile: "profile.jpg",
     };
@@ -399,24 +385,20 @@ const DemoPage = () => {
 
   // Check if specific image types are available for analysis
   const hasFaceImages = uploadedImages.frontal && uploadedImages.profile;
-  const hasXrayImages = uploadedImages.general_xray; // Only panoramic X-ray, not lateral
   const hasCephImages = uploadedImages.lateral; // Lateral ceph for Ceph Analysis
   const hasAllImages =
     uploadedImages.frontal &&
     uploadedImages.profile &&
-    uploadedImages.lateral &&
-    uploadedImages.general_xray;
+    uploadedImages.lateral;
 
   // Count available analysis buttons
   const availableAnalysisCount = [
     hasFaceImages,    // Facial Analysis (frontal + profile)
-    hasXrayImages,    // Radiographic Analysis (general_xray only)
     hasCephImages,    // Ceph Analysis (lateral only)
-    true,             // 3D Model (always available)
     true,             // Treatment Planning (always available)
   ].filter(Boolean).length;
 
-  const totalAnalysisCount = 5; // Total number of analysis buttons
+  const totalAnalysisCount = 3; // Total number of analysis buttons
 
   const handleEditStart = (field: string, currentValue: string) => {
     setEditingField(field);
@@ -439,7 +421,7 @@ const DemoPage = () => {
 
   // AI Thinking handlers
   const handleAnalysisClick = (
-    analysisType: "facial" | "radiographic" | "ceph" | "3d" | "treatment",
+    analysisType: "facial" | "ceph" | "treatment",
     path: string,
     withImages = false
   ) => {
@@ -480,10 +462,6 @@ const DemoPage = () => {
         }
       });
 
-      // Add original filename for the xray to ensure correct data mapping
-      if (localImages.general_xray?.outputFilename) {
-        imageParams.set('xrayFile', localImages.general_xray.outputFilename);
-      }
 
       // Navigate with query params
       const queryString = imageParams.toString();
@@ -573,14 +551,12 @@ const DemoPage = () => {
       lateral: false,
       profile: false,
       frontal: false,
-      general_xray: false,
     };
 
     const newImagePreviewUrls: { [key: string]: string } = {
       lateral: "",
       profile: "",
       frontal: "",
-      general_xray: "",
     };
 
     Object.entries(processedImages).forEach(([imageType, data]) => {
@@ -617,14 +593,12 @@ const DemoPage = () => {
         lateral: false,
         profile: false,
         frontal: false,
-        general_xray: false,
       });
 
       setImagePreviewUrls({
         lateral: "",
         profile: "",
         frontal: "",
-        general_xray: "",
       });
 
       // Reset folder info
@@ -1046,18 +1020,7 @@ const DemoPage = () => {
                                     {loadingCards[item.id] ? (
                                       <Upload className="w-8 h-8 text-blue-500 animate-spin" />
                                     ) : uploadedImages[item.id] ? (
-                                      item.id === "model_3d_upper" ||
-                                      item.id === "model_3d_lower" ? (
-                                        <div className="relative w-full h-full bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl flex items-center justify-center">
-                                          <Box className="w-12 h-12 text-purple-600" />
-                                          <div className="absolute bottom-1 right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white"></div>
-                                          <div className="absolute top-1 left-1 text-xs bg-purple-600 text-white px-1 rounded">
-                                            {item.id === "model_3d_upper"
-                                              ? "U"
-                                              : "L"}
-                                          </div>
-                                        </div>
-                                      ) : imagePreviewUrls[item.id] ? (
+                                      imagePreviewUrls[item.id] ? (
                                         <img
                                           src={imagePreviewUrls[item.id]}
                                           alt={item.name}
@@ -1107,28 +1070,6 @@ const DemoPage = () => {
                         </div>
                       </div>
                     ))}
-                    {/* 3D Model Analysis */}
-                    <div className="relative group">
-                      <Button
-                        className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${"bg-purple-600 hover:bg-purple-700 text-white shadow-md border border-purple-700"}`}
-                        onClick={() => handleNavigation("/model-3d", true)}
-                      >
-                        <div
-                          className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${"bg-purple-500"}`}
-                        >
-                          <Box className="w-6 h-6" />
-                        </div>
-                        <div className="text-left flex-1">
-                          <div className="font-semibold text-base flex items-center justify-between">
-                            3D Model Analysis
-                            <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
-                          </div>
-                          <div className="text-sm opacity-80 mt-1">
-                            Digital Model Assessment
-                          </div>
-                        </div>
-                      </Button>
-                    </div>
                   </div>
 
                   {/* Clinical Analysis Sidebar */}
@@ -1212,52 +1153,6 @@ const DemoPage = () => {
                             {!currentFolderName && <br />}
                             {!currentFolderName &&
                               "Upload images to detect case folder"}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Radiographic Analysis */}
-                      <div className="relative group">
-                        <Button
-                          className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${
-                            hasXrayImages
-                              ? "bg-emerald-600 hover:bg-emerald-700 text-white shadow-md border border-emerald-700"
-                              : "bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200"
-                          }`}
-                          disabled={!hasXrayImages || showAIThinking}
-                          onClick={() =>
-                            hasXrayImages &&
-                            handleAnalysisClick(
-                              "radiographic",
-                              "/xray-analysis",
-                              true
-                            )
-                          }
-                        >
-                          <div
-                            className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
-                              hasXrayImages ? "bg-emerald-500" : "bg-gray-200"
-                            }`}
-                          >
-                            <Scan className="w-6 h-6" />
-                          </div>
-                          <div className="text-left flex-1">
-                            <div className="font-semibold text-base flex items-center justify-between">
-                              Radiographic Analysis
-                              {hasXrayImages && (
-                                <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
-                              )}
-                            </div>
-                            <div className="text-sm opacity-80 mt-1">
-                              {hasXrayImages
-                                ? "Digital X-Ray Interpretation"
-                                : "Requires radiographic data"}
-                            </div>
-                          </div>
-                        </Button>
-                        {!hasXrayImages && (
-                          <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                            Digital radiographs required
                           </div>
                         )}
                       </div>

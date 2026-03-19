@@ -62,10 +62,8 @@ const DemoCaseManager: React.FC<DemoCaseManagerProps> = ({
   const getImageTypeIcon = (type: ImageType) => {
     const icons: Record<ImageType, string> = {
       lateral: '🦷',
-      general_xray: '📷',
       frontal: '👤',
-      profile: '👥',
-      model_3d: '📦'
+      profile: '👥'
     };
     return icons[type] || '📄';
   };

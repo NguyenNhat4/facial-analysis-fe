@@ -140,11 +140,8 @@ const LocalImageUploader: React.FC<LocalImageUploaderProps> = ({
     // For now, return empty placeholder - user will add output images later
     const placeholders: Record<ImageType, string> = {
       lateral: '/assets/output_xray.jpg',
-      general_xray: '/assets/output_xray.jpg',
       frontal: '/assets/output_xray.jpg',
-      profile: '/assets/output_xray.jpg',
-      model_3d_upper: '/assets/output_xray.jpg',
-      model_3d_lower: '/assets/output_xray.jpg'
+      profile: '/assets/output_xray.jpg'
     };
 
     return placeholders[imageType];
@@ -278,17 +275,11 @@ const LocalImageUploader: React.FC<LocalImageUploaderProps> = ({
                 >
                   {/* Preview */}
                   <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-200 flex-shrink-0">
-                    {item.type === 'model_3d' ? (
-                      <div className="w-full h-full bg-purple-100 flex items-center justify-center">
-                        <File className="w-6 h-6 text-purple-600" />
-                      </div>
-                    ) : (
                       <img 
                         src={item.preview} 
                         alt={item.file.name}
                         className="w-full h-full object-cover"
                       />
-                    )}
                   </div>
 
                   {/* Info */}
@@ -332,7 +323,7 @@ const LocalImageUploader: React.FC<LocalImageUploaderProps> = ({
               <p className="font-medium mb-1">Auto-Detection Tips:</p>
               <ul className="text-xs space-y-1">
                 <li>• Use descriptive filenames (e.g., "patient_lateral.jpg", "frontal_face.png")</li>
-                <li>• Supported: lateral, ceph, pano, frontal, profile, 3d, model</li>
+                <li>• Supported: lateral, ceph, frontal, profile</li>
                 <li>• The system will map images to appropriate analysis slots</li>
               </ul>
             </div>
