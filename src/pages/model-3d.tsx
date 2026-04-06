@@ -247,69 +247,6 @@ export default function Model3DPage() {
             </Card>
           </div>
 
-          {/* Treatment Timeline */}
-          <Card className="mt-8 border-purple-200 bg-purple-50">
-            <CardHeader className="border-b border-purple-200">
-              <h4 className="font-semibold text-purple-900 flex items-center">
-                <Clock className="mr-2" size={20} />
-                Lộ trình Điều trị
-              </h4>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-6">
-                <div className="flex items-center space-x-4">
-                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    1
-                  </div>
-                  <div className="flex-1">
-                    <h5 className="font-medium text-purple-900">Giai đoạn chuẩn bị (Tháng 1-3)</h5>
-                    <p className="text-sm text-purple-700">Điều trị nội nha, vệ sinh răng miệng</p>
-                  </div>
-                  <span className="text-sm text-purple-600 bg-purple-100 px-3 py-1 rounded-full">3 tháng</span>
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    2
-                  </div>
-                  <div className="flex-1">
-                    <h5 className="font-medium text-purple-900">Giai đoạn chính (Tháng 4-15)</h5>
-                    <p className="text-sm text-purple-700">Niềng răng chỉnh nha, điều chỉnh khớp cắn</p>
-                  </div>
-                  <span className="text-sm text-purple-600 bg-purple-100 px-3 py-1 rounded-full">12 tháng</span>
-                </div>
-
-                <div className="flex items-center space-x-4">
-                  <div className="w-8 h-8 bg-purple-500 rounded-full flex items-center justify-center text-white text-sm font-bold">
-                    3
-                  </div>
-                  <div className="flex-1">
-                    <h5 className="font-medium text-purple-900">Giai đoạn hoàn thiện (Tháng 16-18)</h5>
-                    <p className="text-sm text-purple-700">Tháo niềng, lắp hàm duy trì, theo dõi</p>
-                  </div>
-                  <span className="text-sm text-purple-600 bg-purple-100 px-3 py-1 rounded-full">3 tháng</span>
-                </div>
-              </div>
-
-              <div className="mt-6 pt-6 border-t border-purple-200">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-lg font-semibold text-purple-900">Tổng thời gian điều trị</p>
-                    <p className="text-sm text-purple-700">Từ khám ban đầu đến hoàn thành</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-3xl font-bold text-purple-900">{comparison.treatmentTime}</p>
-                    <Link href="/chat">
-                      <Button className="mt-2 bg-purple-600 hover:bg-purple-700 text-white">
-                        <MessageCircle size={14} className="mr-2" />
-                        Tư vấn kế hoạch
-                      </Button>
-                    </Link>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </section>
     </div>

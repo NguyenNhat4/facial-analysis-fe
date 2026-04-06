@@ -8,7 +8,6 @@ import FacialAnalysisPage from "@/pages/facial-analysis";
 import CephAnalysisPage from "@/pages/ceph-analysis";
 import DemoPage from "@/pages/demo";
 import NotFound from "@/pages/not-found";
-import Treatment from "./TreatmentPlan";
 
 function Router() {
   return (
@@ -17,7 +16,6 @@ function Router() {
       <Route path="/chat" component={Chat} />
       <Route path="/facial-analysis" component={FacialAnalysisPage} />
       <Route path="/ceph-analysis" component={CephAnalysisPage} />
-      <Route path="/treatment-plan" component={Treatment} />
       <Route component={NotFound} />
     </Switch>
   );

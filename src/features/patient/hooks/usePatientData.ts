@@ -14,7 +14,6 @@ export function usePatientData() {
     chiefComplaint: "Click to edit",
     diagnose: "Click to edit",
     note: "Click to edit",
-    treatmentPlan: "Click to edit",
   });
 
   const [editingField, setEditingField] = useState<string | null>(null);

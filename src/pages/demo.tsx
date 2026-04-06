@@ -84,7 +84,7 @@ const DemoPage = () => {
   // AI Thinking Modal state
   const [showAIThinking, setShowAIThinking] = useState(false);
   const [currentAnalysis, setCurrentAnalysis] = useState<
-    "facial" | "ceph" | "treatment"
+    "facial" | "ceph"
   >("facial");
   const [pendingNavigation, setPendingNavigation] = useState<{
     path: string;
@@ -127,7 +127,7 @@ const DemoPage = () => {
 
   // AI Thinking handlers
   const handleAnalysisClick = (
-    analysisType: "facial" | "ceph" | "treatment",
+    analysisType: "facial" | "ceph",
     path: string,
     withImages = false
   ) => {
@@ -719,43 +719,6 @@ const DemoPage = () => {
                         )}
                       </div> */}
 
-                      {/* Treatment Planning */}
-                      <div className="relative group">
-                        <Button
-                          className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${"bg-orange-600 hover:bg-orange-700 text-white shadow-md border border-orange-700"}`}
-                          onClick={() =>
-                            handleAnalysisClick(
-                              "treatment",
-                              "/treatment-plan",
-                              true
-                            )
-                          }
-                        >
-                          <div
-                            className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${"bg-orange-500"}`}
-                          >
-                            <Stethoscope className="w-6 h-6" />
-                          </div>
-                          <div className="text-left flex-1">
-                            <div className="font-semibold text-base flex items-center justify-between">
-                              Treatment Planning
-                              {hasAllImages && (
-                                <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
-                              )}
-                            </div>
-                            <div className="text-sm opacity-80 mt-1">
-                              {hasAllImages
-                                ? "AI Treatment Simulation"
-                                : "Requires complete dataset"}
-                            </div>
-                          </div>
-                        </Button>
-                        {!hasAllImages && (
-                          <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                            Complete clinical data required
-                          </div>
-                        )}
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -777,8 +740,8 @@ const DemoPage = () => {
                 Clinical AI Diagnostic Platform
               </h3>
               <p className="text-gray-400 text-base leading-relaxed">
-                Advanced artificial intelligence for dental diagnostics and
-                treatment planning. Empowering healthcare professionals with
+                Advanced artificial intelligence for dental diagnostics.
+                Empowering healthcare professionals with
                 cutting-edge technology.
               </p>
             </div>
