@@ -1,13 +1,5 @@
 // Common type definitions for the dental AI application
 
-export interface Model {
-  target: string;
-  model_name: string;
-  accuracy?: number;
-  f1_score?: number;
-  classes: number;
-}
-
 export interface Features {
   gender: number;
   age: number;
@@ -96,7 +88,6 @@ export type Predictions = MultiOutputPrediction | SingleTargetPrediction | null;
 
 export type PredictionType = "multi-output" | "single-target";
 export type InputMode = "guided" | "advanced";
-export type TabName = "predict" | "models";
 
 // Form field types
 export interface Option {
