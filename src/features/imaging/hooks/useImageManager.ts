@@ -246,8 +246,8 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
   const hasCephImages = uploadedImages.lateral;
   const hasAllImages = uploadedImages.frontal && uploadedImages.profile && uploadedImages.lateral;
   
-  const availableAnalysisCount = [hasFaceImages, hasCephImages, true].filter(Boolean).length;
-  const totalAnalysisCount = 3;
+  const availableAnalysisCount = [hasFaceImages, hasCephImages].filter(Boolean).length;
+  const totalAnalysisCount = 2;
 
   return {
     localImages,

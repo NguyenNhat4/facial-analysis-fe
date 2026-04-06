@@ -39,22 +39,14 @@ interface XrayAnalysisData {
       total_teeth: number;
       healthy_teeth: number;
       decayed_teeth: number;
-      treatment_needed: number;
       overall_health: number;
     };
     detailed_analysis: Array<{
       tooth_number: number;
-      status: "healthy" | "decay" | "treatment_needed";
+      status: "healthy" | "decay";
       condition: string;
       position: { x: number; y: number; width: number; height: number };
       confidence: number;
-      treatment?: {
-        priority: "low" | "medium" | "high" | "urgent";
-        method: string;
-        estimated_time: string;
-        cost_estimate: string;
-        notes: string;
-      };
     }>;
     ai_insights: {
       overall_assessment: string;
@@ -278,33 +270,10 @@ export default function XrayAnalysisPage() {
         return (
           <Badge className="bg-yellow-100 text-yellow-800">Sâu răng</Badge>
         );
-      case "treatment_needed":
-        return <Badge className="bg-red-100 text-red-800">Cần điều trị</Badge>;
       default:
         return (
           <Badge className="bg-gray-100 text-gray-800">Không xác định</Badge>
         );
-    }
-  };
-
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case "urgent":
-        return (
-          <Badge className="bg-red-600 text-white animate-pulse">
-            KHẨN CẤP
-          </Badge>
-        );
-      case "high":
-        return <Badge className="bg-red-100 text-red-800">Cao</Badge>;
-      case "medium":
-        return (
-          <Badge className="bg-yellow-100 text-yellow-800">Trung bình</Badge>
-        );
-      case "low":
-        return <Badge className="bg-blue-100 text-blue-800">Thấp</Badge>;
-      default:
-        return <Badge className="bg-gray-100 text-gray-800">-</Badge>;
     }
   };
 
@@ -450,22 +419,6 @@ export default function XrayAnalysisPage() {
                     </p>
                   </div>
                   <AlertTriangle className="w-8 h-8 text-yellow-600" />
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-red-50 border-red-200 shadow-md">
-              <CardContent className="p-6">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-red-700 font-medium">
-                      Cần điều trị
-                    </p>
-                    <p className="text-3xl font-bold text-red-800">
-                      {caseData.summary.treatment_needed}
-                    </p>
-                  </div>
-                  <AlertCircle className="w-8 h-8 text-red-600" />
                 </div>
               </CardContent>
             </Card>
@@ -683,8 +636,7 @@ export default function XrayAnalysisPage() {
                       <span className="text-gray-600">Cần chú ý:</span>
                       <span className="font-semibold text-yellow-600">
                         {(
-                          ((caseData.summary.decayed_teeth +
-                            caseData.summary.treatment_needed) /
+                          (caseData.summary.decayed_teeth /
                             caseData.summary.total_teeth) *
                           100
                         ).toFixed(1)}
@@ -714,21 +666,13 @@ export default function XrayAnalysisPage() {
                   .map((tooth) => (
                     <Card
                       key={tooth.tooth_number}
-                      className={`cursor-pointer transition-all hover:shadow-md ${
-                        tooth.status === "treatment_needed"
-                          ? "border-red-200 bg-red-50"
-                          : "border-yellow-200 bg-yellow-50"
-                      }`}
+                      className={`cursor-pointer transition-all hover:shadow-md border-yellow-200 bg-yellow-50`}
                       onClick={() => setSelectedTooth(tooth)}
                     >
                       <CardContent className="p-4">
                         <div className="flex items-center justify-between mb-3">
                           <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold ${
-                              tooth.status === "treatment_needed"
-                                ? "bg-red-500"
-                                : "bg-yellow-500"
-                            }`}
+                            className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-bold bg-yellow-500`}
                           >
                             {tooth.tooth_number}
                           </div>
@@ -741,21 +685,6 @@ export default function XrayAnalysisPage() {
                         <p className="text-sm text-gray-600 mb-3">
                           {tooth.condition}
                         </p>
-
-                        {tooth.treatment && (
-                          <div className="space-y-2">
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-gray-500">
-                                Ưu tiên:
-                              </span>
-                              {getPriorityBadge(tooth.treatment.priority)}
-                            </div>
-                            <div className="flex items-center text-xs text-gray-500">
-                              <Clock className="w-3 h-3 mr-1" />
-                              {tooth.treatment.estimated_time}
-                            </div>
-                          </div>
-                        )}
 
                         <div className="mt-3 pt-3 border-t border-gray-200">
                           <div className="flex justify-between items-center text-xs">
@@ -776,13 +705,13 @@ export default function XrayAnalysisPage() {
         )}
       </div>
 
-      {/* Treatment Detail Modal */}
+      {/* Detail Modal */}
       {selectedTooth && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full shadow-2xl">
             <div className="flex justify-between items-center p-6 border-b border-gray-200">
               <h3 className="text-xl font-bold text-gray-800">
-                Chi tiết điều trị - Răng số {selectedTooth.tooth_number}
+                Chi tiết - Răng số {selectedTooth.tooth_number}
               </h3>
               <Button
                 variant="ghost"
@@ -799,61 +728,11 @@ export default function XrayAnalysisPage() {
                 <h4 className="font-semibold text-gray-800 mb-2">Tình trạng</h4>
                 <p className="text-gray-600">{selectedTooth.condition}</p>
               </div>
-
-              {selectedTooth.treatment && (
-                <>
-                  <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">
-                      Phương pháp điều trị
-                    </h4>
-                    <p className="text-gray-600">
-                      {selectedTooth.treatment.method}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">
-                      Thời gian dự kiến
-                    </h4>
-                    <p className="text-gray-600">
-                      {selectedTooth.treatment.estimated_time}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">
-                      Chi phí ước tính
-                    </h4>
-                    <p className="text-gray-600 font-semibold text-green-600">
-                      {selectedTooth.treatment.cost_estimate}
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-semibold text-gray-800 mb-2">
-                      Ghi chú
-                    </h4>
-                    <p className="text-gray-600">
-                      {selectedTooth.treatment.notes}
-                    </p>
-                  </div>
-
-                  <div className="pt-4 border-t border-gray-200">
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm text-gray-500">Độ ưu tiên:</span>
-                      {getPriorityBadge(selectedTooth.treatment.priority)}
-                    </div>
-                  </div>
-                </>
-              )}
             </div>
 
             <div className="flex justify-end space-x-3 p-6 border-t border-gray-200">
               <Button variant="outline" onClick={() => setSelectedTooth(null)}>
                 Đóng
-              </Button>
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
-                Lên lịch điều trị
               </Button>
             </div>
           </div>

@@ -277,47 +277,6 @@ export default function Home() {
               </div>
             </div>
 
-            {/* Feature 4: Treatment Prediction */}
-            <div className="group cursor-pointer bg-gradient-to-br from-emerald-900 to-teal-900 text-white rounded-3xl overflow-hidden hover:scale-105 transition-all duration-500 hover:shadow-2xl">
-              <div className="relative p-8 pb-12 h-[380px] flex flex-col">
-                <div className="absolute top-4 right-4">
-                  <span className="bg-emerald-500/20 backdrop-blur-sm text-emerald-300 text-xs font-bold px-3 py-1 rounded-full">
-                    FEATURE #4
-                  </span>
-                </div>
-
-                <div className="flex-1 flex flex-col items-center justify-center text-center space-y-6">
-                  <div className="w-28 h-28 bg-gradient-to-br from-emerald-700 to-teal-900 rounded-2xl flex items-center justify-center group-hover:rotate-12 transition-transform duration-500 shadow-2xl">
-                    <Brain className="text-white" size={48} />
-                  </div>
-
-                  <div>
-                    <h3 className="text-3xl font-bold mb-4 bg-gradient-to-r from-emerald-300 to-teal-300 bg-clip-text text-transparent">
-                      Dự đoán Điều trị AI
-                    </h3>
-                    <p className="text-gray-300 text-base leading-relaxed max-w-xs mx-auto">
-                      Dự đoán kết quả điều trị và đề xuất phương án tối ưu bằng
-                      AI
-                    </p>
-                  </div>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center space-x-3 text-sm">
-                      <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
-                      <span className="text-emerald-300 font-medium">
-                        Dự đoán Kết quả
-                      </span>
-                    </div>
-                    <div className="flex items-center space-x-3 text-sm">
-                      <div className="w-3 h-3 bg-teal-400 rounded-full animate-pulse"></div>
-                      <span className="text-teal-300 font-medium">
-                        Phương án Tối ưu
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
 
           {/* Enhanced Call to Action */}
