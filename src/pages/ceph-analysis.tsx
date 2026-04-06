@@ -327,7 +327,7 @@ export default function CephAnalysisPage() {
         const formData = new FormData();
         formData.append("file", file);
 
-        const response = await fetch("http://localhost:8006/predict", {
+        const response = await fetch("http://localhost:8000/api/predict", {
           method: "POST",
           body: formData,
         });
@@ -352,7 +352,7 @@ export default function CephAnalysisPage() {
         reader.readAsDataURL(file);
       } catch (error) {
         console.error("Error:", error);
-        alert("Lỗi khi gọi API. Đảm bảo API đang chạy tại http://localhost:8006");
+        alert("Lỗi khi gọi API. Đảm bảo API đang chạy tại http://localhost:8000");
         setLoading(false);
       }
     };

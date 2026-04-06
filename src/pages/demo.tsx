@@ -38,12 +38,9 @@ import {
   RefreshCw,
 } from "lucide-react";
 import { ImageType, IMAGE_TYPE_MAPPING } from "../types/demo-cases";
-import { getFallbackImages } from "../utils/demo-cases";
-import { groupFilesByType, validateFileType } from "../utils/image-detection";
-import {
-  findOutputPathFromAssets,
-  extractCaseIdFromInputFile,
-} from "../utils/case-mapping";
+import { useToast } from "../shared/hooks/useToast";
+import { usePatientData } from "../features/patient/hooks/usePatientData";
+import { useImageManager } from "../features/imaging/hooks/useImageManager";
 import AIThinkingModal from "../components/ai-thinking-modal";
 import ValidationErrorModal from "../components/validation-error-modal";
 import ToastNotification from "../components/toast-notification";
@@ -52,115 +49,37 @@ const DemoPage = () => {
   const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("record");
 
-  // Local upload state
-  const [localImages, setLocalImages] = useState<{
-    [key in ImageType]?: {
-      input: File;
-      inputPreview: string;
-      outputPreview: string;
-      outputFilename: string;
-    };
-  }>({});
+  const { toast, showToast, hideToast } = useToast();
+  
+  const {
+    patientData,
+    editingField,
+    tempValue,
+    setTempValue,
+    handleEditStart,
+    handleEditSave,
+    handleEditCancel,
+  } = usePatientData();
 
-  // Current case info
-  const [currentCaseId, setCurrentCaseId] = useState<string | null>(null);
-  const [currentFolderName, setCurrentFolderName] = useState<string | null>(
-    null
-  );
-
-  const [uploadedImages, setUploadedImages] = useState<{
-    [key: string]: boolean;
-  }>({
-    lateral: false,
-    profile: false,
-    frontal: false,
-  });
-
-  // State to store uploaded image files
-  const [uploadedFiles, setUploadedFiles] = useState<{
-    [key: string]: File | null;
-  }>({
-    lateral: null,
-    profile: null,
-    frontal: null,
-  });
-
-  // State to store image preview URLs
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<{
-    [key: string]: string;
-  }>({
-    lateral: "",
-    profile: "",
-    frontal: "",
-  });
-
-  // Loading state for fake upload
-  const [isLoading, setIsLoading] = useState(false);
-  const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingCards, setLoadingCards] = useState<{ [key: string]: boolean }>(
-    {}
-  );
-
-  // Validation error state
-  const [validationError, setValidationError] = useState<{
-    show: boolean;
-    message: string;
-    imageId: string;
-    fileName: string;
-  }>({
-    show: false,
-    message: "",
-    imageId: "",
-    fileName: "",
-  });
-
-  // Toast notification state
-  const [toast, setToast] = useState<{
-    show: boolean;
-    message: string;
-    type: "success" | "error" | "info";
-  }>({
-    show: false,
-    message: "",
-    type: "info",
-  });
-
-  // Show toast notification
-  const showToast = (
-    message: string,
-    type: "success" | "error" | "info" = "info"
-  ) => {
-    setToast({ show: true, message, type });
-
-    // Auto hide after 3 seconds with fade out
-    setTimeout(() => {
-      setToast((prev) => ({ ...prev, show: false }));
-      // Clear message after animation completes
-      setTimeout(() => {
-        setToast({ show: false, message: "", type: "info" });
-      }, 500); // Match animation duration
-    }, 3000);
-  };
-
-  // Enhanced patient data with editing states
-  const [patientData, setPatientData] = useState({
-    name: "NHẬT NGUYỄN",
-    firstName: "NGUYỄN",
-    lastName: "NHẬT",
-    email: "635107103@st.utc2.edu.v",
-    sex: "male",
-    dateOfBirth: "01/01/1990",
-    consultationDate: "07/07/2025",
-    phone: "0909090909909",
-    address: "Click to edit",
-    chiefComplaint: "Click to edit",
-    diagnose: "Click to edit",
-    note: "Click to edit",
-    treatmentPlan: "Click to edit",
-  });
-
-  const [editingField, setEditingField] = useState<string | null>(null);
-  const [tempValue, setTempValue] = useState("");
+  const {
+    currentFolderName,
+    uploadedImages,
+    imagePreviewUrls,
+    isLoading,
+    loadingProgress,
+    loadingCards,
+    validationError,
+    setValidationError,
+    handleImageUpload,
+    handleRemoveImage,
+    fakeLoadImages,
+    getKeywordsForType,
+    getExampleFileName,
+    hasFaceImages,
+    hasAllImages,
+    availableAnalysisCount,
+    totalAnalysisCount
+  } = useImageManager(showToast);
 
   // AI Thinking Modal state
   const [showAIThinking, setShowAIThinking] = useState(false);
@@ -171,18 +90,6 @@ const DemoPage = () => {
     path: string;
     withImages: boolean;
   } | null>(null);
-
-  // Cleanup URLs when component unmounts
-  useEffect(() => {
-    return () => {
-      // Cleanup all preview URLs to prevent memory leaks
-      Object.values(imagePreviewUrls).forEach((url) => {
-        if (url && url.startsWith("blob:")) {
-          URL.revokeObjectURL(url);
-        }
-      });
-    };
-  }, []);
 
   // Generate upload categories from IMAGE_TYPE_MAPPING
   const uploadCategories = (() => {
@@ -216,210 +123,7 @@ const DemoPage = () => {
     return Object.values(categories);
   })();
 
-  // Handle file upload with validation
-  const handleFileUpload = (
-    imageId: string,
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      // Validate file name for specific image type
-      const isValidFileName = validateFileNameForType(file.name, imageId);
 
-      if (!isValidFileName) {
-        // Show error message
-        setValidationError({
-          show: true,
-          message: getValidationErrorMessage(imageId, file.name),
-          imageId: imageId,
-          fileName: file.name,
-        });
-
-        // Show toast error
-        showToast("Sai loại ảnh", "error");
-        return;
-      }
-
-      // Clean up previous URL if exists
-      if (imagePreviewUrls[imageId]) {
-        URL.revokeObjectURL(imagePreviewUrls[imageId]);
-      }
-
-      // Store the file
-      setUploadedFiles((prev) => ({
-        ...prev,
-        [imageId]: file,
-      }));
-
-      // Create preview URL
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreviewUrls((prev) => ({
-        ...prev,
-        [imageId]: previewUrl,
-      }));
-
-      // Mark as uploaded
-      setUploadedImages((prev) => ({
-        ...prev,
-        [imageId]: true,
-      }));
-
-      // Show success toast
-      showToast("Upload thành công", "success");
-    }
-  };
-
-  // Validate file name for specific image type
-  const validateFileNameForType = (
-    fileName: string,
-    imageId: string
-  ): boolean => {
-    const fileNameLower = fileName.toLowerCase();
-
-    const validationPatterns: Record<string, RegExp[]> = {
-      lateral: [
-        /lateral/i,
-        /ceph/i,
-        /cephalometric/i,
-        /side.*x.*ray/i,
-        /nghieng/i,
-      ],
-      frontal: [
-        /frontal/i,
-        /front/i,
-        /face.*front/i,
-        /portrait/i,
-        /mat.*truoc/i,
-        /chinh.*dien/i,
-      ],
-      profile: [
-        /profile/i,
-        /side.*face/i,
-        /lateral.*face/i,
-        /mat.*nghieng/i,
-        /ben.*hong/i,
-      ],
-    };
-
-    const patterns = validationPatterns[imageId];
-    if (!patterns) return true; // Skip validation for unknown types
-
-    return patterns.some((pattern) => pattern.test(fileNameLower));
-  };
-
-  // Get validation error message
-  const getValidationErrorMessage = (
-    imageId: string,
-    fileName: string
-  ): string => {
-    const typeNames: Record<string, string> = {
-      lateral: "Lateral Cephalometric",
-      frontal: "Frontal Face",
-      profile: "Profile Face",
-    };
-
-    const typeName = typeNames[imageId] || imageId;
-
-    return `Invalid file name for ${typeName}: "${fileName}"`;
-  };
-
-  // Get keywords for specific image type
-  const getKeywordsForType = (imageId: string): string => {
-    const keywords: Record<string, string> = {
-      lateral: "• lateral, ceph, cephalometric, side x-ray, nghieng",
-      frontal: "• frontal, front, face front, portrait, mat truoc, chinh dien",
-      profile: "• profile, side face, lateral face, mat nghieng, ben hong",
-    };
-
-    return keywords[imageId] || "• Any valid keyword for this image type";
-  };
-
-  // Get example file name for specific image type
-  const getExampleFileName = (imageId: string): string => {
-    const examples: Record<string, string> = {
-      lateral: "lateral.jpg",
-      frontal: "frontal.jpg",
-      profile: "profile.jpg",
-    };
-
-    return examples[imageId] || "example.jpg";
-  };
-
-  // Handle remove uploaded image
-  const handleRemoveImage = (imageId: string, event: React.MouseEvent) => {
-    event.stopPropagation(); // Prevent card click
-
-    // Clean up URL to prevent memory leak
-    if (imagePreviewUrls[imageId]) {
-      URL.revokeObjectURL(imagePreviewUrls[imageId]);
-    }
-
-    // Reset states
-    setUploadedFiles((prev) => ({
-      ...prev,
-      [imageId]: null,
-    }));
-
-    setImagePreviewUrls((prev) => ({
-      ...prev,
-      [imageId]: "",
-    }));
-
-    setUploadedImages((prev) => ({
-      ...prev,
-      [imageId]: false,
-    }));
-  };
-
-  const handleImageUpload = (imageId: string) => {
-    // Create and trigger file input for real upload
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-    input.onchange = (event) => {
-      const target = event.target as HTMLInputElement;
-      if (target.files && target.files[0]) {
-        handleFileUpload(imageId, { target: { files: target.files } } as any);
-      }
-    };
-    input.click();
-  };
-
-  // Check if specific image types are available for analysis
-  const hasFaceImages = uploadedImages.frontal && uploadedImages.profile;
-  const hasCephImages = uploadedImages.lateral; // Lateral ceph for Ceph Analysis
-  const hasAllImages =
-    uploadedImages.frontal &&
-    uploadedImages.profile &&
-    uploadedImages.lateral;
-
-  // Count available analysis buttons
-  const availableAnalysisCount = [
-    hasFaceImages,    // Facial Analysis (frontal + profile)
-    hasCephImages,    // Ceph Analysis (lateral only)
-    true,             // Treatment Planning (always available)
-  ].filter(Boolean).length;
-
-  const totalAnalysisCount = 3; // Total number of analysis buttons
-
-  const handleEditStart = (field: string, currentValue: string) => {
-    setEditingField(field);
-    setTempValue(currentValue);
-  };
-
-  const handleEditSave = (field: string) => {
-    setPatientData((prev) => ({
-      ...prev,
-      [field]: tempValue,
-    }));
-    setEditingField(null);
-    setTempValue("");
-  };
-
-  const handleEditCancel = () => {
-    setEditingField(null);
-    setTempValue("");
-  };
 
   // AI Thinking handlers
   const handleAnalysisClick = (
@@ -535,215 +239,6 @@ const DemoPage = () => {
         </div>
       </div>
     );
-  };
-
-  // Handle local images processed
-  const handleLocalImagesProcessed = (processedImages: {
-    [key in ImageType]?: {
-      input: File;
-      inputPreview: string;
-      outputPreview: string;
-      outputFilename: string;
-    };
-  }) => {
-    setLocalImages(processedImages);
-
-    // Update uploaded images state
-    const newUploadedImages: { [key: string]: boolean } = {
-      lateral: false,
-      profile: false,
-      frontal: false,
-    };
-
-    const newImagePreviewUrls: { [key: string]: string } = {
-      lateral: "",
-      profile: "",
-      frontal: "",
-    };
-
-    Object.entries(processedImages).forEach(([imageType, data]) => {
-      if (data) {
-        newUploadedImages[imageType] = true;
-        newImagePreviewUrls[imageType] = data.inputPreview;
-      }
-    });
-
-    setUploadedImages(newUploadedImages);
-    setImagePreviewUrls(newImagePreviewUrls);
-  };
-
-  // Handle file picker and load images (input from local, output from assets)
-  const fakeLoadImages = async () => {
-    // Create file input element for multiple files (not folders)
-    const input = document.createElement("input");
-    input.type = "file";
-    input.multiple = true;
-    input.accept = "image/*,.stl,.obj,.ply";
-
-    input.onchange = async (event) => {
-      const target = event.target as HTMLInputElement;
-      const files = Array.from(target.files || []);
-      console.log("file ", files);
-      if (files.length === 0) return;
-
-      setIsLoading(true);
-      setLoadingProgress(0);
-      setLoadingCards({});
-
-      // Reset all states first
-      setUploadedImages({
-        lateral: false,
-        profile: false,
-        frontal: false,
-      });
-
-      setImagePreviewUrls({
-        lateral: "",
-        profile: "",
-        frontal: "",
-      });
-
-      // Reset folder info
-      setCurrentCaseId(null);
-      setCurrentFolderName(null);
-
-      try {
-        // Validate and group files by type
-        const validFiles = files.filter(validateFileType);
-        const { detected } = await groupFilesByType(validFiles);
-
-        // Extract case ID from first file (assume all files are from same case)
-        let detectedCaseId: string | null = null;
-        let detectedFolderName: string | null = null;
-
-        for (const file of validFiles) {
-          detectedCaseId = extractCaseIdFromInputFile(file);
-          if (detectedCaseId) {
-            detectedFolderName = detectedCaseId; // folder name is same as case ID
-            break;
-          }
-        }
-
-        if (detectedCaseId && detectedFolderName) {
-          setCurrentCaseId(detectedCaseId);
-          setCurrentFolderName(detectedFolderName);
-          console.log(
-            `Detected case: ${detectedCaseId}, folder: ${detectedFolderName}`
-          );
-        }
-
-        const allDetectedFiles = Object.values(detected).flat();
-        let processedCount = 0;
-
-        // Process each detected file
-        for (const [imageType, typeFiles] of Object.entries(detected)) {
-          if (typeFiles.length > 0) {
-            // Take the first file of each type
-            const file = typeFiles[0];
-
-            // Set loading state for current card
-            setLoadingCards((prev) => ({ ...prev, [imageType]: true }));
-
-            // Simulate loading delay
-            await new Promise((resolve) =>
-              setTimeout(resolve, 500 + Math.random() * 800)
-            );
-
-            // Create preview URL from uploaded input file
-            const inputPreviewUrl = URL.createObjectURL(file);
-
-            // Generate output path from assets/outputs/
-            const outputPath = findOutputPathFromAssets(
-              file,
-              imageType as ImageType
-            );
-
-            console.log(`Input: ${file.name} → Output: ${outputPath}`);
-
-            // Set preview URL (input image)
-            setImagePreviewUrls((prev) => ({
-              ...prev,
-              [imageType]: inputPreviewUrl,
-            }));
-
-            // Store local image data for future processing
-            setLocalImages((prev) => ({
-              ...prev,
-              [imageType as ImageType]: {
-                input: file,
-                inputPreview: inputPreviewUrl,
-                outputPreview: outputPath,
-                outputFilename: outputPath.split("/").pop() || "output.png",
-              },
-            }));
-
-            // Mark as uploaded
-            setUploadedImages((prev) => ({
-              ...prev,
-              [imageType]: true,
-            }));
-
-            // Remove loading state for current card
-            setLoadingCards((prev) => ({ ...prev, [imageType]: false }));
-
-            processedCount++;
-            setLoadingProgress(
-              (processedCount / allDetectedFiles.length) * 100
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Failed to process uploaded images:", error);
-      }
-
-      // Finish loading
-      setTimeout(() => {
-        setIsLoading(false);
-        setLoadingProgress(0);
-      }, 300);
-    };
-
-    // Trigger file picker
-    input.click();
-  };
-
-  // Load single sample image
-  const loadSingleSampleImage = async (imageId: string) => {
-    try {
-      const sampleImages = await getFallbackImages();
-      const imagePath = sampleImages[imageId as keyof typeof sampleImages];
-      if (!imagePath) return;
-
-      // Set loading state for this card
-      setLoadingCards((prev) => ({ ...prev, [imageId]: true }));
-
-      // Simulate loading delay
-      await new Promise((resolve) =>
-        setTimeout(resolve, 800 + Math.random() * 600)
-      );
-
-      // Clean up previous URL if exists
-      if (imagePreviewUrls[imageId]) {
-        URL.revokeObjectURL(imagePreviewUrls[imageId]);
-      }
-
-      // Set preview URL to demo image path
-      setImagePreviewUrls((prev) => ({
-        ...prev,
-        [imageId]: imagePath,
-      }));
-
-      // Mark as uploaded
-      setUploadedImages((prev) => ({
-        ...prev,
-        [imageId]: true,
-      }));
-
-      // Remove loading state
-      setLoadingCards((prev) => ({ ...prev, [imageId]: false }));
-    } catch (error) {
-      console.error("Failed to load single image:", error);
-    }
   };
 
   return (
@@ -1332,7 +827,7 @@ const DemoPage = () => {
         show={toast.show}
         message={toast.message}
         type={toast.type}
-        onClose={() => setToast({ show: false, message: "", type: "info" })}
+        onClose={hideToast}
       />
     </div>
   );
