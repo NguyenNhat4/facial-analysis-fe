@@ -19,7 +19,6 @@ import {
   Upload,
   Camera,
   Radiation,
-  Box,
   User,
   Calendar,
   Phone,
@@ -677,47 +676,6 @@ const DemoPage = () => {
                         )}
                       </div>
 
-                      {/* 3D Model Analysis
-                      <div className="relative group">
-                        <Button
-                          className={`w-full flex items-center justify-start p-5 h-auto rounded-xl transition-all duration-200 ${
-                            has3DModel
-                              ? "bg-purple-600 hover:bg-purple-700 text-white shadow-md border border-purple-700"
-                              : "bg-gray-50 text-gray-400 cursor-not-allowed border border-gray-200"
-                          }`}
-                          disabled={!has3DModel || showAIThinking}
-                          onClick={() =>
-                            has3DModel &&
-                            handleAnalysisClick("3d", "/model-3d", true)
-                          }
-                        >
-                          <div
-                            className={`w-12 h-12 rounded-lg mr-4 flex items-center justify-center ${
-                              has3DModel ? "bg-purple-500" : "bg-gray-200"
-                            }`}
-                          >
-                            <Box className="w-6 h-6" />
-                          </div>
-                          <div className="text-left flex-1">
-                            <div className="font-semibold text-base flex items-center justify-between">
-                              3D Model Analysis
-                              {has3DModel && (
-                                <div className="w-3 h-3 bg-emerald-400 rounded-full animate-pulse"></div>
-                              )}
-                            </div>
-                            <div className="text-sm opacity-80 mt-1">
-                              {has3DModel
-                                ? "Digital Model Assessment"
-                                : "Requires 3D scan data"}
-                            </div>
-                          </div>
-                        </Button>
-                        {!has3DModel && (
-                          <div className="absolute left-1/2 transform -translate-x-1/2 top-full mt-2 bg-gray-800 text-white text-xs px-3 py-2 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap z-10">
-                            Intraoral scan required
-                          </div>
-                        )}
-                      </div> */}
 
                     </div>
                   </div>
