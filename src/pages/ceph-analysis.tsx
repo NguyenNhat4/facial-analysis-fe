@@ -1,8 +1,7 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 import { useLocation } from "wouter";
 import {
   Card,
-  CardContent,
   CardHeader,
   CardTitle,
 } from "../components/ui/card";
@@ -10,74 +9,33 @@ import { Button } from "../components/ui/button";
 import { Badge } from "../components/ui/badge";
 import {
   ArrowLeft,
-  Upload,
-  RefreshCw,
   User,
   Activity,
   Target,
-  FileText,
-  Ruler,
 } from "lucide-react";
+
+import { useCephStore } from "../features/cephalometric/stores/ceph-store";
+import { InteractiveCanvas } from "../features/cephalometric/components/InteractiveCanvas";
+import { MeasurementTable } from "../features/cephalometric/components/MeasurementTable";
 
 // Import styles from reference project
 import "./ceph-analysis.css";
 
-// Interface for landmark data
-interface Landmark {
-  symbol: string;
-  value: {
-    x: number;
-    y: number;
-  };
-}
-
-interface LandmarksData {
-  landmarks: Landmark[];
-}
-
-interface LandmarksObject {
-  [symbol: string]: {
-    x: number;
-    y: number;
-  };
-}
-
-interface Measurement {
-  name: string;
-  value: number;
-  mean: number;
-  sd: number;
-  unit: string;
-  classification: "normal" | "moderate" | "severe" | "error";
-  significance: string;
-  interpretation: string;
-}
-
-// Load external scripts and config
-declare global {
-  interface Window {
-    MEASUREMENTS_CONFIG: any;
-    calculateAllMeasurements: (landmarksObj: LandmarksObject) => { [key: string]: Measurement };
-    landmarksArrayToObject: (landmarksArray: Landmark[]) => LandmarksObject;
-    drawLine: (ctx: CanvasRenderingContext2D, start: any, end: any, scale: number, color?: string, width?: number, dash?: number[]) => void;
-    drawAngleArc: (ctx: CanvasRenderingContext2D, A: any, B: any, C: any, scale: number, color?: string) => void;
-    drawPerpendicularLine: (ctx: CanvasRenderingContext2D, P: any, A: any, B: any, scale: number, color?: string) => void;
-    drawMeasurementLine: (ctx: CanvasRenderingContext2D, start: any, end: any, scale: number) => void;
-  }
-}
-
 export default function CephAnalysisPage() {
   const [location, setLocation] = useLocation();
-  const canvasRef = useRef<HTMLCanvasElement>(null);
-  const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null);
-  const [landmarksData, setLandmarksData] = useState<LandmarksData | null>(null);
-  const [landmarksObj, setLandmarksObj] = useState<LandmarksObject | null>(null);
-  const [measurements, setMeasurements] = useState<{ [key: string]: Measurement }>({});
-  const [loading, setLoading] = useState(false);
-  const [showLandmarkNames, setShowLandmarkNames] = useState(false);
-  const [hoveredMeasurement, setHoveredMeasurement] = useState<string | null>(null);
-  const [canvasScale, setCanvasScale] = useState(1);
-  const [scriptsLoaded, setScriptsLoaded] = useState(false);
+
+  const {
+    loadedImageSrc,
+    loading,
+    showLandmarkNames,
+    setShowLandmarkNames,
+    uploadAndDetect,
+    setLoadedImageSrc,
+    loadJsonData,
+    reset,
+    error,
+    landmarksData
+  } = useCephStore();
 
   // Demo patient data
   const patientData = {
@@ -88,208 +46,41 @@ export default function CephAnalysisPage() {
     gender: "Demo Case",
   };
 
-  // Load external scripts
+  // Parse query parameters for lateral image and load demo JSON
   useEffect(() => {
-    const loadScript = (src: string): Promise<void> => {
-      return new Promise((resolve, reject) => {
-        const script = document.createElement("script");
-        script.src = src;
-        script.onload = () => resolve();
-        script.onerror = () => reject(new Error(`Failed to load script: ${src}`));
-        document.head.appendChild(script);
-      });
-    };
+    // Only load from query param if we don't already have an image in store
+    if (!loadedImageSrc) {
+      const urlParams = new URLSearchParams(window.location.search);
+      const lateral = urlParams.get("lateral");
 
-    const loadScripts = async () => {
-      try {
-        await loadScript("/ceph/measurements-config.js");
-        await loadScript("/ceph/calculations.js");
-        setScriptsLoaded(true);
-      } catch (error) {
-        console.error("Error loading scripts:", error);
-      }
-    };
-
-    loadScripts();
-  }, []);
-
-  // Auto-load demo data when scripts are loaded
-  useEffect(() => {
-    if (scriptsLoaded) {
-      loadDemoData();
-    }
-  }, [scriptsLoaded]);
-
-  // Parse query parameters
-  useEffect(() => {
-    const urlParams = new URLSearchParams(window.location.search);
-    const lateral = urlParams.get("lateral");
-
-    if (lateral && scriptsLoaded) {
-      const img = new Image();
-      img.crossOrigin = "anonymous";
-      img.onload = () => {
-        setLoadedImage(img);
-      };
-      img.src = lateral;
-    }
-  }, [location, scriptsLoaded]);
-
-  // Redraw canvas when dependencies change
-  useEffect(() => {
-    if (loadedImage && scriptsLoaded) {
-      drawCanvas();
-    }
-  }, [loadedImage, landmarksObj, showLandmarkNames, hoveredMeasurement, scriptsLoaded]);
-
-  // Load demo data
-  const loadDemoData = async () => {
-    try {
-      const jsonResponse = await fetch("/ceph/cks2ip8fq2a0j0yufdfssbc09.json");
-      const data = await jsonResponse.json();
-      setLandmarksData(data);
-
-      const img = new Image();
-      img.onload = () => {
-        setLoadedImage(img);
-        initializeData(data);
-      };
-      img.src = "/ceph/cks2ip8fq2a0j0yufdfssbc09.png";
-    } catch (error) {
-      console.error("Error loading demo data:", error);
-    }
-  };
-
-  // Initialize data and calculate measurements
-  const initializeData = (data: LandmarksData) => {
-    if (!data || !window.landmarksArrayToObject || !window.calculateAllMeasurements) {
-      console.log("Waiting for scripts to load...");
-      return;
-    }
-
-    const landmarksObject = window.landmarksArrayToObject(data.landmarks);
-    setLandmarksObj(landmarksObject);
-
-    const calculatedMeasurements = window.calculateAllMeasurements(landmarksObject);
-    setMeasurements(calculatedMeasurements);
-  };
-
-  // Draw canvas with image and landmarks
-  const drawCanvas = () => {
-    const canvas = canvasRef.current;
-    if (!canvas || !loadedImage) return;
-
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-
-    // Calculate scale to fit canvas
-    const maxWidth = 800;
-    const maxHeight = 900;
-    const scale = Math.min(maxWidth / loadedImage.width, maxHeight / loadedImage.height);
-    setCanvasScale(scale);
-
-    canvas.width = loadedImage.width * scale;
-    canvas.height = loadedImage.height * scale;
-
-    // Draw image
-    ctx.drawImage(loadedImage, 0, 0, canvas.width, canvas.height);
-
-    // Draw all landmarks (small dots)
-    if (landmarksObj) {
-      Object.entries(landmarksObj).forEach(([symbol, pos]) => {
-        drawLandmark(ctx, pos.x * scale, pos.y * scale, symbol, false);
-      });
-    }
-
-    // Draw measurement guide if hovering
-    if (hoveredMeasurement && window.MEASUREMENTS_CONFIG && window.MEASUREMENTS_CONFIG[hoveredMeasurement]) {
-      const config = window.MEASUREMENTS_CONFIG[hoveredMeasurement];
-
-      // Highlight landmarks
-      config.landmarks.forEach((symbol: string) => {
-        if (landmarksObj && landmarksObj[symbol]) {
-          const pos = landmarksObj[symbol];
-          drawLandmark(ctx, pos.x * scale, pos.y * scale, symbol, true);
-        }
-      });
-
-      // Draw guide lines/angles
-      if (config.drawGuide && landmarksObj) {
-        config.drawGuide(ctx, landmarksObj, scale);
-      }
-    }
-  };
-
-  // Draw landmark point
-  const drawLandmark = (
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    symbol: string,
-    highlighted: boolean
-  ) => {
-    ctx.save();
-
-    if (highlighted) {
-      // Highlighted landmark
-      ctx.beginPath();
-      ctx.arc(x, y, 8, 0, 2 * Math.PI);
-      ctx.fillStyle = "#FFD700";
-      ctx.fill();
-      ctx.strokeStyle = "#FF4500";
-      ctx.lineWidth = 3;
-      ctx.stroke();
-
-      // Draw label with background
-      ctx.font = "bold 16px Arial";
-      const textMetrics = ctx.measureText(symbol);
-      const textWidth = textMetrics.width;
-      const textHeight = 16;
-
-      ctx.fillStyle = "rgba(255, 69, 0, 0.9)";
-      ctx.fillRect(x + 12, y - textHeight - 4, textWidth + 8, textHeight + 8);
-
-      ctx.fillStyle = "white";
-      ctx.fillText(symbol, x + 16, y - 2);
-    } else {
-      // Normal landmark
-      ctx.beginPath();
-      ctx.arc(x, y, 3, 0, 2 * Math.PI);
-      ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
-      ctx.fill();
-
-      // Show label if toggle is on
-      if (showLandmarkNames) {
-        ctx.font = "bold 12px Arial";
-        const textMetrics = ctx.measureText(symbol);
-        const textWidth = textMetrics.width;
-        const textHeight = 12;
-
-        ctx.fillStyle = "rgba(33, 150, 243, 0.85)";
-        ctx.fillRect(x + 8, y - textHeight - 2, textWidth + 6, textHeight + 4);
-
-        ctx.fillStyle = "white";
-        ctx.fillText(symbol, x + 11, y - 2);
+      if (lateral) {
+        setLoadedImageSrc(lateral);
       }
     }
 
-    ctx.restore();
-  };
+    // Always pre-load demo data if empty, for testing (matches old behavior somewhat)
+    // Actually, only load if we have no landmarksData
+    if (!landmarksData) {
+      import("../data/mock/cephalometric-demo.json").then((module) => {
+         loadJsonData(module.default as any);
+      });
+      // also load the demo image if no image src
+      if (!loadedImageSrc) {
+        setLoadedImageSrc("/ceph/cks2ip8fq2a0j0yufdfssbc09.png");
+      }
+    }
+  }, [location, loadedImageSrc, landmarksData, setLoadedImageSrc, loadJsonData]);
+
 
   // Handle image upload
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const img = new Image();
-      img.onload = () => {
-        setLoadedImage(img);
-      };
-      img.src = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
+    // Create a local blob url for the user to view immediately without detection
+    // but the actual requirement usually pairs upload with detection
+    const src = URL.createObjectURL(file);
+    setLoadedImageSrc(src);
   };
 
   // Handle JSON upload
@@ -301,8 +92,7 @@ export default function CephAnalysisPage() {
     reader.onload = (e) => {
       try {
         const data = JSON.parse(e.target?.result as string);
-        setLandmarksData(data);
-        initializeData(data);
+        loadJsonData(data);
       } catch (error) {
         console.error("Error parsing JSON:", error);
         alert("File JSON không hợp lệ");
@@ -321,39 +111,10 @@ export default function CephAnalysisPage() {
       const file = (e.target as HTMLInputElement).files?.[0];
       if (!file) return;
 
-      try {
-        setLoading(true);
+      await uploadAndDetect(file);
 
-        const formData = new FormData();
-        formData.append("file", file);
-
-        const response = await fetch("http://localhost:8000/api/predict", {
-          method: "POST",
-          body: formData,
-        });
-
-        if (!response.ok) {
-          throw new Error(`API error: ${response.status}`);
-        }
-
-        const data = await response.json();
-        setLandmarksData(data);
-
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          const img = new Image();
-          img.onload = () => {
-            setLoadedImage(img);
-            initializeData(data);
-            setLoading(false);
-          };
-          img.src = event.target?.result as string;
-        };
-        reader.readAsDataURL(file);
-      } catch (error) {
-        console.error("Error:", error);
-        alert("Lỗi khi gọi API. Đảm bảo API đang chạy tại http://localhost:8000");
-        setLoading(false);
+      if (error) {
+        alert(error);
       }
     };
 
@@ -362,21 +123,7 @@ export default function CephAnalysisPage() {
 
   // Reset canvas
   const handleReset = () => {
-    setHoveredMeasurement(null);
-  };
-
-  // Get color class based on classification
-  const getColorClass = (classification: string) => {
-    switch (classification) {
-      case "normal":
-        return "color-normal";
-      case "moderate":
-        return "color-moderate";
-      case "severe":
-        return "color-severe";
-      default:
-        return "";
-    }
+    reset();
   };
 
   return (
@@ -443,9 +190,8 @@ export default function CephAnalysisPage() {
               <Target className="inline w-6 h-6 mr-2 text-blue-600" />
               Hình Ảnh X-quang
             </h2>
-            <div className="canvas-container">
-              <canvas ref={canvasRef} id="cephCanvas" />
-            </div>
+
+            <InteractiveCanvas />
 
             {/* Controls */}
             <div className="canvas-controls">
@@ -457,7 +203,7 @@ export default function CephAnalysisPage() {
                 {loading ? "Đang xử lý..." : "Upload & Detect với AI"}
               </button>
 
-              <label htmlFor="imageInput" className="btn-secondary">
+              <label htmlFor="imageInput" className="btn-secondary cursor-pointer">
                 Chọn Ảnh
               </label>
               <input
@@ -468,7 +214,7 @@ export default function CephAnalysisPage() {
                 style={{ display: "none" }}
               />
 
-              <label htmlFor="jsonInput" className="btn-secondary">
+              <label htmlFor="jsonInput" className="btn-secondary cursor-pointer">
                 Chọn JSON
               </label>
               <input
@@ -501,49 +247,7 @@ export default function CephAnalysisPage() {
           </div>
 
           {/* Measurements Table */}
-          <div className="table-section">
-            <h2>
-              <Ruler className="inline w-6 h-6 mr-2 text-purple-600" />
-              Bảng Các Chỉ Số
-            </h2>
-            <div className="table-container">
-              <table id="measurementsTable">
-                <thead>
-                  <tr>
-                    <th>Ý nghĩa</th>
-                    <th>Giá trị</th>
-                    <th>S.D.</th>
-                    <th>Kết quả</th>
-                    <th></th>
-                    <th>Ý nghĩa</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {Object.entries(measurements).map(([key, measurement]) => (
-                    <tr
-                      key={key}
-                      className={`measurement-row ${hoveredMeasurement === key ? "row-highlight" : ""}`}
-                      onMouseEnter={() => setHoveredMeasurement(key)}
-                      onMouseLeave={() => setHoveredMeasurement(null)}
-                    >
-                      <td className="measurement-name">{measurement.name}</td>
-                      <td className="text-center">{measurement.value.toFixed(2)}</td>
-                      <td className="text-center">
-                        {((measurement.value - measurement.mean) / measurement.sd).toFixed(1)}
-                      </td>
-                      <td className={`text-center font-bold ${getColorClass(measurement.classification)}`}>
-                        {measurement.value.toFixed(2)}
-                      </td>
-                      <td className="text-center color-severe">{measurement.significance}</td>
-                      <td className={getColorClass(measurement.classification)}>
-                        {measurement.interpretation}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
+          <MeasurementTable />
         </div>
       </div>
     </div>
