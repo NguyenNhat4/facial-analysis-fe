@@ -113,17 +113,11 @@ const ProcessingAnimation: React.FC<ProcessingAnimationProps> = ({
             {/* Input Preview */}
             <div className="flex justify-center">
               <div className="w-24 h-24 rounded-lg overflow-hidden bg-gray-100">
-                {(imageType === 'model_3d_upper' || imageType === 'model_3d_lower') ? (
-                  <div className="w-full h-full bg-purple-100 flex items-center justify-center">
-                    <div className="text-2xl">📦</div>
-                  </div>
-                ) : (
-                  <img 
-                    src={inputPreview} 
-                    alt="Processing" 
-                    className="w-full h-full object-cover"
-                  />
-                )}
+                <img
+                  src={inputPreview}
+                  alt="Processing"
+                  className="w-full h-full object-cover"
+                />
               </div>
             </div>
 

@@ -14,7 +14,7 @@ import {
 
 interface AIThinkingModalProps {
   isOpen: boolean;
-  analysisType: 'facial' | 'radiographic' | 'ceph' | '3d' | 'treatment';
+  analysisType: 'facial' | 'radiographic' | 'ceph' | '3d';
   onComplete: () => void;
 }
 
@@ -79,19 +79,6 @@ const AIThinkingModal: React.FC<AIThinkingModalProps> = ({
         'Processing lower jaw geometry...',
         'Computing bite relationships...',
         'Generating 3D analysis report...'
-      ]
-    },
-    treatment: {
-      title: 'Treatment Planning AI',
-      icon: Stethoscope,
-      color: 'orange',
-      steps: [
-        'Initializing treatment algorithms...',
-        'Analyzing complete patient data...',
-        'Evaluating treatment options...',
-        'Simulating treatment outcomes...',
-        'Optimizing treatment sequence...',
-        'Finalizing treatment plan...'
       ]
     }
   };
