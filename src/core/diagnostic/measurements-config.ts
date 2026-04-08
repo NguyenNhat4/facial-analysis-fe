@@ -1,5 +1,24 @@
-// Cephalometric Measurements Configuration
-const MEASUREMENTS_CONFIG = {
+import { calculateAngle, calculateAngleBetweenLines, calculateDistance, calculatePointToLineDistance, Point } from "../geometry/math-utils";
+import { LandmarksObject, MeasurementConfig } from "../../features/cephalometric/types";
+
+// Helper function to get classification
+export function getClassification(value: number, mean: number, sd: number): "normal" | "moderate" | "severe" {
+  const diff = Math.abs(value - mean);
+  if (diff <= sd) return 'normal';
+  if (diff <= 2 * sd) return 'moderate';
+  return 'severe';
+}
+
+// Helper function to get significance stars
+export function getSignificance(value: number, mean: number, sd: number): string {
+  const diff = Math.abs(value - mean);
+  if (diff <= sd) return '';
+  if (diff <= 2 * sd) return '*';
+  if (diff <= 3 * sd) return '**';
+  return '***';
+}
+
+export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
   SNA: {
     name: "SNA",
     nameFull: "SNA",
@@ -13,19 +32,11 @@ const MEASUREMENTS_CONFIG = {
       normal: "Posición A-P normal del maxilar",
       low: "Posición A-P normal del maxilar"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const S = landmarks.S;
       const N = landmarks.N;
       const A = landmarks.A;
       return calculateAngle(S, N, A);
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const S = landmarks.S;
-      const N = landmarks.N;
-      const A = landmarks.A;
-      drawLine(ctx, S, N, scale, '#FF6B6B', 2);
-      drawLine(ctx, N, A, scale, '#FF6B6B', 2);
-      drawAngleArc(ctx, S, N, A, scale, '#FF6B6B');
     }
   },
 
@@ -42,19 +53,11 @@ const MEASUREMENTS_CONFIG = {
       normal: "Posición A-P normal de la mandíbula",
       low: "Posición A-P normal de la mandíbula"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const S = landmarks.S;
       const N = landmarks.N;
       const B = landmarks.B;
       return calculateAngle(S, N, B);
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const S = landmarks.S;
-      const N = landmarks.N;
-      const B = landmarks.B;
-      drawLine(ctx, S, N, scale, '#4ECDC4', 2);
-      drawLine(ctx, N, B, scale, '#4ECDC4', 2);
-      drawAngleArc(ctx, S, N, B, scale, '#4ECDC4');
     }
   },
 
@@ -71,19 +74,11 @@ const MEASUREMENTS_CONFIG = {
       normal: "Tương quan xương hàm I",
       low: "Tương quan xương hàm I"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const A = landmarks.A;
       const N = landmarks.N;
       const B = landmarks.B;
       return calculateAngle(A, N, B);
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const A = landmarks.A;
-      const N = landmarks.N;
-      const B = landmarks.B;
-      drawLine(ctx, A, N, scale, '#95E1D3', 2);
-      drawLine(ctx, N, B, scale, '#95E1D3', 2);
-      drawAngleArc(ctx, A, N, B, scale, '#95E1D3');
     }
   },
 
@@ -100,20 +95,11 @@ const MEASUREMENTS_CONFIG = {
       normal: "Tương quan xương hàm I",
       low: "Tương quan xương hàm I"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       // Simplified - actual Wits requires perpendicular projection to occlusal plane
       const A = landmarks.A;
       const B = landmarks.B;
       return (A.x - B.x) * 0.1; // Approximate scaling
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const A = landmarks.A;
-      const B = landmarks.B;
-      const ANS = landmarks.ANS;
-      const PNS = landmarks.PNS;
-      drawLine(ctx, ANS, PNS, scale, '#F38181', 1, [5, 5]);
-      drawLine(ctx, A, {x: A.x, y: B.y}, scale, '#F38181', 2);
-      drawLine(ctx, B, {x: B.x, y: A.y}, scale, '#F38181', 2);
     }
   },
 
@@ -130,20 +116,14 @@ const MEASUREMENTS_CONFIG = {
       normal: "Patrón de crecimiento normodivergente",
       low: "Patrón de crecimiento normodivergente"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const N = landmarks.N;
       const ANS = landmarks.ANS;
       const Me = landmarks.Me;
       const AFH = calculateDistance(N, Me);
       const PFH = calculateDistance(N, ANS);
+      if (AFH === 0) return 0;
       return (PFH / AFH) * 100;
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const N = landmarks.N;
-      const ANS = landmarks.ANS;
-      const Me = landmarks.Me;
-      drawLine(ctx, N, ANS, scale, '#FFB6B9', 3);
-      drawLine(ctx, N, Me, scale, '#FFC9C9', 2, [5, 5]);
     }
   },
 
@@ -160,21 +140,13 @@ const MEASUREMENTS_CONFIG = {
       normal: "Mất mặt siêu phân kỳ",
       low: "Mất mặt siêu phân kỳ"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const Po = landmarks.Po;
       const Or = landmarks.Or;
       const Go = landmarks.Go;
       const Me = landmarks.Me;
       // Angle between Frankfort horizontal and Mandibular plane
       return calculateAngleBetweenLines(Po, Or, Go, Me);
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const Po = landmarks.Po;
-      const Or = landmarks.Or;
-      const Go = landmarks.Go;
-      const Me = landmarks.Me;
-      drawLine(ctx, Po, Or, scale, '#FECA57', 2);
-      drawLine(ctx, Go, Me, scale, '#FF6348', 2);
     }
   },
 
@@ -191,20 +163,12 @@ const MEASUREMENTS_CONFIG = {
       normal: "Mất mặt siêu phân kỳ",
       low: "Mất mặt siêu phân kỳ"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const S = landmarks.S;
       const N = landmarks.N;
       const Go = landmarks.Go;
       const Gn = landmarks.Gn;
       return calculateAngleBetweenLines(S, N, Go, Gn);
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const S = landmarks.S;
-      const N = landmarks.N;
-      const Go = landmarks.Go;
-      const Gn = landmarks.Gn;
-      drawLine(ctx, S, N, scale, '#A8E6CF', 2);
-      drawLine(ctx, Go, Gn, scale, '#DCEDC1', 2);
     }
   },
 
@@ -221,20 +185,12 @@ const MEASUREMENTS_CONFIG = {
       normal: "Desarrollo vertical excesivo de la cara",
       low: "Desarrollo vertical excesivo de la cara"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const N = landmarks.N;
       const Gn = landmarks.Gn;
       const Po = landmarks.Po;
       const Or = landmarks.Or;
       return calculateAngleBetweenLines(N, Gn, Po, Or);
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const N = landmarks.N;
-      const Gn = landmarks.Gn;
-      const Po = landmarks.Po;
-      const Or = landmarks.Or;
-      drawLine(ctx, N, Gn, scale, '#FFD3B6', 2);
-      drawLine(ctx, Po, Or, scale, '#FFAAA5', 2);
     }
   },
 
@@ -251,20 +207,12 @@ const MEASUREMENTS_CONFIG = {
       normal: "Prominencia normal de la barbilla, Clase I esquelética",
       low: "Prominencia normal de la barbilla, Clase I esquelética"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const N = landmarks.N;
       const Pog = landmarks.Pog;
       const Po = landmarks.Po;
       const Or = landmarks.Or;
       return calculateAngleBetweenLines(N, Pog, Po, Or);
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const N = landmarks.N;
-      const Pog = landmarks.Pog;
-      const Po = landmarks.Po;
-      const Or = landmarks.Or;
-      drawLine(ctx, N, Pog, scale, '#D4A5A5', 2);
-      drawLine(ctx, Po, Or, scale, '#FFCDA3', 2);
     }
   },
 
@@ -281,16 +229,10 @@ const MEASUREMENTS_CONFIG = {
       normal: "Altura facial inferior normal",
       low: "Altura facial inferior normal"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const ANS = landmarks.ANS;
       const Me = landmarks.Me;
       return calculateDistance(ANS, Me) * 0.1; // Scale to mm
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const ANS = landmarks.ANS;
-      const Me = landmarks.Me;
-      drawLine(ctx, ANS, Me, scale, '#E8B4B8', 2);
-      drawMeasurementLine(ctx, ANS, Me, scale);
     }
   },
 
@@ -307,18 +249,11 @@ const MEASUREMENTS_CONFIG = {
       normal: "Răng cửa trên lùi",
       low: "Răng cửa trên lùi"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const UIT = landmarks.UIT;
       const N = landmarks.N;
       const A = landmarks.A;
       return calculatePointToLineDistance(UIT, N, A) * 0.1;
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const UIT = landmarks.UIT;
-      const N = landmarks.N;
-      const A = landmarks.A;
-      drawLine(ctx, N, A, scale, '#C7CEEA', 2);
-      drawPerpendicularLine(ctx, UIT, N, A, scale, '#B8B8F5');
     }
   },
 
@@ -335,18 +270,11 @@ const MEASUREMENTS_CONFIG = {
       normal: "Răng cửa dưới lùi",
       low: "Răng cửa dưới lùi"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const LIT = landmarks.LIT;
       const N = landmarks.N;
       const B = landmarks.B;
       return calculatePointToLineDistance(LIT, N, B) * 0.1;
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const LIT = landmarks.LIT;
-      const N = landmarks.N;
-      const B = landmarks.B;
-      drawLine(ctx, N, B, scale, '#FFDAC1', 2);
-      drawPerpendicularLine(ctx, LIT, N, B, scale, '#FFB7B2');
     }
   },
 
@@ -363,20 +291,12 @@ const MEASUREMENTS_CONFIG = {
       normal: "Răng cửa trên nghiêng về phía trước",
       low: "Răng cửa trên nghiêng về phía trước"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const UIT = landmarks.UIT;
       const UIA = landmarks.UIA;
       const N = landmarks.N;
       const A = landmarks.A;
       return calculateAngleBetweenLines(UIT, UIA, N, A);
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const UIT = landmarks.UIT;
-      const UIA = landmarks.UIA;
-      const N = landmarks.N;
-      const A = landmarks.A;
-      drawLine(ctx, UIT, UIA, scale, '#E3AFBC', 2);
-      drawLine(ctx, N, A, scale, '#9A1750', 2);
     }
   },
 
@@ -393,20 +313,12 @@ const MEASUREMENTS_CONFIG = {
       normal: "Răng cửa dưới nghiêng về phía trước",
       low: "Răng cửa dưới nghiêng về phía trước"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const LIT = landmarks.LIT;
       const LIA = landmarks.LIA;
       const N = landmarks.N;
       const B = landmarks.B;
       return calculateAngleBetweenLines(LIT, LIA, N, B);
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const LIT = landmarks.LIT;
-      const LIA = landmarks.LIA;
-      const N = landmarks.N;
-      const B = landmarks.B;
-      drawLine(ctx, LIT, LIA, scale, '#EE4C7C', 2);
-      drawLine(ctx, N, B, scale, '#AA4465', 2);
     }
   },
 
@@ -423,18 +335,11 @@ const MEASUREMENTS_CONFIG = {
       normal: "Răng cửa trên lùi",
       low: "Răng cửa trên lùi"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const UIT = landmarks.UIT;
       const A = landmarks.A;
       const Pog = landmarks.Pog;
       return calculatePointToLineDistance(UIT, A, Pog) * 0.1;
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const UIT = landmarks.UIT;
-      const A = landmarks.A;
-      const Pog = landmarks.Pog;
-      drawLine(ctx, A, Pog, scale, '#463F3A', 2);
-      drawPerpendicularLine(ctx, UIT, A, Pog, scale, '#8A817C');
     }
   },
 
@@ -451,18 +356,11 @@ const MEASUREMENTS_CONFIG = {
       normal: "Răng cửa dưới lùi",
       low: "Răng cửa dưới lùi"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const LIT = landmarks.LIT;
       const A = landmarks.A;
       const Pog = landmarks.Pog;
       return calculatePointToLineDistance(LIT, A, Pog) * 0.1;
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const LIT = landmarks.LIT;
-      const A = landmarks.A;
-      const Pog = landmarks.Pog;
-      drawLine(ctx, A, Pog, scale, '#BCB8B1', 2);
-      drawPerpendicularLine(ctx, LIT, A, Pog, scale, '#8A95A5');
     }
   },
 
@@ -479,20 +377,12 @@ const MEASUREMENTS_CONFIG = {
       normal: "Góc giữa các răng cửa nghiêng về phía trước",
       low: "Góc giữa các răng cửa nghiêng về phía trước"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const UIT = landmarks.UIT;
       const UIA = landmarks.UIA;
       const LIT = landmarks.LIT;
       const LIA = landmarks.LIA;
       return calculateAngleBetweenLines(UIT, UIA, LIT, LIA);
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const UIT = landmarks.UIT;
-      const UIA = landmarks.UIA;
-      const LIT = landmarks.LIT;
-      const LIA = landmarks.LIA;
-      drawLine(ctx, UIT, UIA, scale, '#F4A261', 2);
-      drawLine(ctx, LIT, LIA, scale, '#E76F51', 2);
     }
   },
 
@@ -509,20 +399,12 @@ const MEASUREMENTS_CONFIG = {
       normal: "Góc nghiêng răng cửa dưới bình thường",
       low: "Góc nghiêng răng cửa dưới bình thường"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const LIT = landmarks.LIT;
       const LIA = landmarks.LIA;
       const Go = landmarks.Go;
       const Me = landmarks.Me;
       return calculateAngleBetweenLines(LIT, LIA, Go, Me);
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const LIT = landmarks.LIT;
-      const LIA = landmarks.LIA;
-      const Go = landmarks.Go;
-      const Me = landmarks.Me;
-      drawLine(ctx, LIT, LIA, scale, '#457B9D', 2);
-      drawLine(ctx, Go, Me, scale, '#1D3557', 2);
     }
   },
 
@@ -539,18 +421,12 @@ const MEASUREMENTS_CONFIG = {
       normal: "Vị trí môi trên bình thường",
       low: "Vị trí môi trên bình thường"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const Ls = landmarks.Ls;
       const Pn = landmarks.Pn;
       const Pog_soft = landmarks["Pog`"];
+      if (!Pog_soft) return 0; // Guard
       return calculatePointToLineDistance(Ls, Pn, Pog_soft) * 0.1;
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const Ls = landmarks.Ls;
-      const Pn = landmarks.Pn;
-      const Pog_soft = landmarks["Pog`"];
-      drawLine(ctx, Pn, Pog_soft, scale, '#06FFA5', 2);
-      drawPerpendicularLine(ctx, Ls, Pn, Pog_soft, scale, '#06D6A0');
     }
   },
 
@@ -567,18 +443,12 @@ const MEASUREMENTS_CONFIG = {
       normal: "Vị trí môi dưới bình thường",
       low: "Vị trí môi dưới bình thường"
     },
-    calculate: (landmarks) => {
+    calculate: (landmarks: LandmarksObject) => {
       const Li = landmarks.Li;
       const Pn = landmarks.Pn;
       const Pog_soft = landmarks["Pog`"];
+      if (!Pog_soft) return 0; // Guard
       return calculatePointToLineDistance(Li, Pn, Pog_soft) * 0.1;
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      const Li = landmarks.Li;
-      const Pn = landmarks.Pn;
-      const Pog_soft = landmarks["Pog`"];
-      drawLine(ctx, Pn, Pog_soft, scale, '#EF476F', 2);
-      drawPerpendicularLine(ctx, Li, Pn, Pog_soft, scale, '#F78C6B');
     }
   },
 
@@ -595,37 +465,10 @@ const MEASUREMENTS_CONFIG = {
       normal: "Bình thường",
       low: "Bình thường"
     },
-    calculate: (landmarks, measurements) => {
+    calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>) => {
       // Complex calculation using other measurements
       // Simplified version
       return 146.09;
-    },
-    drawGuide: (ctx, landmarks, scale) => {
-      // No specific landmarks to highlight
     }
   }
 };
-
-// Helper function to get classification
-function getClassification(value, mean, sd) {
-  const diff = Math.abs(value - mean);
-  if (diff <= sd) return 'normal';
-  if (diff <= 2 * sd) return 'moderate';
-  return 'severe';
-}
-
-// Helper function to get significance stars
-function getSignificance(value, mean, sd) {
-  const diff = Math.abs(value - mean);
-  if (diff <= sd) return '';
-  if (diff <= 2 * sd) return '*';
-  if (diff <= 3 * sd) return '**';
-  return '***';
-}
-
-// ===================================================================
-// Expose to window object for use in React components
-// ===================================================================
-window.MEASUREMENTS_CONFIG = MEASUREMENTS_CONFIG;
-window.getClassification = getClassification;
-window.getSignificance = getSignificance;
