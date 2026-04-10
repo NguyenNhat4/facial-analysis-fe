@@ -8,6 +8,7 @@ import FacialAnalysisPage from "@/pages/facial-analysis";
 import CephAnalysisPage from "@/pages/ceph-analysis";
 import DemoPage from "@/pages/demo";
 import NotFound from "@/pages/not-found";
+import GlobalErrorBoundary from "@/components/GlobalErrorBoundary";
 
 function Router() {
   return (
@@ -23,12 +24,14 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <GlobalErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </GlobalErrorBoundary>
   );
 }
 
