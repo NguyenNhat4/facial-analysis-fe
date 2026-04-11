@@ -15,6 +15,7 @@ export function InteractiveCanvas() {
 
   const [scale, setScale] = useState(1);
   const [draggedLandmark, setDraggedLandmark] = useState<string | null>(null);
+  const [hoveredLandmark, setHoveredLandmark] = useState<string | null>(null);
 
   // Load image when src changes
   useEffect(() => {
@@ -34,7 +35,7 @@ export function InteractiveCanvas() {
   // Redraw canvas
   useEffect(() => {
     drawCanvas();
-  }, [loadedImage, landmarksObj, showLandmarkNames, hoveredMeasurement, draggedLandmark]);
+  }, [loadedImage, landmarksObj, showLandmarkNames, hoveredMeasurement, draggedLandmark, hoveredLandmark]);
 
   const drawCanvas = () => {
     const canvas = canvasRef.current;
@@ -63,7 +64,7 @@ export function InteractiveCanvas() {
     // Draw all landmarks (small dots)
     if (landmarksObj) {
       Object.entries(landmarksObj).forEach(([symbol, pos]) => {
-        drawLandmark(ctx, pos.x * scale, pos.y * scale, symbol, draggedLandmark === symbol);
+        drawLandmark(ctx, pos.x * scale, pos.y * scale, symbol, draggedLandmark === symbol, hoveredLandmark === symbol);
       });
     }
 
@@ -92,7 +93,8 @@ export function InteractiveCanvas() {
     x: number,
     y: number,
     symbol: string,
-    highlighted: boolean
+    highlighted: boolean,
+    hovered: boolean = false
   ) => {
     ctx.save();
 
@@ -117,6 +119,27 @@ export function InteractiveCanvas() {
 
       ctx.fillStyle = "white";
       ctx.fillText(symbol, x + 16, y - 2);
+    } else if (hovered) {
+      // Hovered landmark
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, 2 * Math.PI);
+      ctx.fillStyle = "#FFD700";
+      ctx.fill();
+      ctx.strokeStyle = "#FF4500";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // Always show label when hovered
+      ctx.font = "bold 14px Arial";
+      const textMetrics = ctx.measureText(symbol);
+      const textWidth = textMetrics.width;
+      const textHeight = 14;
+
+      ctx.fillStyle = "rgba(33, 150, 243, 0.9)";
+      ctx.fillRect(x + 10, y - textHeight - 3, textWidth + 6, textHeight + 6);
+
+      ctx.fillStyle = "white";
+      ctx.fillText(symbol, x + 13, y - 2);
     } else {
       // Normal landmark
       ctx.beginPath();
@@ -163,12 +186,33 @@ export function InteractiveCanvas() {
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!draggedLandmark || !canvasRef.current || !loadedImage) return;
+    if (!canvasRef.current || !loadedImage || !landmarksObj) return;
 
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left;
     const y = e.clientY - rect.top;
+
+    if (!draggedLandmark) {
+      // Hover effect logic
+      const hitRadius = 10;
+      let foundHover = false;
+      for (const [symbol, pos] of Object.entries(landmarksObj)) {
+        const lx = pos.x * scale;
+        const ly = pos.y * scale;
+        if (Math.hypot(x - lx, y - ly) <= hitRadius) {
+          if (hoveredLandmark !== symbol) {
+            setHoveredLandmark(symbol);
+          }
+          foundHover = true;
+          break;
+        }
+      }
+      if (!foundHover && hoveredLandmark !== null) {
+        setHoveredLandmark(null);
+      }
+      return;
+    }
 
     // Convert canvas coordinates back to image coordinates
     const imgX = Math.max(0, Math.min(loadedImage.width, x / scale));
@@ -186,6 +230,10 @@ export function InteractiveCanvas() {
     }
   };
 
+  const handlePointerLeave = () => {
+    setHoveredLandmark(null);
+  };
+
   return (
     <div className="canvas-container w-full h-[900px] bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center border-2 border-slate-700">
        <canvas
@@ -195,6 +243,7 @@ export function InteractiveCanvas() {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
+        onPointerLeave={handlePointerLeave}
       />
     </div>
   );
