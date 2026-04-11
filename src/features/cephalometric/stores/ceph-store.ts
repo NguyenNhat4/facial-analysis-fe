@@ -25,6 +25,7 @@ interface CephState {
   loadJsonData: (data: LandmarksData) => void;
   uploadAndDetect: (file: File) => Promise<void>;
   reset: () => void;
+  updateLandmark: (symbol: string, x: number, y: number) => void;
 }
 
 export const useCephStore = create<CephState>((set, get) => ({
@@ -56,19 +57,34 @@ export const useCephStore = create<CephState>((set, get) => ({
   uploadAndDetect: async (file: File) => {
     set({ loading: true, error: null });
     try {
-      // Create object URL for the image
-      const src = URL.createObjectURL(file);
-
       const data = await predictLandmarks(file);
 
       // Update store
-      set({ loadedImageSrc: src });
       get().setLandmarksData(data);
     } catch (err: any) {
       set({ error: err.message || "Failed to process image" });
     } finally {
       set({ loading: false });
     }
+  },
+
+  updateLandmark: (symbol: string, x: number, y: number) => {
+    const state = get();
+    if (!state.landmarksData) return;
+
+    // Create a new data object with the updated landmark
+    const newLandmarks = state.landmarksData.landmarks.map(lm =>
+      lm.symbol === symbol ? { ...lm, value: { x, y } } : lm
+    );
+
+    const newData: LandmarksData = {
+      ...state.landmarksData,
+      landmarks: newLandmarks
+    };
+
+    const obj = landmarksArrayToObject(newData.landmarks);
+    const measurements = calculateAllMeasurements(obj);
+    set({ landmarksData: newData, landmarksObj: obj, measurements });
   },
 
   reset: () => {

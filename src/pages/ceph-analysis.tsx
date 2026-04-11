@@ -46,85 +46,30 @@ export default function CephAnalysisPage() {
     gender: "Demo Case",
   };
 
-  // Parse query parameters for lateral image and load demo JSON
+  // Parse query parameters for lateral image and trigger API
   useEffect(() => {
-    // Only load from query param if we don't already have an image in store
-    if (!loadedImageSrc) {
+    const processImage = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const lateral = urlParams.get("lateral");
 
-      if (lateral) {
+      // If we have a lateral param from the query and it's different from the currently loaded one
+      if (lateral && loadedImageSrc !== lateral) {
         setLoadedImageSrc(lateral);
-      }
-    }
 
-    // Always pre-load demo data if empty, for testing (matches old behavior somewhat)
-    // Actually, only load if we have no landmarksData
-    if (!landmarksData) {
-      import("../data/mock/cephalometric-demo.json").then((module) => {
-         loadJsonData(module.default as any);
-      });
-      // also load the demo image if no image src
-      if (!loadedImageSrc) {
-        setLoadedImageSrc("/ceph/cks2ip8fq2a0j0yufdfssbc09.png");
-      }
-    }
-  }, [location, loadedImageSrc, landmarksData, setLoadedImageSrc, loadJsonData]);
-
-
-  // Handle image upload
-  const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    // Create a local blob url for the user to view immediately without detection
-    // but the actual requirement usually pairs upload with detection
-    const src = URL.createObjectURL(file);
-    setLoadedImageSrc(src);
-  };
-
-  // Handle JSON upload
-  const handleJsonUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const data = JSON.parse(e.target?.result as string);
-        loadJsonData(data);
-      } catch (error) {
-        console.error("Error parsing JSON:", error);
-        alert("File JSON không hợp lệ");
-      }
-    };
-    reader.readAsText(file);
-  };
-
-  // Handle API upload and detection
-  const handleAPIUpload = async () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = "image/*";
-
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
-
-      await uploadAndDetect(file);
-
-      if (error) {
-        alert(error);
+        try {
+          const response = await fetch(lateral);
+          const blob = await response.blob();
+          const file = new File([blob], "lateral.jpg", { type: blob.type });
+          await uploadAndDetect(file);
+        } catch (err: any) {
+          console.error("Failed to load image for detection:", err);
+          alert(err.message || "Lỗi tải ảnh");
+        }
       }
     };
 
-    input.click();
-  };
-
-  // Reset canvas
-  const handleReset = () => {
-    reset();
-  };
+    processImage();
+  }, [location, loadedImageSrc, setLoadedImageSrc, uploadAndDetect]);
 
   return (
     <div className="ceph-analysis-page min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25" style={{ backgroundColor: "#fafbfc" }}>
@@ -134,7 +79,7 @@ export default function CephAnalysisPage() {
           <div className="flex justify-between items-center h-24">
             <div className="flex items-center space-x-6">
               <Button
-                onClick={() => setLocation("/demo")}
+                onClick={() => setLocation("/")}
                 className="bg-gray-100 hover:bg-gray-200 text-gray-700"
               >
                 <ArrowLeft className="w-5 h-5 mr-2" />
@@ -195,40 +140,6 @@ export default function CephAnalysisPage() {
 
             {/* Controls */}
             <div className="canvas-controls">
-              <button
-                onClick={handleAPIUpload}
-                disabled={loading}
-                className="btn-primary"
-              >
-                {loading ? "Đang xử lý..." : "Upload & Detect với AI"}
-              </button>
-
-              <label htmlFor="imageInput" className="btn-secondary cursor-pointer">
-                Chọn Ảnh
-              </label>
-              <input
-                type="file"
-                id="imageInput"
-                accept="image/*"
-                onChange={handleImageUpload}
-                style={{ display: "none" }}
-              />
-
-              <label htmlFor="jsonInput" className="btn-secondary cursor-pointer">
-                Chọn JSON
-              </label>
-              <input
-                type="file"
-                id="jsonInput"
-                accept="application/json"
-                onChange={handleJsonUpload}
-                style={{ display: "none" }}
-              />
-
-              <button onClick={handleReset} className="btn-secondary">
-                Reset
-              </button>
-
               {/* Toggle for landmark names */}
               <div className="toggle-container">
                 <label className="toggle-label">
@@ -243,6 +154,8 @@ export default function CephAnalysisPage() {
                   <span className="toggle-text">Hiển thị tên landmark</span>
                 </label>
               </div>
+
+              {loading && <div className="text-blue-600 font-medium">Đang xử lý phân tích AI...</div>}
             </div>
           </div>
 
