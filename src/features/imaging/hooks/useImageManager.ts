@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { ImageType } from "../../../types/demo-cases";
 import { getFallbackImages } from "../../../utils/demo-cases";
 import { groupFilesByType, validateFileType } from "../../../utils/image-detection";
@@ -6,6 +6,7 @@ import {
   findOutputPathFromAssets,
   extractCaseIdFromInputFile,
 } from "../../../utils/case-mapping";
+import { useImageStore } from "../stores/image-store";
 
 interface ValidationState {
   show: boolean;
@@ -15,35 +16,23 @@ interface ValidationState {
 }
 
 export function useImageManager(showToast: (message: string, type?: "success" | "error" | "info") => void) {
-  const [localImages, setLocalImages] = useState<{
-    [key in ImageType]?: {
-      input: File;
-      inputPreview: string;
-      outputPreview: string;
-      outputFilename: string;
-    };
-  }>({});
-
-  const [currentCaseId, setCurrentCaseId] = useState<string | null>(null);
-  const [currentFolderName, setCurrentFolderName] = useState<string | null>(null);
-
-  const [uploadedImages, setUploadedImages] = useState<{ [key: string]: boolean }>({
-    lateral: false,
-    profile: false,
-    frontal: false,
-  });
-
-  const [uploadedFiles, setUploadedFiles] = useState<{ [key: string]: File | null }>({
-    lateral: null,
-    profile: null,
-    frontal: null,
-  });
-
-  const [imagePreviewUrls, setImagePreviewUrls] = useState<{ [key: string]: string }>({
-    lateral: "",
-    profile: "",
-    frontal: "",
-  });
+  const {
+    localImages,
+    currentCaseId,
+    currentFolderName,
+    uploadedImages,
+    uploadedFiles,
+    imagePreviewUrls,
+    setLocalImages,
+    setCurrentCaseId,
+    setCurrentFolderName,
+    setUploadedImages,
+    setUploadedFiles,
+    setImagePreviewUrls,
+    setUploadedImage,
+    setUploadedFile,
+    setImagePreviewUrl,
+  } = useImageStore();
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -56,15 +45,8 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
     fileName: "",
   });
 
-  useEffect(() => {
-    return () => {
-      Object.values(imagePreviewUrls).forEach((url) => {
-        if (url && url.startsWith("blob:")) {
-          URL.revokeObjectURL(url);
-        }
-      });
-    };
-  }, []); // Only on unmount or initial, depends on imagePreviewUrls. Actually to be safe we can use a ref or just keep it simple as in demo.tsx
+  // We intentionally remove the useEffect that revokes object URLs on unmount.
+  // This allows the URLs (and the image previews) to persist when navigating away and back.
 
   const validateFileNameForType = (fileName: string, imageId: string): boolean => {
     const fileNameLower = fileName.toLowerCase();
@@ -108,12 +90,12 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
         URL.revokeObjectURL(imagePreviewUrls[imageId]);
       }
 
-      setUploadedFiles((prev) => ({ ...prev, [imageId]: file }));
+      setUploadedFile(imageId, file);
 
       const previewUrl = URL.createObjectURL(file);
-      setImagePreviewUrls((prev) => ({ ...prev, [imageId]: previewUrl }));
+      setImagePreviewUrl(imageId, previewUrl);
 
-      setUploadedImages((prev) => ({ ...prev, [imageId]: true }));
+      setUploadedImage(imageId, true);
 
       showToast("Upload thành công", "success");
     }
@@ -137,9 +119,9 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
     if (imagePreviewUrls[imageId]) {
       URL.revokeObjectURL(imagePreviewUrls[imageId]);
     }
-    setUploadedFiles((prev) => ({ ...prev, [imageId]: null }));
-    setImagePreviewUrls((prev) => ({ ...prev, [imageId]: "" }));
-    setUploadedImages((prev) => ({ ...prev, [imageId]: false }));
+    setUploadedFile(imageId, null);
+    setImagePreviewUrl(imageId, "");
+    setUploadedImage(imageId, false);
   };
 
   const fakeLoadImages = async () => {
@@ -193,8 +175,8 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
             const inputPreviewUrl = URL.createObjectURL(file);
             const outputPath = findOutputPathFromAssets(file, imageType as ImageType);
 
-            setImagePreviewUrls((prev) => ({ ...prev, [imageType]: inputPreviewUrl }));
-            setLocalImages((prev) => ({
+            setImagePreviewUrl(imageType, inputPreviewUrl);
+            setLocalImages((prev: any) => ({
               ...prev,
               [imageType as ImageType]: {
                 input: file,
@@ -204,7 +186,7 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
               },
             }));
 
-            setUploadedImages((prev) => ({ ...prev, [imageType]: true }));
+            setUploadedImage(imageType, true);
             setLoadingCards((prev) => ({ ...prev, [imageType]: false }));
 
             processedCount++;
