@@ -11,6 +11,10 @@ export function InteractiveCanvas() {
   const landmarksObj = useCephStore((state) => state.landmarksObj);
   const showLandmarkNames = useCephStore((state) => state.showLandmarkNames);
   const hoveredMeasurement = useCephStore((state) => state.hoveredMeasurement);
+  const updateLandmark = useCephStore((state) => state.updateLandmark);
+
+  const [scale, setScale] = useState(1);
+  const [draggedLandmark, setDraggedLandmark] = useState<string | null>(null);
 
   // Load image when src changes
   useEffect(() => {
@@ -30,7 +34,7 @@ export function InteractiveCanvas() {
   // Redraw canvas
   useEffect(() => {
     drawCanvas();
-  }, [loadedImage, landmarksObj, showLandmarkNames, hoveredMeasurement]);
+  }, [loadedImage, landmarksObj, showLandmarkNames, hoveredMeasurement, draggedLandmark]);
 
   const drawCanvas = () => {
     const canvas = canvasRef.current;
@@ -42,7 +46,10 @@ export function InteractiveCanvas() {
     // Calculate scale to fit canvas
     const maxWidth = 800;
     const maxHeight = 900;
-    const scale = Math.min(maxWidth / loadedImage.width, maxHeight / loadedImage.height);
+    const currentScale = Math.min(maxWidth / loadedImage.width, maxHeight / loadedImage.height);
+    setScale(currentScale);
+
+    const scale = currentScale;
 
     canvas.width = loadedImage.width * scale;
     canvas.height = loadedImage.height * scale;
@@ -56,7 +63,7 @@ export function InteractiveCanvas() {
     // Draw all landmarks (small dots)
     if (landmarksObj) {
       Object.entries(landmarksObj).forEach(([symbol, pos]) => {
-        drawLandmark(ctx, pos.x * scale, pos.y * scale, symbol, false);
+        drawLandmark(ctx, pos.x * scale, pos.y * scale, symbol, draggedLandmark === symbol);
       });
     }
 
@@ -135,9 +142,60 @@ export function InteractiveCanvas() {
     ctx.restore();
   };
 
+  const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!canvasRef.current || !landmarksObj) return;
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Find if clicked near a landmark
+    const hitRadius = 10;
+    for (const [symbol, pos] of Object.entries(landmarksObj)) {
+      const lx = pos.x * scale;
+      const ly = pos.y * scale;
+      if (Math.hypot(x - lx, y - ly) <= hitRadius) {
+        setDraggedLandmark(symbol);
+        canvas.setPointerCapture(e.pointerId);
+        break;
+      }
+    }
+  };
+
+  const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (!draggedLandmark || !canvasRef.current || !loadedImage) return;
+
+    const canvas = canvasRef.current;
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Convert canvas coordinates back to image coordinates
+    const imgX = Math.max(0, Math.min(loadedImage.width, x / scale));
+    const imgY = Math.max(0, Math.min(loadedImage.height, y / scale));
+
+    updateLandmark(draggedLandmark, imgX, imgY);
+  };
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
+    if (draggedLandmark) {
+      if (canvasRef.current) {
+        canvasRef.current.releasePointerCapture(e.pointerId);
+      }
+      setDraggedLandmark(null);
+    }
+  };
+
   return (
     <div className="canvas-container w-full h-[900px] bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center border-2 border-slate-700">
-       <canvas ref={canvasRef} className="max-w-full max-h-full object-contain" />
+       <canvas
+        ref={canvasRef}
+        className="max-w-full max-h-full object-contain cursor-crosshair touch-none"
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+      />
     </div>
   );
 }
