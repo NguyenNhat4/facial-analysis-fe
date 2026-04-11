@@ -52,8 +52,9 @@ export default function CephAnalysisPage() {
       const urlParams = new URLSearchParams(window.location.search);
       const lateral = urlParams.get("lateral");
 
-      // If we have a lateral param from the query and it's different from the currently loaded one
-      if (lateral && loadedImageSrc !== lateral) {
+      // Only trigger if we have a lateral param from the query and it's different from the currently loaded one,
+      // or if we have no landmarksData for the current loaded image.
+      if (lateral && (loadedImageSrc !== lateral || !landmarksData)) {
         setLoadedImageSrc(lateral);
 
         try {
@@ -69,7 +70,7 @@ export default function CephAnalysisPage() {
     };
 
     processImage();
-  }, [location, loadedImageSrc, setLoadedImageSrc, uploadAndDetect]);
+  }, [location, loadedImageSrc, landmarksData, setLoadedImageSrc, uploadAndDetect]);
 
   return (
     <div className="ceph-analysis-page min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25" style={{ backgroundColor: "#fafbfc" }}>
