@@ -77,7 +77,9 @@ const DemoPage = () => {
     hasFaceImages,
     hasAllImages,
     availableAnalysisCount,
-    totalAnalysisCount
+    totalAnalysisCount,
+    processedAnalyses,
+    setProcessedAnalysis
   } = useImageManager(showToast);
 
   // AI Thinking Modal state
@@ -132,11 +134,25 @@ const DemoPage = () => {
   ) => {
     setCurrentAnalysis(analysisType);
     setPendingNavigation({ path, withImages });
-    setShowAIThinking(true);
+
+    if (processedAnalyses[analysisType]) {
+      // Already processed, navigate directly
+      if (withImages) {
+        handleNavigation(path, true);
+      } else {
+        handleNavigation(path);
+      }
+    } else {
+      // Show AI thinking modal first
+      setShowAIThinking(true);
+    }
   };
 
   const handleAIThinkingComplete = () => {
     setShowAIThinking(false);
+
+    // Mark as processed
+    setProcessedAnalysis(currentAnalysis, true);
 
     // Navigate after thinking is complete
     if (pendingNavigation) {

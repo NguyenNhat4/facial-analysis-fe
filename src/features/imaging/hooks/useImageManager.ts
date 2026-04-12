@@ -32,6 +32,8 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
     setUploadedImage,
     setUploadedFile,
     setImagePreviewUrl,
+    processedAnalyses,
+    setProcessedAnalysis,
   } = useImageStore();
 
   const [isLoading, setIsLoading] = useState(false);
@@ -253,6 +255,8 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
     hasCephImages,
     hasAllImages,
     availableAnalysisCount,
-    totalAnalysisCount
+    totalAnalysisCount,
+    processedAnalyses,
+    setProcessedAnalysis
   };
 }
