@@ -15,6 +15,7 @@ interface ImageState {
   uploadedImages: { [key: string]: boolean };
   uploadedFiles: { [key: string]: File | null };
   imagePreviewUrls: { [key: string]: string };
+  processedAnalyses: Record<string, boolean>;
 
   setLocalImages: (images: any | ((prev: any) => any)) => void;
   setCurrentCaseId: (id: string | null) => void;
@@ -27,6 +28,7 @@ interface ImageState {
   setUploadedImage: (imageId: string, isUploaded: boolean) => void;
   setUploadedFile: (imageId: string, file: File | null) => void;
   setImagePreviewUrl: (imageId: string, url: string) => void;
+  setProcessedAnalysis: (analysisType: string, isProcessed: boolean) => void;
 
   reset: () => void;
 }
@@ -50,24 +52,33 @@ export const useImageStore = create<ImageState>((set) => ({
     profile: "",
     frontal: "",
   },
+  processedAnalyses: {
+    facial: false,
+    ceph: false,
+  },
 
   setLocalImages: (images) => set((state) => ({
     localImages: typeof images === "function" ? images(state.localImages) : images
   })),
   setCurrentCaseId: (id) => set({ currentCaseId: id }),
   setCurrentFolderName: (name) => set({ currentFolderName: name }),
-  setUploadedImages: (images) => set({ uploadedImages: images }),
-  setUploadedFiles: (files) => set({ uploadedFiles: files }),
+  setUploadedImages: (images) => set({ uploadedImages: images, processedAnalyses: { facial: false, ceph: false } }),
+  setUploadedFiles: (files) => set({ uploadedFiles: files, processedAnalyses: { facial: false, ceph: false } }),
   setImagePreviewUrls: (urls) => set({ imagePreviewUrls: urls }),
 
   setUploadedImage: (imageId, isUploaded) => set((state) => ({
-    uploadedImages: { ...state.uploadedImages, [imageId]: isUploaded }
+    uploadedImages: { ...state.uploadedImages, [imageId]: isUploaded },
+    processedAnalyses: { facial: false, ceph: false }
   })),
   setUploadedFile: (imageId, file) => set((state) => ({
-    uploadedFiles: { ...state.uploadedFiles, [imageId]: file }
+    uploadedFiles: { ...state.uploadedFiles, [imageId]: file },
+    processedAnalyses: { facial: false, ceph: false }
   })),
   setImagePreviewUrl: (imageId, url) => set((state) => ({
     imagePreviewUrls: { ...state.imagePreviewUrls, [imageId]: url }
+  })),
+  setProcessedAnalysis: (analysisType, isProcessed) => set((state) => ({
+    processedAnalyses: { ...state.processedAnalyses, [analysisType]: isProcessed }
   })),
 
   reset: () => {
@@ -90,6 +101,10 @@ export const useImageStore = create<ImageState>((set) => ({
         lateral: "",
         profile: "",
         frontal: "",
+      },
+      processedAnalyses: {
+        facial: false,
+        ceph: false,
       },
     });
   }
