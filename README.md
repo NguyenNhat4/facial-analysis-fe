@@ -1,6 +1,6 @@
 # Project Leetray - Frontend
 
-This repository contains the frontend code for the Leetray project, a web application for dental analysis. It is built with React, Vite, and Tailwind CSS.
+This repository contains the frontend code for the orthodontic analysis project, a web application for dental analysis. It is built with React, Vite, and Tailwind CSS.
 
 ## Getting Started
 
