@@ -77,7 +77,9 @@ const DemoPage = () => {
     hasFaceImages,
     hasAllImages,
     availableAnalysisCount,
-    totalAnalysisCount
+    totalAnalysisCount,
+    hasAnalyzed,
+    setHasAnalyzed
   } = useImageManager(showToast);
 
   // AI Thinking Modal state
@@ -124,31 +126,6 @@ const DemoPage = () => {
 
 
 
-  // AI Thinking handlers
-  const handleAnalysisClick = (
-    analysisType: "facial" | "ceph",
-    path: string,
-    withImages = false
-  ) => {
-    setCurrentAnalysis(analysisType);
-    setPendingNavigation({ path, withImages });
-    setShowAIThinking(true);
-  };
-
-  const handleAIThinkingComplete = () => {
-    setShowAIThinking(false);
-
-    // Navigate after thinking is complete
-    if (pendingNavigation) {
-      if (pendingNavigation.withImages) {
-        handleNavigation(pendingNavigation.path, true);
-      } else {
-        handleNavigation(pendingNavigation.path);
-      }
-      setPendingNavigation(null);
-    }
-  };
-
   // Navigation handlers
   const handleNavigation = (path: string, withImages = false) => {
     if (withImages) {
@@ -173,6 +150,37 @@ const DemoPage = () => {
       setLocation(queryString ? `${path}?${queryString}` : path);
     } else {
       setLocation(path);
+    }
+  };
+
+  // AI Thinking handlers
+  const handleAnalysisClick = (
+    analysisType: "facial" | "ceph",
+    path: string,
+    withImages = false
+  ) => {
+    if (hasAnalyzed[analysisType]) {
+      // Navigate immediately if already analyzed for the current images
+      handleNavigation(path, withImages);
+    } else {
+      setCurrentAnalysis(analysisType);
+      setPendingNavigation({ path, withImages });
+      setShowAIThinking(true);
+    }
+  };
+
+  const handleAIThinkingComplete = () => {
+    setShowAIThinking(false);
+    setHasAnalyzed(currentAnalysis, true);
+
+    // Navigate after thinking is complete
+    if (pendingNavigation) {
+      if (pendingNavigation.withImages) {
+        handleNavigation(pendingNavigation.path, true);
+      } else {
+        handleNavigation(pendingNavigation.path);
+      }
+      setPendingNavigation(null);
     }
   };
 
