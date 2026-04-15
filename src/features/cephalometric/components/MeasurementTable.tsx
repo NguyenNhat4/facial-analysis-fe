@@ -7,17 +7,11 @@ export function MeasurementTable() {
   const hoveredMeasurement = useCephStore((state) => state.hoveredMeasurement);
   const setHoveredMeasurement = useCephStore((state) => state.setHoveredMeasurement);
 
-  const getColorClass = (classification: string) => {
-    switch (classification) {
-      case "normal":
-        return "text-green-600";
-      case "moderate":
-        return "text-yellow-600";
-      case "severe":
-        return "text-red-600";
-      default:
-        return "text-gray-600";
+  const getSdColorClass = (sdValue: number) => {
+    if (Math.abs(sdValue) > 1) {
+      return "text-red-600";
     }
+    return "text-gray-900";
   };
 
   return (
@@ -30,16 +24,18 @@ export function MeasurementTable() {
         <table className="w-full text-sm text-left">
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
             <tr>
-              <th className="px-4 py-3 font-semibold">Ý nghĩa</th>
+              <th className="px-4 py-3 font-semibold">Chỉ số</th>
               <th className="px-4 py-3 font-semibold text-center">Giá trị</th>
               <th className="px-4 py-3 font-semibold text-center">S.D.</th>
-              <th className="px-4 py-3 font-semibold text-center">Kết quả</th>
-              <th className="px-4 py-3 font-semibold text-center"></th>
-              <th className="px-4 py-3 font-semibold">Ý nghĩa</th>
+              <th className="px-4 py-3 font-semibold text-center">Giá trị hài hòa</th>
             </tr>
           </thead>
           <tbody>
-            {Object.entries(measurements).map(([key, measurement]) => (
+            {Object.entries(measurements).map(([key, measurement]) => {
+              const sdValue = (measurement.value - measurement.mean) / measurement.sd;
+              const isError = measurement.classification === 'error';
+              const rangeStr = `[${(measurement.mean - measurement.sd).toFixed(2)}, ${(measurement.mean + measurement.sd).toFixed(2)}]`;
+              return (
               <tr
                 key={key}
                 className={`border-b hover:bg-blue-50 transition-colors cursor-pointer ${hoveredMeasurement === key ? "bg-blue-100" : ""}`}
@@ -47,19 +43,15 @@ export function MeasurementTable() {
                 onMouseLeave={() => setHoveredMeasurement(null)}
               >
                 <td className="px-4 py-3 font-medium text-gray-900">{measurement.name}</td>
-                <td className="px-4 py-3 text-center">{measurement.value.toFixed(2)}</td>
-                <td className="px-4 py-3 text-center">
-                  {((measurement.value - measurement.mean) / measurement.sd).toFixed(1)}
+                <td className="px-4 py-3 text-center">{isError ? '-' : measurement.value.toFixed(2)}</td>
+                <td className={`px-4 py-3 text-center font-bold ${getSdColorClass(sdValue)}`}>
+                  {isError ? '-' : sdValue.toFixed(2)}
                 </td>
-                <td className={`px-4 py-3 text-center font-bold ${getColorClass(measurement.classification)}`}>
-                  {measurement.value.toFixed(2)}
-                </td>
-                <td className="px-4 py-3 text-center text-red-500 font-bold">{measurement.significance}</td>
-                <td className={`px-4 py-3 ${getColorClass(measurement.classification)}`}>
-                  {measurement.interpretation}
+                <td className="px-4 py-3 text-center text-gray-600">
+                  {isError ? '-' : rangeStr}
                 </td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       </div>
