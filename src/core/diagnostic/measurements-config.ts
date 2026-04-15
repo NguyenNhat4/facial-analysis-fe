@@ -74,13 +74,13 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     name: "U1 to NA(mm)",
     nameFull: "Upper incisor to NA (mm)",
     type: "distance",
-    landmarks: ["UIT", "N", "A"],
+    landmarks: ["I", "N", "A"],
     normalMean: 5.0, // (5.07 + 4.93) / 2
     normalSD: 2.285, // (2.26 + 2.31) / 2
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
-      const UIT = landmarks.UIT;
+      const UIT = landmarks.I;
       const N = landmarks.N;
       const A = landmarks.A;
       return calculatePointToLineDistance(UIT, N, A) * 0.1;
@@ -91,13 +91,13 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     name: "L1 to NB(mm)",
     nameFull: "Lower incisor to NB (mm)",
     type: "distance",
-    landmarks: ["LIT", "N", "B"],
+    landmarks: ["i", "N", "B"],
     normalMean: 6.205, // (6.25 + 6.16) / 2
     normalSD: 2.135, // (2.18 + 2.09) / 2
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
-      const LIT = landmarks.LIT;
+      const LIT = landmarks.i;
       const N = landmarks.N;
       const B = landmarks.B;
       return calculatePointToLineDistance(LIT, N, B) * 0.1;
@@ -108,13 +108,13 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     name: "U1 to NA(deg)",
     nameFull: "Upper incisor to NA (degrees)",
     type: "angle",
-    landmarks: ["UIT", "UIA", "N", "A"],
+    landmarks: ["I", "UIA", "N", "A"],
     normalMean: 22, // No new data for angle in formular.md, kept original
     normalSD: 5.0, // No new data for angle in formular.md, kept original
     unit: "°",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
-      const UIT = landmarks.UIT;
+      const UIT = landmarks.I;
       const UIA = landmarks.UIA;
       const N = landmarks.N;
       const A = landmarks.A;
@@ -126,13 +126,13 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     name: "L1 to NB(deg)",
     nameFull: "Lower incisor to NB (degrees)",
     type: "angle",
-    landmarks: ["LIT", "LIA", "N", "B"],
+    landmarks: ["i", "LIA", "N", "B"],
     normalMean: 25, // No new data for angle in formular.md, kept original
     normalSD: 5.0, // No new data for angle in formular.md, kept original
     unit: "°",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
-      const LIT = landmarks.LIT;
+      const LIT = landmarks.i;
       const LIA = landmarks.LIA;
       const N = landmarks.N;
       const B = landmarks.B;
@@ -144,15 +144,15 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     name: "IMPA",
     nameFull: "Incisor Mandibular Plane Angle",
     type: "angle",
-    landmarks: ["LIT", "LIA", "Go", "Me"],
+    landmarks: ["i", "LIA", "go", "Me"],
     normalMean: 95.94, // (96.79 + 95.09) / 2
     normalSD: 6.91, // (6.86 + 6.96) / 2
     unit: "°",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
-      const LIT = landmarks.LIT;
+      const LIT = landmarks.i;
       const LIA = landmarks.LIA;
-      const Go = landmarks.Go;
+      const Go = landmarks.go;
       const Me = landmarks.Me;
       return calculateAngleBetweenLines(LIT, LIA, Go, Me);
     }
