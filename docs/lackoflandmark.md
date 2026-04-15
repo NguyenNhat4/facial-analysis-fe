@@ -3,6 +3,8 @@ ANS (Anterior Nasal Spine - Gai mũi trước)
 Góc Z (Z-angle)
 Điểm Cm (Columella)
 Pal (Palatal Plane - Mặt phẳng khẩu cái)
+FMIA
+
 
 
 ANS: Tương ứng với vùng Sn (Subnasale) trên mô mềm.
