@@ -27,12 +27,14 @@ export function MeasurementTable() {
               <th className="px-4 py-3 font-semibold">Chỉ số</th>
               <th className="px-4 py-3 font-semibold text-center">Giá trị</th>
               <th className="px-4 py-3 font-semibold text-center">S.D.</th>
+              <th className="px-4 py-3 font-semibold text-center">Giá trị hài hòa</th>
             </tr>
           </thead>
           <tbody>
             {Object.entries(measurements).map(([key, measurement]) => {
               const sdValue = (measurement.value - measurement.mean) / measurement.sd;
               const isError = measurement.classification === 'error';
+              const rangeStr = `[${(measurement.mean - measurement.sd).toFixed(2)}, ${(measurement.mean + measurement.sd).toFixed(2)}]`;
               return (
               <tr
                 key={key}
@@ -44,6 +46,9 @@ export function MeasurementTable() {
                 <td className="px-4 py-3 text-center">{isError ? '-' : measurement.value.toFixed(2)}</td>
                 <td className={`px-4 py-3 text-center font-bold ${getSdColorClass(sdValue)}`}>
                   {isError ? '-' : sdValue.toFixed(2)}
+                </td>
+                <td className="px-4 py-3 text-center text-gray-600">
+                  {isError ? '-' : rangeStr}
                 </td>
               </tr>
             )})}
