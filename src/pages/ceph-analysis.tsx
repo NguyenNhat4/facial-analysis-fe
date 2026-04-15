@@ -20,10 +20,11 @@ import { MeasurementTable } from "../features/cephalometric/components/Measureme
 
 // Import styles from reference project
 import "./ceph-analysis.css";
+import { Console } from "console";
 
 export default function CephAnalysisPage() {
   const [location, setLocation] = useLocation();
-
+  console.log("Rendering CephAnalysisPage, current location:", location); // Debug log for location changes
   const {
     loadedImageSrc,
     loading,
@@ -35,7 +36,7 @@ export default function CephAnalysisPage() {
     reset,
     error,
     landmarksData
-  } = useCephStore();
+  } = useCephStore(); 
 
   // Demo patient data
   const patientData = {
