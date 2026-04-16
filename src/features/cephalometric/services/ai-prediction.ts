@@ -14,7 +14,7 @@ export const predictLandmarks = async (file: File): Promise<LandmarksData> => {
   formData.append("file", file);
 
   try {
-    const response = await fetch("http://localhost:8000/api/predict", {
+    const response = await fetch("/api/ai/predict-ceph", {
       method: "POST",
       body: formData,
     });
