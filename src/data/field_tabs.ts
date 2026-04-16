@@ -321,20 +321,6 @@ export const fieldTabs: FieldTab[] = [
             help: "Khoảng cách từ răng cửa dưới đến đường NB",
           },
           {
-            name: "u1_na_deg",
-            label: "Góc (U1- NA) (°)",
-            type: "number",
-            step: 0.1,
-            help: "Góc nghiêng của răng cửa trên so với đường NA",
-          },
-          {
-            name: "l1_nb_deg",
-            label: "Góc (L1- NB) (°)",
-            type: "number",
-            step: 0.1,
-            help: "Góc nghiêng của răng cửa dưới so với đường NB",
-          },
-          {
             name: "u1_apog_mm",
             label: "U1- APog (mm)",
             type: "number",

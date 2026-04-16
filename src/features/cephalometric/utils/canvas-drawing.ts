@@ -295,18 +295,6 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     drawExtendedLine(ctx, N, B, scale, '#FFDAC1', 2, [5, 5]);
     drawPerpendicularLine(ctx, LIT, N, B, scale, '#FFB7B2', false);
   },
-  U1_NA_deg: (ctx, landmarks, scale) => {
-    const { UIT, UIA, N, A } = landmarks;
-    if (!UIT || !UIA || !N || !A) return;
-    drawLine(ctx, UIT, UIA, scale, '#E3AFBC', 2);
-    drawLine(ctx, N, A, scale, '#9A1750', 2);
-  },
-  L1_NB_deg: (ctx, landmarks, scale) => {
-    const { LIT, LIA, N, B } = landmarks;
-    if (!LIT || !LIA || !N || !B) return;
-    drawLine(ctx, LIT, LIA, scale, '#EE4C7C', 2);
-    drawLine(ctx, N, B, scale, '#AA4465', 2);
-  },
   U1_APog_mm: (ctx, landmarks, scale) => {
     const { UIT, A, Pog } = landmarks;
     if (!UIT || !A || !Pog) return;

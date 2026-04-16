@@ -104,42 +104,6 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     }
   },
 
-  U1_NA_deg: {
-    name: "U1 to NA(deg)",
-    nameFull: "Upper incisor to NA (degrees)",
-    type: "angle",
-    landmarks: ["I", "UIA", "N", "A"],
-    normalMean: 22, // No new data for angle in formular.md, kept original
-    normalSD: 5.0, // No new data for angle in formular.md, kept original
-    unit: "°",
-    interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
-      const UIT = landmarks.I;
-      const UIA = landmarks.UIA;
-      const N = landmarks.N;
-      const A = landmarks.A;
-      return calculateAngleBetweenLines(UIT, UIA, N, A);
-    }
-  },
-
-  L1_NB_deg: {
-    name: "L1 to NB(deg)",
-    nameFull: "Lower incisor to NB (degrees)",
-    type: "angle",
-    landmarks: ["i", "LIA", "N", "B"],
-    normalMean: 25, // No new data for angle in formular.md, kept original
-    normalSD: 5.0, // No new data for angle in formular.md, kept original
-    unit: "°",
-    interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
-      const LIT = landmarks.i;
-      const LIA = landmarks.LIA;
-      const N = landmarks.N;
-      const B = landmarks.B;
-      return calculateAngleBetweenLines(LIT, LIA, N, B);
-    }
-  },
-
   "i_MP": {
     name: "i/MP",
     nameFull: "Incisor Mandibular Plane Angle",
