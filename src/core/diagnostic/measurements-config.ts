@@ -108,7 +108,7 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     name: "i/MP",
     nameFull: "Incisor Mandibular Plane Angle",
     type: "angle",
-    landmarks: ["i", "LIA", "go", "Me"],
+    landmarks: ["i", "go", "Me"],
     normalMean: 95.94, // (96.79 + 95.09) / 2
     normalSD: 6.91, // (6.86 + 6.96) / 2
     unit: "°",
