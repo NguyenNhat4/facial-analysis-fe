@@ -64,3 +64,34 @@ useEffect(() => {
 - **Component body code** = Runs on every render (dangerous for side effects)
 - **Code in `useEffect` with `[]`** = Runs only once on mount (safe for API calls)
 
+## more example 
+
+```tsx
+
+import React, { useState, useEffect } from 'react';
+
+function ReRenderDemo() {
+  const [count, setCount] = useState(0);
+
+  // This runs on EVERY render because there is no dependency array
+  useEffect(() => {
+    console.log("I am rendering (either mounting or updating)!");
+  });
+
+  // This runs ONLY on mount (first time only - if you jump to other page and jump back it is first time as well)
+  useEffect(() => {
+    console.log("I only ran once: Initial Mount");
+  }, []);
+
+  return (
+    <div style={{ padding: '20px' }}>
+      <h1>Count: {count}</h1>
+      <button onClick={() => setCount(count + 1)}>
+        Click to Re-render
+      </button>
+    </div>
+  );
+}
+
+export default ReRenderDemo;
+```
