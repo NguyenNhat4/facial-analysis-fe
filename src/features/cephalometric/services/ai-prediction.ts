@@ -1,4 +1,4 @@
-import demoData from "../../../data/mock/cephalometric-demo.json";
+import demoData from "../data/cephalometric-demo.json";
 import { LandmarksData } from "../types";
 
 export const getMockPrediction = (): Promise<LandmarksData> => {
