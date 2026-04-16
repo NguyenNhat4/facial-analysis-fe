@@ -4,6 +4,8 @@ Góc Z (Z-angle)
 Điểm Cm (Columella)
 Pal (Palatal Plane - Mặt phẳng khẩu cái)
 FMIA
+S-lines
+
 
 
 
