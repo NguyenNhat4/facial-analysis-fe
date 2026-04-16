@@ -1,4 +1,4 @@
-import { calculateAngle, calculateAngleBetweenLines, calculateDistance, calculatePointToLineDistance, Point } from "../geometry/math-utils";
+import { calculateAngle, calculateAngleBetweenLines, calculateDistance, calculatePointToLineDistance, calculatePointToLineSignedDistance, Point } from "../geometry/math-utils";
 import { LandmarksObject, MeasurementConfig } from "../../features/cephalometric/types";
 
 // Helper function to get classification
@@ -70,8 +70,8 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     }
   },
 
-  U1_NA_mm: {
-    name: "U1 to NA(mm)",
+  "I-NA": {
+    name: "I-NA",
     nameFull: "Upper incisor to NA (mm)",
     type: "distance",
     landmarks: ["I", "N", "A"],
@@ -87,8 +87,8 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     }
   },
 
-  L1_NB_mm: {
-    name: "L1 to NB(mm)",
+  "i-NB": {
+    name: "i-NB",
     nameFull: "Lower incisor to NB (mm)",
     type: "distance",
     landmarks: ["i", "N", "B"],
@@ -104,44 +104,8 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     }
   },
 
-  U1_NA_deg: {
-    name: "U1 to NA(deg)",
-    nameFull: "Upper incisor to NA (degrees)",
-    type: "angle",
-    landmarks: ["I", "UIA", "N", "A"],
-    normalMean: 22, // No new data for angle in formular.md, kept original
-    normalSD: 5.0, // No new data for angle in formular.md, kept original
-    unit: "°",
-    interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
-      const UIT = landmarks.I;
-      const UIA = landmarks.UIA;
-      const N = landmarks.N;
-      const A = landmarks.A;
-      return calculateAngleBetweenLines(UIT, UIA, N, A);
-    }
-  },
-
-  L1_NB_deg: {
-    name: "L1 to NB(deg)",
-    nameFull: "Lower incisor to NB (degrees)",
-    type: "angle",
-    landmarks: ["i", "LIA", "N", "B"],
-    normalMean: 25, // No new data for angle in formular.md, kept original
-    normalSD: 5.0, // No new data for angle in formular.md, kept original
-    unit: "°",
-    interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
-      const LIT = landmarks.i;
-      const LIA = landmarks.LIA;
-      const N = landmarks.N;
-      const B = landmarks.B;
-      return calculateAngleBetweenLines(LIT, LIA, N, B);
-    }
-  },
-
-  IMPA: {
-    name: "IMPA",
+  "i_MP": {
+    name: "i/MP",
     nameFull: "Incisor Mandibular Plane Angle",
     type: "angle",
     landmarks: ["i", "LIA", "go", "Me"],
@@ -155,6 +119,95 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
       const Go = landmarks.go;
       const Me = landmarks.Me;
       return calculateAngleBetweenLines(LIT, LIA, Go, Me);
+    }
+  },
+
+  "N-Me": {
+    name: "N-Me",
+    nameFull: "N-Me (mm)",
+    type: "distance",
+    landmarks: ["N", "Me"],
+    normalMean: 113.625, // (115.10 + 112.15) / 2
+    normalSD: 6.84, // (7.30 + 6.38) / 2
+    unit: "mm",
+    interpretation: { high: "", normal: "", low: "" },
+    calculate: (landmarks: LandmarksObject) => {
+      const N = landmarks.N;
+      const Me = landmarks.Me;
+      return calculateDistance(N, Me) * 0.1;
+    }
+  },
+
+  "I/i": {
+    name: "I/i",
+    nameFull: "Interincisal Angle",
+    type: "angle",
+    landmarks: ["I", "UIA", "i", "LIA"],
+    normalMean: 120.94, // (119.53 + 122.35) / 2
+    normalSD: 10.12, // (9.34 + 10.90) / 2
+    unit: "°",
+    interpretation: { high: "", normal: "", low: "" },
+    calculate: (landmarks: LandmarksObject) => {
+      const UIT = landmarks.I;
+      const UIA = landmarks.UIA;
+      const LIT = landmarks.i;
+      const LIA = landmarks.LIA;
+      return calculateAngleBetweenLines(UIT, UIA, LIT, LIA);
+    }
+  },
+
+  "Li-E": {
+    name: "Li-E",
+    nameFull: "Lower Lip to E-line",
+    type: "distance",
+    landmarks: ["Li", "Pn", "Pog`"],
+    normalMean: 1.57, // (1.77 + 1.37) / 2
+    normalSD: 2.225, // (2.37 + 2.08) / 2
+    unit: "mm",
+    interpretation: { high: "", normal: "", low: "" },
+    calculate: (landmarks: LandmarksObject) => {
+      const Li = landmarks.Li;
+      const Pn = landmarks.Pn;
+      const Pog_soft = landmarks["Pog`"];
+      // Pn to Pog' is directed top to bottom.
+      // Point in front (right) means negative cross product if using crossProduct = (Bx-Ax)(Py-Ay) - (By-Ay)(Px-Ax)
+      // Actually, if x goes right and y goes down, crossProduct for P(right of AB) is negative.
+      // Let's use negative of the signed distance so right = positive.
+      return -calculatePointToLineSignedDistance(Li, Pn, Pog_soft) * 0.1;
+    }
+  },
+
+  "Ls-E": {
+    name: "Ls-E",
+    nameFull: "Upper Lip to E-line",
+    type: "distance",
+    landmarks: ["Ls", "Pn", "Pog`"],
+    normalMean: 0.115, // (0.44 + -0.21) / 2
+    normalSD: 2.105, // (2.34 + 1.87) / 2
+    unit: "mm",
+    interpretation: { high: "", normal: "", low: "" },
+    calculate: (landmarks: LandmarksObject) => {
+      const Ls = landmarks.Ls;
+      const Pn = landmarks.Pn;
+      const Pog_soft = landmarks["Pog`"];
+      return -calculatePointToLineSignedDistance(Ls, Pn, Pog_soft) * 0.1;
+    }
+  },
+
+  "N-Sn-Pg": {
+    name: "N-Sn-Pg",
+    nameFull: "Soft Tissue Facial Angle",
+    type: "angle",
+    landmarks: ["N`", "Sn", "Pog`"],
+    normalMean: 162.065, // (161.28 + 162.85) / 2
+    normalSD: 5.76, // (6.03 + 5.49) / 2
+    unit: "°",
+    interpretation: { high: "", normal: "", low: "" },
+    calculate: (landmarks: LandmarksObject) => {
+      const N_soft = landmarks["N`"];
+      const Sn = landmarks.Sn;
+      const Pog_soft = landmarks["Pog`"];
+      return calculateAngle(N_soft, Sn, Pog_soft);
     }
   }
 };

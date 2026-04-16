@@ -86,3 +86,28 @@ export function calculatePointToLineDistance(P: Point, A: Point, B: Point): numb
   );
   return numerator / lineLength;
 }
+
+/**
+ * Calculate signed perpendicular distance from point P to line AB
+ * @param P - Point P {x, y}
+ * @param A - Point A {x, y} on the line
+ * @param B - Point B {x, y} on the line
+ * @returns - Signed perpendicular distance. Positive if point is on the left of the directed line AB, negative if on the right.
+ */
+export function calculatePointToLineSignedDistance(P: Point, A: Point, B: Point): number {
+  const lineLength = calculateDistance(A, B);
+  if (lineLength === 0) return calculateDistance(P, A);
+
+  // Using cross product to find perpendicular distance
+  // Cross product of AB and AP: (Bx - Ax)*(Py - Ay) - (By - Ay)*(Px - Ax)
+  const crossProduct = (B.x - A.x) * (P.y - A.y) - (B.y - A.y) * (P.x - A.x);
+
+  // Note: in canvas, y goes down.
+  // If crossProduct > 0, P is on the right of directed line AB.
+  // If crossProduct < 0, P is on the left.
+  // Usually, E-line is drawn from Pn to Pog' (top to bottom).
+  // Lip in front of E-line (right side on profile facing right) -> we want positive.
+  // We can just return crossProduct / lineLength and adjust sign in the caller or here based on expected convention.
+  // We return the raw cross product divided by length (which has a sign).
+  return crossProduct / lineLength;
+}
