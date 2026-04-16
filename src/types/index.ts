@@ -39,6 +39,14 @@ export interface Features {
   l1_apog_mm: number;
   u1_l1_deg: number;
   impa: number;
+  "I-NA": number;
+  "i-NB": number;
+  "i_MP": number;
+  "N-Me": number;
+  "I/i": number;
+  "Li-E": number;
+  "Ls-E": number;
+  "N-Sn-Pg": number;
   ul_e_plane: number;
   ll_e_plane: number;
   ei: number;
