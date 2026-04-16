@@ -22,6 +22,8 @@ Các chỉ số dưới đây là quan trọng nhất để xác định kiểu 
 | | | Nữ | 54.46 mm | [cite_start]3.47 mm | [cite: 243]
 | **Chiều cao tầng mặt dưới** | $ANS-Me$ | Nam | 60.66 mm | [cite_start]5.69 mm | [cite: 243]
 | | | Nữ | 57.21 mm | [cite_start]4.99 mm | [cite: 243]
+| **Chiều cao tầng mặt toàn bộ** | $N-Me$ | Nam | 115.10 mm | [cite_start]7.30 mm | [cite: 243]
+| | | Nữ | 112.15 mm | [cite_start]6.38 mm | [cite: 243]
 | **Răng cửa trên - NA** | $I-NA$ | Nam | 5.07 mm | [cite_start]2.26 mm | [cite: 243]
 | | | Nữ | 4.93 mm | [cite_start]2.31 mm | [cite: 243]
 | **Răng cửa dưới - NB** | $i-NB$ | Nam | 6.25 mm | [cite_start]2.18 mm | [cite: 243]

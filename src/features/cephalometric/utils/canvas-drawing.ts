@@ -82,6 +82,50 @@ export function drawAngleArc(
 }
 
 /**
+ * Draw an extended (infinite-looking) line that passes through A and B
+ * @param ctx - Canvas context
+ * @param A - Point A {x, y}
+ * @param B - Point B {x, y}
+ * @param scale - Scale factor
+ * @param color - Line color
+ * @param width - Line width
+ * @param dash - Line dash pattern
+ */
+export function drawExtendedLine(
+  ctx: CanvasRenderingContext2D,
+  A: Point,
+  B: Point,
+  scale: number,
+  color: string = '#FF0000',
+  width: number = 2,
+  dash: number[] = []
+): void {
+  const extensionLength = 2000; // Arbitrary large number to make it look infinite
+
+  const dx = B.x - A.x;
+  const dy = B.y - A.y;
+  const length = Math.sqrt(dx * dx + dy * dy);
+
+  if (length === 0) return;
+
+  const ux = dx / length;
+  const uy = dy / length;
+
+  const extendedStart = {
+    x: A.x - ux * extensionLength,
+    y: A.y - uy * extensionLength
+  };
+
+  const extendedEnd = {
+    x: B.x + ux * extensionLength,
+    y: B.y + uy * extensionLength
+  };
+
+  drawLine(ctx, extendedStart, extendedEnd, scale, color, width, dash);
+}
+
+
+/**
  * Draw perpendicular line from point to line
  * @param ctx - Canvas context
  * @param P - Point P {x, y}
@@ -89,6 +133,7 @@ export function drawAngleArc(
  * @param B - Point B {x, y} on the line
  * @param scale - Scale factor
  * @param color - Line color
+ * @param dashed - Whether to draw as a dashed line
  */
 export function drawPerpendicularLine(
   ctx: CanvasRenderingContext2D,
@@ -96,7 +141,8 @@ export function drawPerpendicularLine(
   A: Point,
   B: Point,
   scale: number,
-  color: string = '#00FF00'
+  color: string = '#00FF00',
+  dashed: boolean = true
 ): void {
   // Find perpendicular projection point on line AB
   const AP = { x: P.x - A.x, y: P.y - A.y };
@@ -113,7 +159,7 @@ export function drawPerpendicularLine(
     y: A.y + t * AB.y
   };
 
-  drawLine(ctx, P, projection, scale, color, 2, [5, 5]);
+  drawLine(ctx, P, projection, scale, color, 2, dashed ? [5, 5] : []);
 }
 
 /**
@@ -237,29 +283,17 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     drawLine(ctx, ANS, Me, scale, '#E8B4B8', 2);
     drawMeasurementLine(ctx, ANS, Me, scale);
   },
-  U1_NA_mm: (ctx, landmarks, scale) => {
+  "I-NA": (ctx, landmarks, scale) => {
     const { UIT, N, A } = landmarks;
     if (!UIT || !N || !A) return;
-    drawLine(ctx, N, A, scale, '#C7CEEA', 2);
-    drawPerpendicularLine(ctx, UIT, N, A, scale, '#B8B8F5');
+    drawExtendedLine(ctx, N, A, scale, '#C7CEEA', 2, [5, 5]);
+    drawPerpendicularLine(ctx, UIT, N, A, scale, '#B8B8F5', false);
   },
-  L1_NB_mm: (ctx, landmarks, scale) => {
+  "i-NB": (ctx, landmarks, scale) => {
     const { LIT, N, B } = landmarks;
     if (!LIT || !N || !B) return;
-    drawLine(ctx, N, B, scale, '#FFDAC1', 2);
-    drawPerpendicularLine(ctx, LIT, N, B, scale, '#FFB7B2');
-  },
-  U1_NA_deg: (ctx, landmarks, scale) => {
-    const { UIT, UIA, N, A } = landmarks;
-    if (!UIT || !UIA || !N || !A) return;
-    drawLine(ctx, UIT, UIA, scale, '#E3AFBC', 2);
-    drawLine(ctx, N, A, scale, '#9A1750', 2);
-  },
-  L1_NB_deg: (ctx, landmarks, scale) => {
-    const { LIT, LIA, N, B } = landmarks;
-    if (!LIT || !LIA || !N || !B) return;
-    drawLine(ctx, LIT, LIA, scale, '#EE4C7C', 2);
-    drawLine(ctx, N, B, scale, '#AA4465', 2);
+    drawExtendedLine(ctx, N, B, scale, '#FFDAC1', 2, [5, 5]);
+    drawPerpendicularLine(ctx, LIT, N, B, scale, '#FFB7B2', false);
   },
   U1_APog_mm: (ctx, landmarks, scale) => {
     const { UIT, A, Pog } = landmarks;
@@ -279,11 +313,42 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     drawLine(ctx, UIT, UIA, scale, '#F4A261', 2);
     drawLine(ctx, LIT, LIA, scale, '#E76F51', 2);
   },
-  IMPA: (ctx, landmarks, scale) => {
+  "i_MP": (ctx, landmarks, scale) => {
     const { LIT, LIA, Go, Me } = landmarks;
     if (!LIT || !LIA || !Go || !Me) return;
     drawLine(ctx, LIT, LIA, scale, '#457B9D', 2);
     drawLine(ctx, Go, Me, scale, '#1D3557', 2);
+  },
+  "N-Me": (ctx, landmarks, scale) => {
+    const { N, Me } = landmarks;
+    if (!N || !Me) return;
+    drawLine(ctx, N, Me, scale, '#E8B4B8', 2);
+    drawMeasurementLine(ctx, N, Me, scale);
+  },
+  "I/i": (ctx, landmarks, scale) => {
+    const { UIT, UIA, LIT, LIA } = landmarks;
+    if (!UIT || !UIA || !LIT || !LIA) return;
+    drawLine(ctx, UIT, UIA, scale, '#F4A261', 2);
+    drawLine(ctx, LIT, LIA, scale, '#E76F51', 2);
+  },
+  "Li-E": (ctx, landmarks, scale) => {
+    const { Li, Pn, "Pog`": Pog_soft } = landmarks;
+    if (!Li || !Pn || !Pog_soft) return;
+    drawLine(ctx, Pn, Pog_soft, scale, '#06FFA5', 2);
+    drawPerpendicularLine(ctx, Li, Pn, Pog_soft, scale, '#06D6A0');
+  },
+  "Ls-E": (ctx, landmarks, scale) => {
+    const { Ls, Pn, "Pog`": Pog_soft } = landmarks;
+    if (!Ls || !Pn || !Pog_soft) return;
+    drawLine(ctx, Pn, Pog_soft, scale, '#EF476F', 2);
+    drawPerpendicularLine(ctx, Ls, Pn, Pog_soft, scale, '#F78C6B');
+  },
+  "N-Sn-Pg": (ctx, landmarks, scale) => {
+    const { "N`": N_soft, Sn, "Pog`": Pog_soft } = landmarks;
+    if (!N_soft || !Sn || !Pog_soft) return;
+    drawLine(ctx, N_soft, Sn, scale, '#9B5DE5', 2);
+    drawLine(ctx, Sn, Pog_soft, scale, '#9B5DE5', 2);
+    drawAngleArc(ctx, N_soft, Sn, Pog_soft, scale, '#9B5DE5');
   },
   UL_E: (ctx, landmarks, scale) => {
     const { Ls, Pn, "Pog`": Pog_soft } = landmarks;

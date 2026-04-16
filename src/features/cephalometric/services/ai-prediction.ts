@@ -1,4 +1,4 @@
-import demoData from "../../../data/mock/cephalometric-demo.json";
+import demoData from "../data/cephalometric-demo.json";
 import { LandmarksData } from "../types";
 
 export const getMockPrediction = (): Promise<LandmarksData> => {
@@ -13,8 +13,10 @@ export const predictLandmarks = async (file: File): Promise<LandmarksData> => {
   const formData = new FormData();
   formData.append("file", file);
 
+  const apiUrl = import.meta.env.VITE_DENTAL_TREATMENT_API_URL || "http://localhost:8000";
+
   try {
-    const response = await fetch("http://localhost:8000/api/predict", {
+    const response = await fetch(`${apiUrl}/api/predict`, {
       method: "POST",
       body: formData,
     });

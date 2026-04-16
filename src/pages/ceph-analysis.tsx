@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import {
   Card,
@@ -47,14 +47,16 @@ export default function CephAnalysisPage() {
   };
 
   // Parse query parameters for lateral image and trigger API
+  const processedLateralRef = useRef<string | null>(null);
+
   useEffect(() => {
     const processImage = async () => {
       const urlParams = new URLSearchParams(window.location.search);
       const lateral = urlParams.get("lateral");
 
-      // Only trigger if we have a lateral param from the query and it's different from the currently loaded one,
-      // or if we have no landmarksData for the current loaded image.
-      if (lateral && (loadedImageSrc !== lateral || !landmarksData)) {
+      // Only process if we have a lateral param and haven't processed it yet
+      if (lateral && processedLateralRef.current !== lateral) {
+        processedLateralRef.current = lateral;
         setLoadedImageSrc(lateral);
 
         try {
@@ -70,7 +72,7 @@ export default function CephAnalysisPage() {
     };
 
     processImage();
-  }, [location, loadedImageSrc, landmarksData, setLoadedImageSrc, uploadAndDetect]);
+  }, []);
 
   return (
     <div className="ceph-analysis-page min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25" style={{ backgroundColor: "#fafbfc" }}>
