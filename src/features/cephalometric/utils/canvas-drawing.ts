@@ -247,23 +247,23 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
   SNA: (ctx, landmarks, scale) => {
     const { S, N, A } = landmarks;
     if (!S || !N || !A) return;
-    drawLine(ctx, S, N, scale, '#FF6B6B', 2);
-    drawLine(ctx, N, A, scale, '#FF6B6B', 2);
-    drawAngleArc(ctx, S, N, A, scale, '#FF6B6B');
+    drawLine(ctx, S, N, scale, '#FFFF00', 2);
+    drawLine(ctx, N, A, scale, '#FFFF00', 2);
+    drawAngleArc(ctx, S, N, A, scale, '#00FF00');
   },
   SNB: (ctx, landmarks, scale) => {
     const { S, N, B } = landmarks;
     if (!S || !N || !B) return;
-    drawLine(ctx, S, N, scale, '#4ECDC4', 2);
-    drawLine(ctx, N, B, scale, '#4ECDC4', 2);
-    drawAngleArc(ctx, S, N, B, scale, '#4ECDC4');
+    drawLine(ctx, S, N, scale, '#FFFF00', 2);
+    drawLine(ctx, N, B, scale, '#FFFF00', 2);
+    drawAngleArc(ctx, S, N, B, scale, '#00FF00');
   },
   ANB: (ctx, landmarks, scale) => {
     const { A, N, B } = landmarks;
     if (!A || !N || !B) return;
-    drawLine(ctx, A, N, scale, '#95E1D3', 2);
-    drawLine(ctx, N, B, scale, '#95E1D3', 2);
-    drawAngleArc(ctx, A, N, B, scale, '#95E1D3');
+    drawLine(ctx, A, N, scale, '#FFFF00', 2);
+    drawLine(ctx, N, B, scale, '#FFFF00', 2);
+    drawAngleArc(ctx, A, N, B, scale, '#00FF00');
   },
   WITS: (ctx, landmarks, scale) => {
     const { A, B, ANS, PNS } = landmarks;
@@ -367,10 +367,25 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     drawMeasurementLine(ctx, N, Me, scale);
   },
   "I/i": (ctx, landmarks, scale) => {
-    const { UIT, UIA, LIT, LIA } = landmarks;
-    if (!UIT || !UIA || !LIT || !LIA) return;
-    drawLine(ctx, UIT, UIA, scale, '#F4A261', 2);
-    drawLine(ctx, LIT, LIA, scale, '#E76F51', 2);
+    const I = landmarks.I || landmarks.UIT;
+    const UIA = landmarks.UIA;
+    const i = landmarks.i || landmarks.LIT;
+    const LIA = landmarks.LIA;
+    if (!I || !UIA || !i || !LIA) return;
+    
+    // Draw extended upper incisor line (I to UIA) as dotted
+    drawExtendedLine(ctx, I, UIA, scale, '#FFFF00', 2, [5, 5]);
+    
+    // Draw extended lower incisor line (i to LIA) as dotted
+    drawExtendedLine(ctx, i, LIA, scale, '#FFFF00', 2, [5, 5]);
+    
+    // Find intersection point of the two incisor lines
+    const intersectionPoint = findLineIntersection(I, UIA, i, LIA);
+    
+    // Draw angle arc at the intersection point if it exists
+    if (intersectionPoint) {
+      drawAngleArc(ctx, UIA, intersectionPoint, LIA, scale, '#00FF00');
+    }
   },
   "Li-E": (ctx, landmarks, scale) => {
     const { Li, Pn, "Pog`": Pog_soft } = landmarks;
