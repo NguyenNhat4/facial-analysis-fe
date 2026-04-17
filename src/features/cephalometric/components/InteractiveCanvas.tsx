@@ -47,6 +47,17 @@ export function InteractiveCanvas() {
     img.src = loadedImageSrc;
   }, [loadedImageSrc]);
 
+  // Non-passive wheel event listener
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    canvas.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      canvas.removeEventListener("wheel", handleWheel);
+    };
+  }, [handleWheel]);
+
   // Redraw canvas
   useEffect(() => {
     drawCanvas();
@@ -74,18 +85,21 @@ export function InteractiveCanvas() {
 
     ctx.save();
 
-    // Apply pan offset
+    // Apply pan offset globally to context
     ctx.translate(offset.x, offset.y);
-    // Apply zoom
+
+    // Draw image with zoom scaling applied only to the image
+    ctx.save();
     ctx.scale(zoom, zoom);
-
-    // Draw image
     ctx.drawImage(loadedImage, 0, 0, canvas.width, canvas.height);
+    ctx.restore();
 
-    // Draw all landmarks (small dots)
+    const renderScale = currentScale * zoom;
+
+    // Draw all landmarks
     if (landmarksObj) {
       Object.entries(landmarksObj).forEach(([symbol, pos]) => {
-        drawLandmark(ctx, pos.x * currentScale, pos.y * currentScale, symbol, draggedLandmark === symbol, hoveredLandmark === symbol);
+        drawLandmark(ctx, pos.x * renderScale, pos.y * renderScale, symbol, draggedLandmark === symbol, hoveredLandmark === symbol);
       });
     }
 
@@ -98,13 +112,13 @@ export function InteractiveCanvas() {
            config.landmarks.forEach((symbol: string) => {
              if (landmarksObj && landmarksObj[symbol]) {
                const pos = landmarksObj[symbol];
-               drawLandmark(ctx, pos.x * currentScale, pos.y * currentScale, symbol, true);
+               drawLandmark(ctx, pos.x * renderScale, pos.y * renderScale, symbol, true);
              }
            });
         }
 
         // Draw guide lines
-        drawMeasurementGuides[hoveredMeasurement](ctx, landmarksObj, currentScale);
+        drawMeasurementGuides[hoveredMeasurement](ctx, landmarksObj, renderScale);
       }
     }
 
@@ -122,47 +136,48 @@ export function InteractiveCanvas() {
     ctx.save();
 
     if (highlighted) {
-      // Highlighted landmark
+      // Dragged / Held landmark - transparent and smaller to show x-ray underneath
       ctx.beginPath();
-      ctx.arc(x, y, 8, 0, 2 * Math.PI);
-      ctx.fillStyle = "#FFD700";
+      ctx.arc(x, y, 2, 0, 2 * Math.PI);
+      ctx.fillStyle = "rgba(255, 69, 0, 0.8)";
       ctx.fill();
-      ctx.strokeStyle = "#FF4500";
-      ctx.lineWidth = 3;
+
+      // Subtle targeting crosshair
+      ctx.strokeStyle = "rgba(255, 215, 0, 0.6)";
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(x - 15, y);
+      ctx.lineTo(x + 15, y);
+      ctx.moveTo(x, y - 15);
+      ctx.lineTo(x, y + 15);
       ctx.stroke();
 
-      // Draw label with background
-      ctx.font = "bold 16px Arial";
-      const textMetrics = ctx.measureText(symbol);
-      const textWidth = textMetrics.width;
-      const textHeight = 16;
-
-      ctx.fillStyle = "rgba(255, 69, 0, 0.9)";
-      ctx.fillRect(x + 12, y - textHeight - 4, textWidth + 8, textHeight + 8);
-
-      ctx.fillStyle = "white";
-      ctx.fillText(symbol, x + 16, y - 2);
-    } else if (hovered) {
-      // Hovered landmark
-      ctx.beginPath();
-      ctx.arc(x, y, 6, 0, 2 * Math.PI);
+      // Draw label with subtle shadow instead of blocking box
+      ctx.font = "bold 14px Arial";
+      ctx.shadowColor = "black";
+      ctx.shadowBlur = 4;
       ctx.fillStyle = "#FFD700";
-      ctx.fill();
-      ctx.strokeStyle = "#FF4500";
+      ctx.fillText(symbol, x + 8, y - 8);
+      ctx.shadowBlur = 0; // reset
+    } else if (hovered) {
+      // Hovered landmark - ring focus effect
+      ctx.beginPath();
+      ctx.arc(x, y, 5, 0, 2 * Math.PI);
+      ctx.strokeStyle = "#FFD700";
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Always show label when hovered
+      // Always show label when hovered, with semi-transparent background
       ctx.font = "bold 14px Arial";
       const textMetrics = ctx.measureText(symbol);
       const textWidth = textMetrics.width;
       const textHeight = 14;
 
-      ctx.fillStyle = "rgba(33, 150, 243, 0.9)";
-      ctx.fillRect(x + 10, y - textHeight - 3, textWidth + 6, textHeight + 6);
+      ctx.fillStyle = "rgba(33, 150, 243, 0.4)";
+      ctx.fillRect(x + 8, y - textHeight - 3, textWidth + 6, textHeight + 6);
 
       ctx.fillStyle = "white";
-      ctx.fillText(symbol, x + 13, y - 2);
+      ctx.fillText(symbol, x + 11, y - 2);
     } else {
       // Normal landmark
       ctx.beginPath();
@@ -286,7 +301,6 @@ export function InteractiveCanvas() {
           "max-w-full max-h-full cursor-crosshair touch-none",
           isPanning ? "cursor-grabbing" : ""
         )}
-        onWheel={handleWheel}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

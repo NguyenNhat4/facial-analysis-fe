@@ -16,10 +16,10 @@ export function useZoomPan() {
   const [lastPanPoint, setLastPanPoint] = useState<Point | null>(null);
 
   const handleWheel = useCallback(
-    (e: React.WheelEvent<HTMLCanvasElement>) => {
+    (e: WheelEvent) => {
       e.preventDefault();
 
-      const canvas = e.currentTarget;
+      const canvas = e.currentTarget as HTMLCanvasElement;
       const rect = canvas.getBoundingClientRect();
       const cursorX = e.clientX - rect.left;
       const cursorY = e.clientY - rect.top;
