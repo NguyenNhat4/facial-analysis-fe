@@ -298,3 +298,221 @@ Layer phân ra rõ rệt (Core tách khỏi Feature Hook, View tách khỏi Stat
 
 Chúc hệ thống chẩn đoán của chúng ta thành công.
 *Version 1.0.0 - Approved by Core Engineering Team.*
+
+## 13. CURRENT PROJECT STRUCTURE
+```
+.
+├── .dockerignore
+├── .env.example
+├── .gitignore
+├── AGENTS.md
+├── DOCKER.md
+├── Dockerfile
+├── Dockerfile.dev
+├── README.md
+├── assets
+│   ├── 3d_objects
+│   │   ├── lower_jaw.stl
+│   │   └── upper_jaw.stl
+│   ├── demo_image
+│   │   ├── images-load-page.png
+│   │   └── user-info.png
+│   ├── hiai-logo.png
+│   ├── input.jpeg
+│   ├── leetray_logo.png
+│   ├── logo
+│   │   ├── 3D_icon.png
+│   │   └── paranomic_icon.png
+│   ├── output.jpeg
+│   ├── paranomic_xray_logo.png
+│   └── upload_logo
+│       ├── 3D-model.png
+│       ├── frontal-face.png
+│       ├── logo-lateral-xray.png
+│       ├── logo-side-face.png
+│       └── logo-upload-xray.png
+├── components.json
+├── dev.js
+├── docker-compose.dev.yml
+├── docker-compose.yml
+├── docs
+│   ├── API_ARCHITECTURE_ANALYSIS.md
+│   ├── bugs
+│   │   ├── double-api-call.md
+│   │   └── troubleshooting-white-screen.md
+│   ├── ceph_refactoring_summary.md
+│   ├── codebase_architecture_issues.md
+│   ├── fomular.md
+│   ├── lackoflandmark.md
+│   ├── landmark_returned_from_backend.md
+│   └── learns
+│       └── re-render.md
+├── index.html
+├── package-lock.json
+├── package.json
+├── postcss.config.js
+├── project_structure.txt
+├── public
+│   ├── ceph
+│   │   ├── cks2ip8fq2a0j0yufdfssbc09.png
+│   │   └── styles.css
+│   ├── demo-cases-config.json
+│   ├── facial-analysis-output.json
+│   └── xray-analysis-output.json
+├── src
+│   ├── App.css
+│   ├── App.tsx
+│   ├── components
+│   │   ├── 3DViewer.tsx
+│   │   ├── GlobalErrorBoundary.tsx
+│   │   ├── PredictionResults.tsx
+│   │   ├── ai-thinking-modal.tsx
+│   │   ├── demo-case-manager.tsx
+│   │   ├── demo-case-selector.tsx
+│   │   ├── facial-analysis.tsx
+│   │   ├── local-image-uploader.tsx
+│   │   ├── patient-info.tsx
+│   │   ├── processing-animation.tsx
+│   │   ├── telegram-button.tsx
+│   │   ├── toast-notification.tsx
+│   │   ├── ui
+│   │   │   ├── AdvancedLighting.tsx
+│   │   │   ├── CrossSection.tsx
+│   │   │   ├── ErrorBoundary.tsx
+│   │   │   ├── LoadingOverlay.tsx
+│   │   │   ├── SingleObjViewer.tsx
+│   │   │   ├── SingleStlViewer.tsx
+│   │   │   ├── ToothAxisArrows.tsx
+│   │   │   ├── ToothNumberLabels.tsx
+│   │   │   ├── ToothSegmentBoxes.tsx
+│   │   │   ├── accordion.tsx
+│   │   │   ├── alert-dialog.tsx
+│   │   │   ├── alert.tsx
+│   │   │   ├── aspect-ratio.tsx
+│   │   │   ├── avatar.tsx
+│   │   │   ├── badge.tsx
+│   │   │   ├── breadcrumb.tsx
+│   │   │   ├── button.tsx
+│   │   │   ├── calendar.tsx
+│   │   │   ├── card.tsx
+│   │   │   ├── carousel.tsx
+│   │   │   ├── chart.tsx
+│   │   │   ├── checkbox.tsx
+│   │   │   ├── collapsible.tsx
+│   │   │   ├── command.tsx
+│   │   │   ├── context-menu.tsx
+│   │   │   ├── dialog.tsx
+│   │   │   ├── drawer.tsx
+│   │   │   ├── dropdown-menu.tsx
+│   │   │   ├── form.tsx
+│   │   │   ├── hover-card.tsx
+│   │   │   ├── input-otp.tsx
+│   │   │   ├── input.tsx
+│   │   │   ├── label.tsx
+│   │   │   ├── menubar.tsx
+│   │   │   ├── navigation-menu.tsx
+│   │   │   ├── pagination.tsx
+│   │   │   ├── popover.tsx
+│   │   │   ├── progress.tsx
+│   │   │   ├── radio-group.tsx
+│   │   │   ├── resizable.tsx
+│   │   │   ├── scroll-area.tsx
+│   │   │   ├── select.tsx
+│   │   │   ├── separator.tsx
+│   │   │   ├── sheet.tsx
+│   │   │   ├── sidebar.tsx
+│   │   │   ├── skeleton.tsx
+│   │   │   ├── slider.tsx
+│   │   │   ├── switch.tsx
+│   │   │   ├── table.tsx
+│   │   │   ├── tabs.tsx
+│   │   │   ├── textarea.tsx
+│   │   │   ├── toast.tsx
+│   │   │   ├── toaster.tsx
+│   │   │   ├── toggle-group.tsx
+│   │   │   ├── toggle.tsx
+│   │   │   └── tooltip.tsx
+│   │   ├── upload-cards.tsx
+│   │   ├── validation-error-modal.tsx
+│   │   └── xray-analysis.tsx
+│   ├── core
+│   │   ├── diagnostic
+│   │   │   ├── calculations.ts
+│   │   │   └── measurements-config.ts
+│   │   └── geometry
+│   │       └── math-utils.ts
+│   ├── features
+│   │   ├── analysis
+│   │   │   ├── components
+│   │   │   │   ├── clinical-analysis-sidebar.tsx
+│   │   │   │   ├── medical-footer.tsx
+│   │   │   │   └── medical-header.tsx
+│   │   │   └── index.ts
+│   │   ├── cephalometric
+│   │   │   ├── components
+│   │   │   │   ├── InteractiveCanvas.tsx
+│   │   │   │   └── MeasurementTable.tsx
+│   │   │   ├── data
+│   │   │   │   └── cephalometric-demo.json
+│   │   │   ├── hooks
+│   │   │   │   └── useZoomPan.ts
+│   │   │   ├── services
+│   │   │   │   └── ai-prediction.ts
+│   │   │   ├── stores
+│   │   │   │   └── ceph-store.ts
+│   │   │   ├── types.ts
+│   │   │   └── utils
+│   │   │       └── canvas-drawing.ts
+│   │   ├── imaging
+│   │   │   ├── components
+│   │   │   │   ├── imaging-upload-grid.tsx
+│   │   │   │   └── imaging-upload-header.tsx
+│   │   │   ├── hooks
+│   │   │   │   └── useImageManager.ts
+│   │   │   ├── index.ts
+│   │   │   └── stores
+│   │   │       └── image-store.ts
+│   │   └── patient
+│   │       ├── components
+│   │       │   └── patient-record-header.tsx
+│   │       ├── hooks
+│   │       │   └── usePatientData.ts
+│   │       ├── index.ts
+│   │       └── stores
+│   │           └── patient-store.ts
+│   ├── hooks
+│   │   ├── use-mobile.tsx
+│   │   └── use-toast.ts
+│   ├── index.css
+│   ├── lib
+│   │   ├── queryClient.ts
+│   │   └── utils.ts
+│   ├── main.tsx
+│   ├── pages
+│   │   ├── ceph-analysis.css
+│   │   ├── ceph-analysis.tsx
+│   │   ├── chat.tsx
+│   │   ├── demo.tsx
+│   │   ├── facial-analysis.tsx
+│   │   ├── home.tsx
+│   │   ├── not-found.tsx
+│   │   └── xray-analysis.tsx
+│   ├── shared
+│   │   └── hooks
+│   │       └── useToast.ts
+│   ├── styles
+│   │   └── buttonStyles.ts
+│   ├── types
+│   │   ├── demo-cases.ts
+│   │   └── index.ts
+│   └── utils
+│       ├── case-mapping.ts
+│       ├── demo-cases.ts
+│       └── image-detection.ts
+├── tailwind.config.ts
+├── test_demo_page.js
+├── tsconfig.json
+└── vite.config.ts
+
+43 directories, 169 files
+```
