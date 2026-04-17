@@ -95,46 +95,9 @@ const AIThinkingModal: React.FC<AIThinkingModalProps> = ({
     }
 
     setIsThinking(true);
-    
-    const totalSteps = config.steps.length;
-    const stepDuration = 1000 + Math.random() * 800; // 1-1.8s per step
-    
-    let currentStepIndex = 0;
-    
-    const processStep = () => {
-      setCurrentStep(currentStepIndex);
-      
-      // Animate progress for current step
-      const stepProgress = (currentStepIndex / totalSteps) * 100;
-      const nextStepProgress = ((currentStepIndex + 1) / totalSteps) * 100;
-      
-      let currentProgress = stepProgress;
-      const progressIncrement = (nextStepProgress - stepProgress) / 20;
-      
-      const progressInterval = setInterval(() => {
-        currentProgress += progressIncrement;
-        setProgress(currentProgress);
-        
-        if (currentProgress >= nextStepProgress) {
-          clearInterval(progressInterval);
-          
-          currentStepIndex++;
-          
-          if (currentStepIndex < totalSteps) {
-            setTimeout(processStep, 200 + Math.random() * 300);
-          } else {
-            // Thinking complete
-            setTimeout(() => {
-              setIsThinking(false);
-              onComplete();
-            }, 500);
-          }
-        }
-      }, stepDuration / 20);
-    };
-
-    // Start processing
-    setTimeout(processStep, 800);
+    // Animated progress bar - quick pulse effect while modal is open
+    setProgress(100);
+    setCurrentStep(config.steps.length - 1);
   }, [isOpen, config.steps.length, onComplete]);
 
   if (!isOpen) return null;

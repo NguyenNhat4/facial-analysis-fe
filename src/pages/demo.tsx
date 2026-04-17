@@ -88,10 +88,6 @@ const DemoPage = () => {
   const [currentAnalysis, setCurrentAnalysis] = useState<
     "facial" | "ceph"
   >("facial");
-  const [pendingNavigation, setPendingNavigation] = useState<{
-    path: string;
-    withImages: boolean;
-  } | null>(null);
 
   // Generate upload categories from IMAGE_TYPE_MAPPING
   const uploadCategories = (() => {
@@ -134,22 +130,18 @@ const DemoPage = () => {
     withImages = false
   ) => {
     setCurrentAnalysis(analysisType);
-    setPendingNavigation({ path, withImages });
     setShowAIThinking(true);
-  };
 
-  const handleAIThinkingComplete = () => {
-    setShowAIThinking(false);
-
-    // Navigate after thinking is complete
-    if (pendingNavigation) {
-      if (pendingNavigation.withImages) {
-        handleNavigation(pendingNavigation.path, true);
+    // Close modal after 1s and navigate
+    setTimeout(() => {
+      setShowAIThinking(false);
+      // Navigate after modal closes
+      if (withImages) {
+        handleNavigation(path, true);
       } else {
-        handleNavigation(pendingNavigation.path);
+        handleNavigation(path);
       }
-      setPendingNavigation(null);
-    }
+    }, 1000); // 1 second delay
   };
 
   // Navigation handlers
@@ -304,7 +296,7 @@ const DemoPage = () => {
       <AIThinkingModal
         isOpen={showAIThinking}
         analysisType={currentAnalysis}
-        onComplete={handleAIThinkingComplete}
+        onComplete={() => {}} // No-op since modal closes immediately via parent
       />
 
       {/* Validation Error Modal */}
