@@ -1,5 +1,6 @@
 import demoData from "../data/cephalometric-demo.json";
 import { LandmarksData } from "../types";
+import { normalizeLandmarkSymbols } from "../utils/landmark-normalizer";
 
 export const getMockPrediction = (): Promise<LandmarksData> => {
   return new Promise((resolve) => {
@@ -27,6 +28,13 @@ export const predictLandmarks = async (file: File): Promise<LandmarksData> => {
     }
 
     const data = await response.json();
+    
+    // Normalize landmark symbols from backend format to frontend format
+    // (e.g., "li" -> "Li", "Pg'" -> "Pog`")
+    if (data.landmarks) {
+      data.landmarks = normalizeLandmarkSymbols(data.landmarks);
+    }
+    
     return data as LandmarksData;
   } catch (error) {
     console.warn("API prediction failed or is unavailable, falling back to mock data.", error);

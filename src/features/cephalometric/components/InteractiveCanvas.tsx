@@ -106,6 +106,7 @@ export function InteractiveCanvas() {
     // Draw measurement guide if hovering
     if (hoveredMeasurement && drawMeasurementGuides[hoveredMeasurement]) {
       if (landmarksObj) {
+
         // Find required landmarks for highlight from MEASUREMENTS_CONFIG
         const config = MEASUREMENTS_CONFIG[hoveredMeasurement];
         if (config) {
@@ -116,7 +117,7 @@ export function InteractiveCanvas() {
              }
            });
         }
-
+        
         // Draw guide lines
         drawMeasurementGuides[hoveredMeasurement](ctx, landmarksObj, renderScale);
       }

@@ -390,14 +390,22 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
   "Li-E": (ctx, landmarks, scale) => {
     const { Li, Pn, "Pog`": Pog_soft } = landmarks;
     if (!Li || !Pn || !Pog_soft) return;
-    drawLine(ctx, Pn, Pog_soft, scale, '#06FFA5', 2);
-    drawPerpendicularLine(ctx, Li, Pn, Pog_soft, scale, '#06D6A0');
+    
+    // Draw E-line (Pn to Pog') as extended dotted yellow line
+    drawExtendedLine(ctx, Pn, Pog_soft, scale, '#FFFF00', 2, [5, 5]);
+    
+    // Draw perpendicular from Li to E-line as solid green
+    drawPerpendicularLine(ctx, Li, Pn, Pog_soft, scale, '#00FF00', false);
   },
   "Ls-E": (ctx, landmarks, scale) => {
     const { Ls, Pn, "Pog`": Pog_soft } = landmarks;
     if (!Ls || !Pn || !Pog_soft) return;
-    drawLine(ctx, Pn, Pog_soft, scale, '#EF476F', 2);
-    drawPerpendicularLine(ctx, Ls, Pn, Pog_soft, scale, '#F78C6B');
+    
+    // Draw E-line (Pn to Pog') as extended dotted yellow line
+    drawExtendedLine(ctx, Pn, Pog_soft, scale, '#FFFF00', 2, [5, 5]);
+    
+    // Draw perpendicular from Ls to E-line as solid green
+    drawPerpendicularLine(ctx, Ls, Pn, Pog_soft, scale, '#00FF00', false);
   },
   "N-Sn-Pg": (ctx, landmarks, scale) => {
     const { "N`": N_soft, Sn, "Pog`": Pog_soft } = landmarks;
