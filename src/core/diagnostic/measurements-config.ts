@@ -192,22 +192,5 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
       const Pog_soft = landmarks["Pog`"];
       return -calculatePointToLineSignedDistance(Ls, Pn, Pog_soft) * 0.1;
     }
-  },
-
-  "N-Sn-Pg": {
-    name: "N-Sn-Pg",
-    nameFull: "Soft Tissue Facial Angle",
-    type: "angle",
-    landmarks: ["N`", "Sn", "Pog`"],
-    normalMean: 162.065, // (161.28 + 162.85) / 2
-    normalSD: 5.76, // (6.03 + 5.49) / 2
-    unit: "°",
-    interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
-      const N_soft = landmarks["N`"];
-      const Sn = landmarks.Sn;
-      const Pog_soft = landmarks["Pog`"];
-      return calculateAngle(N_soft, Sn, Pog_soft);
-    }
   }
 };
