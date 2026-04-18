@@ -108,7 +108,7 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     name: "i/MP",
     nameFull: "Incisor Mandibular Plane Angle",
     type: "angle",
-    landmarks: ["i", "go", "Me"],
+    landmarks: ["i", "Go", "Me"],
     normalMean: 95.94, // (96.79 + 95.09) / 2
     normalSD: 6.91, // (6.86 + 6.96) / 2
     unit: "°",
@@ -116,7 +116,7 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     calculate: (landmarks: LandmarksObject) => {
       const LIT = landmarks.i;
       const LIA = landmarks.LIA;
-      const Go = landmarks.go;
+      const Go = landmarks.Go;
       const Me = landmarks.Me;
       return calculateAngleBetweenLines(LIT, LIA, Go, Me);
     }
