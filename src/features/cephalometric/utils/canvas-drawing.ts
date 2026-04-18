@@ -407,6 +407,15 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     // Draw perpendicular from Ls to E-line as solid green
     drawPerpendicularLine(ctx, Ls, Pn, Pog_soft, scale, '#00FF00', false);
   },
+  "N-Sn-Pg": (ctx, landmarks, scale) => {
+    const { N, Sn, "Pog`": Pog_soft } = landmarks;
+    if (!N || !Sn || !Pog_soft) return;
+    
+    // Yellow lines for reference, green angle arc
+    drawLine(ctx, N, Sn, scale, '#FFFF00', 2);
+    drawLine(ctx, Sn, Pog_soft, scale, '#FFFF00', 2);
+    drawAngleArc(ctx, N, Sn, Pog_soft, scale, '#00FF00');
+  },
   UL_E: (ctx, landmarks, scale) => {
     const { Ls, Pn, "Pog`": Pog_soft } = landmarks;
     if (!Ls || !Pn || !Pog_soft) return;
