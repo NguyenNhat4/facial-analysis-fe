@@ -108,7 +108,7 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     name: "i/MP",
     nameFull: "Incisor Mandibular Plane Angle",
     type: "angle",
-    landmarks: ["i", "go", "Me"],
+    landmarks: ["i", "Go", "Me"],
     normalMean: 95.94, // (96.79 + 95.09) / 2
     normalSD: 6.91, // (6.86 + 6.96) / 2
     unit: "°",
@@ -116,7 +116,7 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     calculate: (landmarks: LandmarksObject) => {
       const LIT = landmarks.i;
       const LIA = landmarks.LIA;
-      const Go = landmarks.go;
+      const Go = landmarks.Go;
       const Me = landmarks.Me;
       return calculateAngleBetweenLines(LIT, LIA, Go, Me);
     }
@@ -198,16 +198,16 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     name: "N-Sn-Pg",
     nameFull: "Soft Tissue Facial Angle",
     type: "angle",
-    landmarks: ["N`", "Sn", "Pog`"],
+    landmarks: ["N", "Sn", "Pog`"],
     normalMean: 162.065, // (161.28 + 162.85) / 2
     normalSD: 5.76, // (6.03 + 5.49) / 2
     unit: "°",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
-      const N_soft = landmarks["N`"];
+      const N = landmarks.N;
       const Sn = landmarks.Sn;
       const Pog_soft = landmarks["Pog`"];
-      return calculateAngle(N_soft, Sn, Pog_soft);
+      return calculateAngle(N, Sn, Pog_soft);
     }
   }
 };
