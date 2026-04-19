@@ -200,7 +200,7 @@ export function drawMeasurementLine(
   end: Point,
   scale: number
 ): void {
-  const color = '#FFFF00';
+  const color = '#00FF00';
   drawLine(ctx, start, end, scale, color, 2);
 
   // Draw arrows
@@ -367,7 +367,7 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
   "N-Me": (ctx, landmarks, scale) => {
     const { N, Me } = landmarks;
     if (!N || !Me) return;
-    drawLine(ctx, N, Me, scale, '#E8B4B8', 2);
+    drawLine(ctx, N, Me, scale, '#00FF00', 2);
     drawMeasurementLine(ctx, N, Me, scale);
   },
   "I/i": (ctx, landmarks, scale) => {
@@ -379,9 +379,11 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     
     // Draw extended upper incisor line (I to UIA) as dotted
     drawExtendedLine(ctx, I, UIA, scale, '#FFFF00', 2, [5, 5]);
+    drawLine(ctx,I, UIA, scale, '#FFFF00', 2);
     
     // Draw extended lower incisor line (i to LIA) as dotted
     drawExtendedLine(ctx, i, LIA, scale, '#FFFF00', 2, [5, 5]);
+    drawLine(ctx,i, LIA, scale, '#FFFF00', 2);
     
     // Find intersection point of the two incisor lines
     const intersectionPoint = findLineIntersection(I, UIA, i, LIA);
