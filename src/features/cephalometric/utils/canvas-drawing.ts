@@ -313,10 +313,13 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     const { N, A } = landmarks;
     if (!I || !N || !A) return;
     
-    // Draw NA reference line as dotted yellow
+    // Draw NA reference line as infinite dotted yellow
     drawExtendedLine(ctx, N, A, scale, '#FFFF00', 2, [5, 5]);
     
-    // Draw I (upper incisor) to NA as solid green
+    // Draw solid yellow segment from N to A only
+    drawLine(ctx, N, A, scale, '#FFFF00', 2);
+    
+    // Draw I (upper incisor) to NA as solid green (perpendicular intersects at NA)
     drawPerpendicularLine(ctx, I, N, A, scale, '#00FF00', false);
   
   },
@@ -328,6 +331,7 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     
     // Draw NB reference line as dotted yellow
     drawExtendedLine(ctx, N, B, scale, '#FFFF00', 2, [5, 5]);
+    drawLine(ctx, N, B, scale, '#FFFF00', 2);
     
     // Draw i (lower incisor) to NB as solid green
     drawPerpendicularLine(ctx, i, N, B, scale, '#00FF00', false);
