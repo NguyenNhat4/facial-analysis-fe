@@ -24,8 +24,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     nameFull: "SNA",
     type: "angle",
     landmarks: ["S", "N", "A"],
-    normalMean: 84.13, // (84.33 + 83.93) / 2
-    normalSD: 4.085, // (4.42 + 3.75) / 2
+    normal: {
+      male: { mean: 84.33, sd: 4.42 },
+      female: { mean: 83.93, sd: 3.75 }
+    },
     unit: "°",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
@@ -41,8 +43,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     nameFull: "SNB",
     type: "angle",
     landmarks: ["S", "N", "B"],
-    normalMean: 80.795, // (80.98 + 80.61) / 2
-    normalSD: 4.09, // (4.36 + 3.82) / 2
+    normal: {
+      male: { mean: 80.98, sd: 4.36 },
+      female: { mean: 80.61, sd: 3.82 }
+    },
     unit: "°",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
@@ -58,8 +62,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     nameFull: "ANB",
     type: "angle",
     landmarks: ["N", "A", "B"],
-    normalMean: 3.33, // (3.34 + 3.32) / 2
-    normalSD: 2.25, // (2.22 + 2.28) / 2
+    normal: {
+      male: { mean: 3.34, sd: 2.22 },
+      female: { mean: 3.32, sd: 2.28 }
+    },
     unit: "°",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
@@ -75,8 +81,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     nameFull: "Upper incisor to NA (mm)",
     type: "distance",
     landmarks: ["I", "N", "A"],
-    normalMean: 5.0, // (5.07 + 4.93) / 2
-    normalSD: 2.285, // (2.26 + 2.31) / 2
+    normal: {
+      male: { mean: 5.07, sd: 2.26 },
+      female: { mean: 4.93, sd: 2.31 }
+    },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
@@ -92,8 +100,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     nameFull: "Lower incisor to NB (mm)",
     type: "distance",
     landmarks: ["i", "N", "B"],
-    normalMean: 6.205, // (6.25 + 6.16) / 2
-    normalSD: 2.135, // (2.18 + 2.09) / 2
+    normal: {
+      male: { mean: 6.25, sd: 2.18 },
+      female: { mean: 6.16, sd: 2.09 }
+    },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
@@ -109,8 +119,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     nameFull: "Incisor Mandibular Plane Angle",
     type: "angle",
     landmarks: ["i", "Go", "Me"],
-    normalMean: 95.94, // (96.79 + 95.09) / 2
-    normalSD: 6.91, // (6.86 + 6.96) / 2
+    normal: {
+      male: { mean: 96.79, sd: 6.86 },
+      female: { mean: 95.09, sd: 6.96 }
+    },
     unit: "°",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
@@ -127,8 +139,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     nameFull: "N-Me (mm)",
     type: "distance",
     landmarks: ["N", "Me"],
-    normalMean: 113.625, // (115.10 + 112.15) / 2
-    normalSD: 6.84, // (7.30 + 6.38) / 2
+    normal: {
+      male: { mean: 115.10, sd: 7.30 },
+      female: { mean: 112.15, sd: 6.38 }
+    },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
@@ -143,8 +157,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     nameFull: "Interincisal Angle",
     type: "angle",
     landmarks: ["I", "UIA", "i", "LIA"],
-    normalMean: 120.94, // (119.53 + 122.35) / 2
-    normalSD: 10.12, // (9.34 + 10.90) / 2
+    normal: {
+      male: { mean: 119.53, sd: 9.34 },
+      female: { mean: 122.35, sd: 10.90 }
+    },
     unit: "°",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
@@ -161,8 +177,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     nameFull: "Lower Lip to E-line",
     type: "distance",
     landmarks: ["Li", "Pn", "Pog`"],
-    normalMean: 1.57, // (1.77 + 1.37) / 2
-    normalSD: 2.225, // (2.37 + 2.08) / 2
+    normal: {
+      male: { mean: 1.77, sd: 2.37 },
+      female: { mean: 1.37, sd: 2.08 }
+    },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
@@ -182,8 +200,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     nameFull: "Upper Lip to E-line",
     type: "distance",
     landmarks: ["Ls", "Pn", "Pog`"],
-    normalMean: 0.115, // (0.44 + -0.21) / 2
-    normalSD: 2.105, // (2.34 + 1.87) / 2
+    normal: {
+      male: { mean: 0.44, sd: 2.34 },
+      female: { mean: -0.21, sd: 1.87 }
+    },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {
@@ -199,8 +219,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     nameFull: "Soft Tissue Facial Angle",
     type: "angle",
     landmarks: ["N", "Sn", "Pog`"],
-    normalMean: 162.065, // (161.28 + 162.85) / 2
-    normalSD: 5.76, // (6.03 + 5.49) / 2
+    normal: {
+      male: { mean: 161.28, sd: 6.03 },
+      female: { mean: 162.85, sd: 5.49 }
+    },
     unit: "°",
     interpretation: { high: "", normal: "", low: "" },
     calculate: (landmarks: LandmarksObject) => {

@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { LandmarksData, LandmarksObject, MeasurementResult } from "../types";
 import { landmarksArrayToObject, calculateAllMeasurements } from "../../../core/diagnostic/calculations";
 import { predictLandmarks } from "../services/ai-prediction";
+import { usePatientStore } from "../../patient/stores/patient-store";
 
 interface CephState {
   loadedImageSrc: string | null;
@@ -26,6 +27,7 @@ interface CephState {
   uploadAndDetect: (file: File) => Promise<void>;
   reset: () => void;
   updateLandmark: (symbol: string, x: number, y: number) => void;
+  recalculateMeasurements: (gender: string) => void;
 }
 
 export const useCephStore = create<CephState>((set, get) => ({
@@ -46,7 +48,8 @@ export const useCephStore = create<CephState>((set, get) => ({
 
   setLandmarksData: (data) => {
     const obj = landmarksArrayToObject(data.landmarks);
-    const measurements = calculateAllMeasurements(obj);
+    const sex = usePatientStore.getState().patientData?.sex as "male" | "female" || "male";
+    const measurements = calculateAllMeasurements(obj, sex);
     set({ landmarksData: data, landmarksObj: obj, measurements });
   },
 
@@ -83,7 +86,8 @@ export const useCephStore = create<CephState>((set, get) => ({
     };
 
     const obj = landmarksArrayToObject(newData.landmarks);
-    const measurements = calculateAllMeasurements(obj);
+    const sex = usePatientStore.getState().patientData?.sex as "male" | "female" || "male";
+    const measurements = calculateAllMeasurements(obj, sex);
     set({ landmarksData: newData, landmarksObj: obj, measurements });
   },
 
@@ -92,5 +96,24 @@ export const useCephStore = create<CephState>((set, get) => ({
     // or we should handle it carefully if we want to reset the session.
     // For now, reset just clears the hover state like the original code
     set({ hoveredMeasurement: null });
+  },
+
+  recalculateMeasurements: (gender: string) => {
+    const state = get();
+    if (!state.landmarksObj) return;
+    
+    const sex = (gender as "male" | "female") || "male";
+    const measurements = calculateAllMeasurements(state.landmarksObj, sex);
+    set({ measurements });
   }
 }));
+
+// Subscribe to patient gender changes
+usePatientStore.subscribe((state, prevState) => {
+  const newSex = state.patientData?.sex;
+  const oldSex = prevState?.patientData?.sex;
+
+  if (newSex && newSex !== oldSex) {
+    useCephStore.getState().recalculateMeasurements(newSex);
+  }
+});

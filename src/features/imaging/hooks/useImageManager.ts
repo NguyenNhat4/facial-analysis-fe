@@ -8,13 +8,6 @@ import {
 } from "../../../utils/case-mapping";
 import { useImageStore } from "../stores/image-store";
 
-interface ValidationState {
-  show: boolean;
-  message: string;
-  imageId: string;
-  fileName: string;
-}
-
 export function useImageManager(showToast: (message: string, type?: "success" | "error" | "info") => void) {
   const {
     localImages,
@@ -38,57 +31,15 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingCards, setLoadingCards] = useState<{ [key: string]: boolean }>({});
 
-  const [validationError, setValidationError] = useState<ValidationState>({
-    show: false,
-    message: "",
-    imageId: "",
-    fileName: "",
-  });
-
-  // We intentionally remove the useEffect that revokes object URLs on unmount.
-  // This allows the URLs (and the image previews) to persist when navigating away and back.
-
-  const validateFileNameForType = (fileName: string, imageId: string): boolean => {
-    const fileNameLower = fileName.toLowerCase();
-    const validationPatterns: Record<string, RegExp[]> = {
-      lateral: [/lateral/i, /ceph/i, /cephalometric/i, /side.*x.*ray/i, /nghieng/i],
-      frontal: [/frontal/i, /front/i, /face.*front/i, /portrait/i, /mat.*truoc/i, /chinh.*dien/i],
-      profile: [/profile/i, /side.*face/i, /lateral.*face/i, /mat.*nghieng/i, /ben.*hong/i],
-    };
-
-    const patterns = validationPatterns[imageId];
-    if (!patterns) return true;
-    return patterns.some((pattern) => pattern.test(fileNameLower));
-  };
-
-  const getValidationErrorMessage = (imageId: string, fileName: string): string => {
-    const typeNames: Record<string, string> = {
-      lateral: "Lateral Cephalometric",
-      frontal: "Frontal Face",
-      profile: "Profile Face",
-    };
-    return `Invalid file name for ${typeNames[imageId] || imageId}: "${fileName}"`;
-  };
-
   const handleFileUpload = (imageId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      const isValidFileName = validateFileNameForType(file.name, imageId);
 
-      if (!isValidFileName) {
-        setValidationError({
-          show: true,
-          message: getValidationErrorMessage(imageId, file.name),
-          imageId: imageId,
-          fileName: file.name,
-        });
-        showToast("Sai loại ảnh", "error");
-        return;
-      }
+    
 
-      if (imagePreviewUrls[imageId]) {
-        URL.revokeObjectURL(imagePreviewUrls[imageId]);
-      }
+    if (imagePreviewUrls[imageId]) {
+      URL.revokeObjectURL(imagePreviewUrls[imageId]);
+    }
 
       setUploadedFile(imageId, file);
 
@@ -206,24 +157,6 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
     input.click();
   };
 
-  const getKeywordsForType = (imageId: string): string => {
-    const keywords: Record<string, string> = {
-      lateral: "• lateral, ceph, cephalometric, side x-ray, nghieng",
-      frontal: "• frontal, front, face front, portrait, mat truoc, chinh dien",
-      profile: "• profile, side face, lateral face, mat nghieng, ben hong",
-    };
-    return keywords[imageId] || "• Any valid keyword for this image type";
-  };
-
-  const getExampleFileName = (imageId: string): string => {
-    const examples: Record<string, string> = {
-      lateral: "lateral.jpg",
-      frontal: "frontal.jpg",
-      profile: "profile.jpg",
-    };
-    return examples[imageId] || "example.jpg";
-  };
-
   const hasFaceImages = uploadedImages.frontal && uploadedImages.profile;
   const hasCephImages = uploadedImages.lateral;
   const hasAllImages = uploadedImages.frontal && uploadedImages.profile && uploadedImages.lateral;
@@ -241,14 +174,10 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
     isLoading,
     loadingProgress,
     loadingCards,
-    validationError,
-    setValidationError,
     handleFileUpload,
     handleImageUpload,
     handleRemoveImage,
     fakeLoadImages,
-    getKeywordsForType,
-    getExampleFileName,
     hasFaceImages,
     hasCephImages,
     hasAllImages,

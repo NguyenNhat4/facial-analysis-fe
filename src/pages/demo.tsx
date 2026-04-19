@@ -41,7 +41,6 @@ import { useToast } from "../shared/hooks/useToast";
 import { usePatientData } from "../features/patient/hooks/usePatientData";
 import { useImageManager } from "../features/imaging/hooks/useImageManager";
 import AIThinkingModal from "../components/ai-thinking-modal";
-import ValidationErrorModal from "../components/validation-error-modal";
 import ToastNotification from "../components/toast-notification";
 import { PatientRecordHeader } from "../features/patient";
 import { ImagingUploadHeader, ImagingUploadGrid } from "../features/imaging";
@@ -70,13 +69,9 @@ const DemoPage = () => {
     isLoading,
     loadingProgress,
     loadingCards,
-    validationError,
-    setValidationError,
     handleImageUpload,
     handleRemoveImage,
     fakeLoadImages,
-    getKeywordsForType,
-    getExampleFileName,
     hasFaceImages,
     hasAllImages,
     availableAnalysisCount,
@@ -297,24 +292,6 @@ const DemoPage = () => {
         isOpen={showAIThinking}
         analysisType={currentAnalysis}
         onComplete={() => {}} // No-op since modal closes immediately via parent
-      />
-
-      {/* Validation Error Modal */}
-      <ValidationErrorModal
-        show={validationError.show}
-        message={validationError.message}
-        imageId={validationError.imageId}
-        fileName={validationError.fileName}
-        onClose={() =>
-          setValidationError({
-            show: false,
-            message: "",
-            imageId: "",
-            fileName: "",
-          })
-        }
-        getKeywordsForType={getKeywordsForType}
-        getExampleFileName={getExampleFileName}
       />
 
       {/* Toast Notification */}
