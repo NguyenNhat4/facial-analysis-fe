@@ -54,6 +54,7 @@ export function MeasurementTable() {
             <tr>
               <th className="px-4 py-3 font-semibold">Chỉ số</th>
               <th className="px-4 py-3 font-semibold text-center">Giá trị</th>
+              <th className="px-4 py-3 font-semibold text-center">Đơn vị</th>
               <th className="px-4 py-3 font-semibold text-center">S.D.</th>
               <th className="px-4 py-3 font-semibold text-center">Giá trị hài hòa</th>
             </tr>
@@ -72,6 +73,7 @@ export function MeasurementTable() {
               >
                 <td className="px-4 py-3 font-medium text-gray-900">{measurement.name}</td>
                 <td className="px-4 py-3 text-center">{isError ? '-' : measurement.value.toFixed(2)}</td>
+                <td className="px-4 py-3 text-center text-gray-500">{isError ? '-' : measurement.unit}</td>
                 <td className={`px-4 py-3 text-center font-bold ${getSdColorClass(sdValue)}`}>
                   {isError ? '-' : sdValue.toFixed(2)}
                 </td>
