@@ -319,7 +319,7 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     const { N, Me } = landmarks;
     if (!N || !Me) return;
     drawLine(ctx, N, Me, scale, '#00FF00', 2);
-    drawMeasurementLine(ctx, N, Me, scale);
+    // drawMeasurementLine(ctx, N, Me, scale);
   },
   "I/i": (ctx, landmarks, scale) => {
     const I = landmarks.I || landmarks.UIT;
