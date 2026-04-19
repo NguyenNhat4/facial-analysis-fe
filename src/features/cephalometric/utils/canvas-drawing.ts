@@ -265,49 +265,6 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     drawLine(ctx, N, B, scale, '#FFFF00', 2);
     drawAngleArc(ctx, A, N, B, scale, '#00FF00');
   },
-  WITS: (ctx, landmarks, scale) => {
-    const { A, B, ANS, PNS } = landmarks;
-    if (!A || !B || !ANS || !PNS) return;
-    drawLine(ctx, ANS, PNS, scale, '#F38181', 1, [5, 5]);
-    drawLine(ctx, A, { x: A.x, y: B.y }, scale, '#F38181', 2);
-    drawLine(ctx, B, { x: B.x, y: A.y }, scale, '#F38181', 2);
-  },
-  FHR: (ctx, landmarks, scale) => {
-    const { N, ANS, Me } = landmarks;
-    if (!N || !ANS || !Me) return;
-    drawLine(ctx, N, ANS, scale, '#FFB6B9', 3);
-    drawLine(ctx, N, Me, scale, '#FFC9C9', 2, [5, 5]);
-  },
-  FMA: (ctx, landmarks, scale) => {
-    const { Po, Or, Go, Me } = landmarks;
-    if (!Po || !Or || !Go || !Me) return;
-    drawLine(ctx, Po, Or, scale, '#FECA57', 2);
-    drawLine(ctx, Go, Me, scale, '#FF6348', 2);
-  },
-  MPA: (ctx, landmarks, scale) => {
-    const { S, N, Go, Gn } = landmarks;
-    if (!S || !N || !Go || !Gn) return;
-    drawLine(ctx, S, N, scale, '#A8E6CF', 2);
-    drawLine(ctx, Go, Gn, scale, '#DCEDC1', 2);
-  },
-  FAA: (ctx, landmarks, scale) => {
-    const { N, Gn, Po, Or } = landmarks;
-    if (!N || !Gn || !Po || !Or) return;
-    drawLine(ctx, N, Gn, scale, '#FFD3B6', 2);
-    drawLine(ctx, Po, Or, scale, '#FFAAA5', 2);
-  },
-  FD: (ctx, landmarks, scale) => {
-    const { N, Pog, Po, Or } = landmarks;
-    if (!N || !Pog || !Po || !Or) return;
-    drawLine(ctx, N, Pog, scale, '#D4A5A5', 2);
-    drawLine(ctx, Po, Or, scale, '#FFCDA3', 2);
-  },
-  DH: (ctx, landmarks, scale) => {
-    const { ANS, Me } = landmarks;
-    if (!ANS || !Me) return;
-    drawLine(ctx, ANS, Me, scale, '#E8B4B8', 2);
-    drawMeasurementLine(ctx, ANS, Me, scale);
-  },
   "I-NA": (ctx, landmarks, scale) => {
     const I = landmarks.I || landmarks.UIT;
     const { N, A } = landmarks;
@@ -336,12 +293,6 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     // Draw i (lower incisor) to NB as solid green
     drawPerpendicularLine(ctx, i, N, B, scale, '#00FF00', false);
     
-  },
-  INTERINCISAL: (ctx, landmarks, scale) => {
-    const { UIT, UIA, LIT, LIA } = landmarks;
-    if (!UIT || !UIA || !LIT || !LIA) return;
-    drawLine(ctx, UIT, UIA, scale, '#F4A261', 2);
-    drawLine(ctx, LIT, LIA, scale, '#E76F51', 2);
   },
   "i_MP": (ctx, landmarks, scale) => {
     const i = landmarks.i || landmarks.LIT;
@@ -421,17 +372,5 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     drawLine(ctx, N, Sn, scale, '#FFFF00', 2);
     drawLine(ctx, Sn, Pog_soft, scale, '#FFFF00', 2);
     drawAngleArc(ctx, N, Sn, Pog_soft, scale, '#00FF00');
-  },
-  UL_E: (ctx, landmarks, scale) => {
-    const { Ls, Pn, "Pog`": Pog_soft } = landmarks;
-    if (!Ls || !Pn || !Pog_soft) return;
-    drawLine(ctx, Pn, Pog_soft, scale, '#06FFA5', 2);
-    drawPerpendicularLine(ctx, Ls, Pn, Pog_soft, scale, '#06D6A0');
-  },
-  LL_E: (ctx, landmarks, scale) => {
-    const { Li, Pn, "Pog`": Pog_soft } = landmarks;
-    if (!Li || !Pn || !Pog_soft) return;
-    drawLine(ctx, Pn, Pog_soft, scale, '#EF476F', 2);
-    drawPerpendicularLine(ctx, Li, Pn, Pog_soft, scale, '#F78C6B');
   }
 };
