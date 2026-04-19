@@ -21,8 +21,10 @@ export interface MeasurementConfig {
   nameFull: string;
   type: "angle" | "distance" | "ratio" | "calculated";
   landmarks: string[];
-  normalMean: number;
-  normalSD: number;
+  normal: {
+    male: { mean: number; sd: number; };
+    female: { mean: number; sd: number; };
+  };
   unit: string;
   interpretation: {
     high?: string;

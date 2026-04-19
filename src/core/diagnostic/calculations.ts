@@ -19,9 +19,13 @@ export function landmarksArrayToObject(landmarksArray: Landmark[]): LandmarksObj
 /**
  * Calculate all measurements
  * @param landmarksObj - Landmarks object with symbol as key
+ * @param gender - The patient's gender to calculate normative data against ('male' or 'female')
  * @returns - Object containing all measurements
  */
-export function calculateAllMeasurements(landmarksObj: LandmarksObject): Record<string, MeasurementResult> {
+export function calculateAllMeasurements(
+  landmarksObj: LandmarksObject,
+  gender: 'male' | 'female' = 'male'
+): Record<string, MeasurementResult> {
   const results: Record<string, MeasurementResult> = {};
 
   for (const [key, config] of Object.entries(MEASUREMENTS_CONFIG)) {
@@ -33,15 +37,19 @@ export function calculateAllMeasurements(landmarksObj: LandmarksObject): Record<
         throw new Error(`Missing landmarks for ${key}`);
       }
 
+      const genderKey = gender === 'female' ? 'female' : 'male';
+      const normalMean = config.normal[genderKey].mean;
+      const normalSD = config.normal[genderKey].sd;
+
       const value = config.calculate(landmarksObj, results);
-      const classification = getClassification(value, config.normalMean, config.normalSD);
-      const significance = getSignificance(value, config.normalMean, config.normalSD);
+      const classification = getClassification(value, normalMean, normalSD);
+      const significance = getSignificance(value, normalMean, normalSD);
 
       results[key] = {
         name: config.name,
         value: value,
-        mean: config.normalMean,
-        sd: config.normalSD,
+        mean: normalMean,
+        sd: normalSD,
         unit: config.unit,
         classification: classification,
         significance: significance,
