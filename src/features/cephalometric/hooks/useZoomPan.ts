@@ -9,6 +9,23 @@ const MIN_ZOOM = 1.0;
 const MAX_ZOOM = 10.0;
 const ZOOM_SENSITIVITY = 0.002;
 
+const getCanvasCoordinates = (
+  canvas: HTMLCanvasElement,
+  clientX: number,
+  clientY: number
+): Point | null => {
+  const rect = canvas.getBoundingClientRect();
+  if (rect.width <= 0 || rect.height <= 0) return null;
+
+  const scaleX = canvas.width / rect.width;
+  const scaleY = canvas.height / rect.height;
+
+  return {
+    x: (clientX - rect.left) * scaleX,
+    y: (clientY - rect.top) * scaleY,
+  };
+};
+
 export function useZoomPan() {
   const [zoom, setZoom] = useState(1);
   const [offset, setOffset] = useState<Point>({ x: 0, y: 0 });
@@ -20,16 +37,17 @@ export function useZoomPan() {
       e.preventDefault();
 
       const canvas = e.currentTarget as HTMLCanvasElement;
-      const rect = canvas.getBoundingClientRect();
-      const cursorX = e.clientX - rect.left;
-      const cursorY = e.clientY - rect.top;
+      const cursor = getCanvasCoordinates(canvas, e.clientX, e.clientY);
+      if (!cursor) return;
+
+      const cursorX = cursor.x;
+      const cursorY = cursor.y;
 
       const zoomDelta = -e.deltaY * ZOOM_SENSITIVITY;
       const newZoom = Math.min(Math.max(MIN_ZOOM, zoom * (1 + zoomDelta)), MAX_ZOOM);
 
       if (newZoom === zoom) return;
 
-      // Calculate the offset required to keep the point under the cursor stationary
       const scaleRatio = newZoom / zoom;
       const newOffsetX = cursorX - (cursorX - offset.x) * scaleRatio;
       const newOffsetY = cursorY - (cursorY - offset.y) * scaleRatio;
@@ -77,9 +95,9 @@ export function useZoomPan() {
     setZoom((z) => {
       const newZoom = Math.min(z * 1.2, MAX_ZOOM);
       const ratio = newZoom / z;
-      setOffset(prev => ({
+      setOffset((prev) => ({
         x: prev.x * ratio,
-        y: prev.y * ratio
+        y: prev.y * ratio,
       }));
       return newZoom;
     });
@@ -89,12 +107,12 @@ export function useZoomPan() {
     setZoom((z) => {
       const newZoom = Math.max(z / 1.2, MIN_ZOOM);
       if (newZoom === MIN_ZOOM) {
-         setOffset({x:0, y:0});
+        setOffset({ x: 0, y: 0 });
       } else {
         const ratio = newZoom / z;
-        setOffset(prev => ({
+        setOffset((prev) => ({
           x: prev.x * ratio,
-          y: prev.y * ratio
+          y: prev.y * ratio,
         }));
       }
       return newZoom;
