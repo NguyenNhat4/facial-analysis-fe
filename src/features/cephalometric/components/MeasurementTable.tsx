@@ -78,14 +78,14 @@ export function MeasurementTable() {
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
             <tr>
               <th className="px-4 py-3 font-semibold">Chỉ số</th>
-              <th className="px-4 py-3 font-semibold text-center">Giá trị</th>
+              <th className="px-4w py-3 font-semibold text-center">Giá trị</th>
               <th className="px-4 py-3 font-semibold text-center">Đơn vị</th>
               <th className="px-4 py-3 font-semibold text-center">S.D.</th>
               <th className="px-4 py-3 font-semibold text-center">Giá trị hài hòa</th>
               <th className="px-4 py-3 font-semibold text-center">Trạng thái</th>
-              <th className="px-4 py-3 font-semibold">Đánh giá</th>
+              <th className="px-4  py-3 font-semibold">Đánh giá</th>
             </tr>
-          </thead>
+          </thead>  
           <tbody>
             {Object.entries(measurements).map(([key, measurement]) => {
               const sdValue = (measurement.value - measurement.mean) / measurement.sd;
