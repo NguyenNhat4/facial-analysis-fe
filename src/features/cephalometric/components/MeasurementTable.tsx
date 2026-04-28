@@ -45,6 +45,38 @@ export function MeasurementTable() {
     });
   }, [measurements]);
 
+  const measurementGroups = useMemo(() => {
+    const groupDefinitions = [
+      {
+        title: "Tương quan giữa 2 xương hàm (°)",
+        keys: ["SNA", "SNB", "ANB"],
+      },
+      {
+        title: "Các khoảng cách (mm)",
+        keys: ["I-NA", "i-NB", "N-Me"],
+      },
+      {
+        title: "Tương quan răng – xương (°)",
+        keys: ["i/MP", "FMIA", "I/i"],
+      },
+      {
+        title: "Khoảng cách từ môi đến các đường thẩm mỹ (mm)",
+        keys: ["Li-E", "Ls-E"],
+      },
+      {
+        title: "Các góc mô mềm (°)",
+        keys: ["Sn-Ls-Li-Pg`", "Pn-N-Sn", "Z"],
+      },
+    ];
+
+    return groupDefinitions
+      .map((group) => ({
+        ...group,
+        measurements: measurementEntries.filter(([key]) => group.keys.includes(key)),
+      }))
+      .filter((group) => group.measurements.length > 0);
+  }, [measurementEntries]);
+
   const getStatusLabel = (status: "LOW" | "NORMAL" | "HIGH") => {
     if (status === "LOW") return "Thấp";
     if (status === "HIGH") return "Cao";
@@ -97,7 +129,6 @@ export function MeasurementTable() {
             <tr>
               <th className="px-4 py-3 font-semibold">Chỉ số</th>
               <th className="px-4w py-3 font-semibold text-center">Giá trị</th>
-              <th className="px-4 py-3 font-semibold text-center">Đơn vị</th>
               <th className="px-4 py-3 font-semibold text-center">S.D.</th>
               <th className="px-4 py-3 font-semibold text-center">Giá trị hài hòa</th>
               <th className="px-4 py-3 font-semibold text-center">Trạng thái</th>
@@ -105,41 +136,49 @@ export function MeasurementTable() {
             </tr>
           </thead>  
           <tbody>
-            {measurementEntries.map(([key, measurement]) => {
-              const sdValue = (measurement.value - measurement.mean) / measurement.sd;
-              const isError = measurement.classification === 'error';
-              const rangeStr = `[${(measurement.mean - measurement.sd).toFixed(2)}, ${(measurement.mean + measurement.sd).toFixed(2)}]`;
-              const evaluation = evaluationByIndexName[measurement.name];
-              return (
-              <tr
-                key={key}
-                className={`border-b hover:bg-blue-50 transition-colors cursor-pointer ${hoveredMeasurement === key ? "bg-blue-100" : ""}`}
-                onMouseEnter={() => setHoveredMeasurement(key)}
-                onMouseLeave={() => setHoveredMeasurement(null)}
-              >
-                <td className="px-4 py-3 font-medium text-gray-900">{measurement.name}</td>
-                <td className="px-4 py-3 text-center">{isError ? '-' : measurement.value.toFixed(2)}</td>
-                <td className="px-4 py-3 text-center text-gray-500">{isError ? '-' : measurement.unit}</td>
-                <td className={`px-4 py-3 text-center font-bold ${getSdColorClass(sdValue)}`}>
-                  {isError ? '-' : sdValue.toFixed(2)}
-                </td>
-                <td className="px-4 py-3 text-center text-gray-600">
-                  {isError ? '-' : rangeStr}
-                </td>
-                <td className="px-4 py-3 text-center">
-                  {isError || !evaluation ? (
-                    "-"
-                  ) : (
-                    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getStatusClass(evaluation.status)}`}>
-                      {getStatusLabel(evaluation.status)}
-                    </span>
-                  )}
-                </td>
-                <td className="px-4 py-3 text-gray-700">
-                  {isError || !evaluation ? '-' : evaluation.message}
-                </td>
-              </tr>
-            )})}
+            {measurementGroups.map((group) => (
+              <React.Fragment key={group.title}>
+                <tr className="bg-slate-100 border-y border-slate-200">
+                  <td colSpan={6} className="px-4 py-2 text-center font-semibold italic text-slate-700">
+                    {group.title}
+                  </td>
+                </tr>
+                {group.measurements.map(([key, measurement]) => {
+                  const sdValue = (measurement.value - measurement.mean) / measurement.sd;
+                  const isError = measurement.classification === 'error';
+                  const rangeStr = `[${(measurement.mean - measurement.sd).toFixed(2)}, ${(measurement.mean + measurement.sd).toFixed(2)}]`;
+                  const evaluation = evaluationByIndexName[measurement.name];
+                  return (
+                  <tr
+                    key={key}
+                    className={`border-b hover:bg-blue-50 transition-colors cursor-pointer ${hoveredMeasurement === key ? "bg-blue-100" : ""}`}
+                    onMouseEnter={() => setHoveredMeasurement(key)}
+                    onMouseLeave={() => setHoveredMeasurement(null)}
+                  >
+                    <td className="px-4 py-3 font-medium text-gray-900">{measurement.name}</td>
+                    <td className="px-4 py-3 text-center">{isError ? '-' : measurement.value.toFixed(2)}</td>
+                    <td className={`px-4 py-3 text-center font-bold ${getSdColorClass(sdValue)}`}>
+                      {isError ? '-' : sdValue.toFixed(2)}
+                    </td>
+                    <td className="px-4 py-3 text-center text-gray-600">
+                      {isError ? '-' : rangeStr}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      {isError || !evaluation ? (
+                        "-"
+                      ) : (
+                        <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getStatusClass(evaluation.status)}`}>
+                          {getStatusLabel(evaluation.status)}
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">
+                      {isError || !evaluation ? '-' : evaluation.message}
+                    </td>
+                  </tr>
+                )})}
+              </React.Fragment>
+            ))}
           </tbody>
         </table>
       </div>
