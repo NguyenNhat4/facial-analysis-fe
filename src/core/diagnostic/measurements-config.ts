@@ -196,6 +196,25 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     }
   },
 
+  "Pn-N-Sn": {
+    name: "Pn-N-Sn",
+    nameFull: "Nasal angle",
+    type: "angle",
+    landmarks: ["Pn", "N", "Sn"],
+    normal: {
+      male: { mean: 19.22, sd: 2.77 },
+      female: { mean: 19.14, sd: 2.24 }
+    },
+    unit: "°",
+    interpretation: { high: "Góc mũi - trán mở rộng hơn so với chuẩn.", normal: "Góc Pn-N-Sn hài hòa theo chuẩn tham chiếu.", low: "Góc mũi - trán hẹp hơn so với chuẩn." },
+    calculate: (landmarks: LandmarksObject) => {
+      const Pn = landmarks.Pn;
+      const N = landmarks.N;
+      const Sn = landmarks.Sn;
+      return calculateAngle(Pn, N, Sn);
+    }
+  },
+
   "N-Me": {
     name: "N-Me",
     nameFull: "N-Me (mm)",

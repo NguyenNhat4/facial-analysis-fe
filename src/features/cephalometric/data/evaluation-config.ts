@@ -135,6 +135,18 @@ export const CEPHALOMETRIC_EVALUATION_CONFIG: Record<string, IndexConfig> = {
       high: "Hai môi căng hoặc nhô hơn so với chuẩn.",
     },
   },
+  "Pn-N-Sn": {
+    name: "Pn-N-Sn",
+    category: "SoftTissue",
+    min: 16.45,
+    max: 21.99,
+    unit: "°",
+    evaluations: {
+      low: "Góc mũi - trán hẹp hơn so với chuẩn.",
+      normal: "Góc Pn-N-Sn hài hòa theo chuẩn tham chiếu.",
+      high: "Góc mũi - trán mở rộng hơn so với chuẩn.",
+    },
+  },
   "N-Me": {
     name: "N-Me",
     category: "SoftTissue",

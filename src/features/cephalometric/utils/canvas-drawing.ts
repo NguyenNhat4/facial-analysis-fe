@@ -407,5 +407,13 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     if (intersectionPoint) {
       drawAngleArc(ctx, Sn, intersectionPoint, Li, scale, '#00FF00');
     }
+  },
+  "Pn-N-Sn": (ctx, landmarks, scale) => {
+    const { Pn, N, Sn } = landmarks;
+    if (!Pn || !N || !Sn) return;
+
+    drawLine(ctx, Pn, N, scale, '#FFFF00', 2);
+    drawLine(ctx, N, Sn, scale, '#FFFF00', 2);
+    drawAngleArc(ctx, Pn, N, Sn, scale, '#00FF00');
   }
 };
