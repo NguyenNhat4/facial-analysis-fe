@@ -123,7 +123,7 @@ export const LANDMARK_REGISTRY: Record<string, LandmarkDefinition> = {
     category: "skeletal",
     aliases: [],
     isKey: false,
-    usedInMeasurements: [],
+    usedInMeasurements: ["Z", "FMIA"],
   },
   Po: {
     symbol: "Po",
@@ -132,7 +132,7 @@ export const LANDMARK_REGISTRY: Record<string, LandmarkDefinition> = {
     category: "skeletal",
     aliases: [],
     isKey: false,
-    usedInMeasurements: [],
+    usedInMeasurements: ["Z", "FMIA"],
   },
   Ar: {
     symbol: "Ar",
@@ -197,7 +197,7 @@ export const LANDMARK_REGISTRY: Record<string, LandmarkDefinition> = {
     category: "dental",
     aliases: ["LIT"],
     isKey: true,
-    usedInMeasurements: ["i-NB", "i/MP", "I/i"],
+    usedInMeasurements: ["i-NB", "i/MP", "I/i", "FMIA"],
   },
   LIT: {
     symbol: "LIT",
@@ -215,7 +215,7 @@ export const LANDMARK_REGISTRY: Record<string, LandmarkDefinition> = {
     category: "dental",
     aliases: [],
     isKey: true,
-    usedInMeasurements: ["i/MP", "I/i"],
+    usedInMeasurements: ["i/MP", "I/i", "FMIA"],
   },
   UPM: {
     symbol: "UPM",
@@ -281,7 +281,7 @@ export const LANDMARK_REGISTRY: Record<string, LandmarkDefinition> = {
     category: "soft-tissue",
     aliases: ["li"],
     isKey: true,
-    usedInMeasurements: ["Li-E"],
+    usedInMeasurements: ["Li-E", "Z"],
   },
   Ls: {
     symbol: "Ls",
@@ -299,7 +299,7 @@ export const LANDMARK_REGISTRY: Record<string, LandmarkDefinition> = {
     category: "soft-tissue",
     aliases: ["Pg'"],
     isKey: true,
-    usedInMeasurements: ["Li-E", "Ls-E", "N-Sn-Pg", "E-line"],
+    usedInMeasurements: ["Li-E", "Ls-E", "N-Sn-Pg", "E-line", "Z"],
   },
   "N`": {
     symbol: "N`",

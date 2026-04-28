@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { useCephStore } from "../stores/ceph-store";
 import { usePatientStore } from "../../patient/stores/patient-store";
 import { Ruler } from "lucide-react";
+import { evaluatePatientDataFromMeasurements } from "../utils/evaluation-utils";
+import { MEASUREMENTS_CONFIG } from "../../../core/diagnostic/measurements-config";
 
 export function MeasurementTable() {
   const measurements = useCephStore((state) => state.measurements);
@@ -18,12 +20,53 @@ export function MeasurementTable() {
     return "text-gray-900";
   };
 
+  const evaluationByIndexName = useMemo(() => {
+    const evaluations = evaluatePatientDataFromMeasurements(measurements);
+    return evaluations.reduce<Record<string, (typeof evaluations)[number]>>((accumulator, current) => {
+      accumulator[current.indexName] = current;
+      return accumulator;
+    }, {});
+  }, [measurements]);
+
+  const measurementEntries = useMemo(() => {
+    const measurementOrder = Object.keys(MEASUREMENTS_CONFIG);
+
+    return Object.entries(measurements).sort(([leftKey], [rightKey]) => {
+      const leftIndex = measurementOrder.indexOf(leftKey);
+      const rightIndex = measurementOrder.indexOf(rightKey);
+
+      if (leftIndex === -1 && rightIndex === -1) {
+        return leftKey.localeCompare(rightKey);
+      }
+
+      if (leftIndex === -1) return 1;
+      if (rightIndex === -1) return -1;
+      return leftIndex - rightIndex;
+    });
+  }, [measurements]);
+
+  const getStatusLabel = (status: "LOW" | "NORMAL" | "HIGH") => {
+    if (status === "LOW") return "Thấp";
+    if (status === "HIGH") return "Cao";
+    return "Bình thường";
+  };
+
+  const getStatusClass = (status: "LOW" | "NORMAL" | "HIGH") => {
+    if (status === "LOW") {
+      return "bg-orange-100 text-orange-700 border-orange-300";
+    }
+    if (status === "HIGH") {
+      return "bg-red-100 text-red-700 border-red-300";
+    }
+    return "bg-emerald-100 text-emerald-700 border-emerald-300";
+  };
+
   return (
     <div className="table-section bg-white rounded-xl shadow-md p-6 border border-gray-200">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4">
         <h2 className="text-xl font-bold flex items-center text-gray-800">
           <Ruler className="w-6 h-6 mr-2 text-purple-600" />
-          Bảng Các Chỉ Số
+          Bảng phân tích 
         </h2>
         <div className="flex items-center bg-gray-100 rounded-full p-1 mt-3 sm:mt-0 shadow-sm border border-gray-200">
           <button
@@ -53,16 +96,20 @@ export function MeasurementTable() {
           <thead className="text-xs text-gray-700 uppercase bg-gray-50 border-b">
             <tr>
               <th className="px-4 py-3 font-semibold">Chỉ số</th>
-              <th className="px-4 py-3 font-semibold text-center">Giá trị</th>
+              <th className="px-4w py-3 font-semibold text-center">Giá trị</th>
+              <th className="px-4 py-3 font-semibold text-center">Đơn vị</th>
               <th className="px-4 py-3 font-semibold text-center">S.D.</th>
               <th className="px-4 py-3 font-semibold text-center">Giá trị hài hòa</th>
+              <th className="px-4 py-3 font-semibold text-center">Trạng thái</th>
+              <th className="px-4  py-3 font-semibold">Đánh giá</th>
             </tr>
-          </thead>
+          </thead>  
           <tbody>
-            {Object.entries(measurements).map(([key, measurement]) => {
+            {measurementEntries.map(([key, measurement]) => {
               const sdValue = (measurement.value - measurement.mean) / measurement.sd;
               const isError = measurement.classification === 'error';
               const rangeStr = `[${(measurement.mean - measurement.sd).toFixed(2)}, ${(measurement.mean + measurement.sd).toFixed(2)}]`;
+              const evaluation = evaluationByIndexName[measurement.name];
               return (
               <tr
                 key={key}
@@ -72,11 +119,24 @@ export function MeasurementTable() {
               >
                 <td className="px-4 py-3 font-medium text-gray-900">{measurement.name}</td>
                 <td className="px-4 py-3 text-center">{isError ? '-' : measurement.value.toFixed(2)}</td>
+                <td className="px-4 py-3 text-center text-gray-500">{isError ? '-' : measurement.unit}</td>
                 <td className={`px-4 py-3 text-center font-bold ${getSdColorClass(sdValue)}`}>
                   {isError ? '-' : sdValue.toFixed(2)}
                 </td>
                 <td className="px-4 py-3 text-center text-gray-600">
                   {isError ? '-' : rangeStr}
+                </td>
+                <td className="px-4 py-3 text-center">
+                  {isError || !evaluation ? (
+                    "-"
+                  ) : (
+                    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${getStatusClass(evaluation.status)}`}>
+                      {getStatusLabel(evaluation.status)}
+                    </span>
+                  )}
+                </td>
+                <td className="px-4 py-3 text-gray-700">
+                  {isError || !evaluation ? '-' : evaluation.message}
                 </td>
               </tr>
             )})}

@@ -78,7 +78,7 @@ export default function CephAnalysisPage() {
     <div className="ceph-analysis-page min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25" style={{ backgroundColor: "#fafbfc" }}>
       {/* Header */}
       <header className="bg-white border-b-2 border-blue-100 shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-24">
             <div className="flex items-center space-x-6">
               <Button
@@ -102,7 +102,7 @@ export default function CephAnalysisPage() {
       </header>
 
       {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Patient Info Card */}
         <Card className="mb-8 border-2 border-blue-200 shadow-lg">
           <CardHeader className="bg-gradient-to-r from-blue-700 to-blue-800 text-white">

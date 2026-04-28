@@ -8,6 +8,7 @@ import { cn } from "../../../lib/utils";
 export function InteractiveCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [loadedImage, setLoadedImage] = useState<HTMLImageElement | null>(null);
+  const baseScaleRef = useRef(1);
 
   const loadedImageSrc = useCephStore((state) => state.loadedImageSrc);
   const landmarksObj = useCephStore((state) => state.landmarksObj);
@@ -15,7 +16,6 @@ export function InteractiveCanvas() {
   const hoveredMeasurement = useCephStore((state) => state.hoveredMeasurement);
   const updateLandmark = useCephStore((state) => state.updateLandmark);
 
-  const [scale, setScale] = useState(1);
   const [draggedLandmark, setDraggedLandmark] = useState<string | null>(null);
   const [hoveredLandmark, setHoveredLandmark] = useState<string | null>(null);
 
@@ -32,7 +32,6 @@ export function InteractiveCanvas() {
     stepZoomOut,
   } = useZoomPan();
 
-  // Load image when src changes
   useEffect(() => {
     if (!loadedImageSrc) {
       setLoadedImage(null);
@@ -47,7 +46,6 @@ export function InteractiveCanvas() {
     img.src = loadedImageSrc;
   }, [loadedImageSrc]);
 
-  // Non-passive wheel event listener
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -58,7 +56,6 @@ export function InteractiveCanvas() {
     };
   }, [handleWheel]);
 
-  // Redraw canvas
   useEffect(() => {
     drawCanvas();
   }, [loadedImage, landmarksObj, showLandmarkNames, hoveredMeasurement, draggedLandmark, hoveredLandmark, zoom, offset]);
@@ -70,25 +67,19 @@ export function InteractiveCanvas() {
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
 
-    // Calculate base scale to fit canvas
     const maxWidth = 800;
     const maxHeight = 900;
     const currentScale = Math.min(maxWidth / loadedImage.width, maxHeight / loadedImage.height);
-    setScale(currentScale);
+    baseScaleRef.current = currentScale;
 
-    // We keep the internal resolution high but display it fitting the container initially
     canvas.width = loadedImage.width * currentScale;
     canvas.height = loadedImage.height * currentScale;
 
-    // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
     ctx.save();
-
-    // Apply pan offset globally to context
     ctx.translate(offset.x, offset.y);
 
-    // Draw image with zoom scaling applied only to the image
     ctx.save();
     ctx.scale(zoom, zoom);
     ctx.drawImage(loadedImage, 0, 0, canvas.width, canvas.height);
@@ -96,34 +87,46 @@ export function InteractiveCanvas() {
 
     const renderScale = currentScale * zoom;
 
-    // Draw all landmarks
     if (landmarksObj) {
       Object.entries(landmarksObj).forEach(([symbol, pos]) => {
         drawLandmark(ctx, pos.x * renderScale, pos.y * renderScale, symbol, draggedLandmark === symbol, hoveredLandmark === symbol);
       });
     }
 
-    // Draw measurement guide if hovering
     if (hoveredMeasurement && drawMeasurementGuides[hoveredMeasurement]) {
       if (landmarksObj) {
-
-        // Find required landmarks for highlight from MEASUREMENTS_CONFIG
         const config = MEASUREMENTS_CONFIG[hoveredMeasurement];
         if (config) {
-           config.landmarks.forEach((symbol: string) => {
-             if (landmarksObj && landmarksObj[symbol]) {
-               const pos = landmarksObj[symbol];
-               drawLandmark(ctx, pos.x * renderScale, pos.y * renderScale, symbol, true);
-             }
-           });
+          config.landmarks.forEach((symbol: string) => {
+            if (landmarksObj[symbol]) {
+              const pos = landmarksObj[symbol];
+              drawLandmark(ctx, pos.x * renderScale, pos.y * renderScale, symbol, true);
+            }
+          });
         }
-        
-        // Draw guide lines
+
         drawMeasurementGuides[hoveredMeasurement](ctx, landmarksObj, renderScale);
       }
     }
 
     ctx.restore();
+  };
+
+  const getCanvasPointer = (clientX: number, clientY: number) => {
+    const canvas = canvasRef.current;
+    if (!canvas) return null;
+
+    const rect = canvas.getBoundingClientRect();
+    if (rect.width <= 0 || rect.height <= 0) return null;
+
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    return {
+      x: (clientX - rect.left) * scaleX,
+      y: (clientY - rect.top) * scaleY,
+      hitRadius: 10 * Math.max(scaleX, scaleY),
+    };
   };
 
   const drawLandmark = (
@@ -137,13 +140,11 @@ export function InteractiveCanvas() {
     ctx.save();
 
     if (highlighted) {
-      // Dragged / Held landmark - transparent and smaller to show x-ray underneath
       ctx.beginPath();
       ctx.arc(x, y, 2, 0, 2 * Math.PI);
       ctx.fillStyle = "rgba(255, 69, 0, 0.8)";
       ctx.fill();
 
-      // Subtle targeting crosshair
       ctx.strokeStyle = "rgba(255, 215, 0, 0.6)";
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -153,22 +154,19 @@ export function InteractiveCanvas() {
       ctx.lineTo(x, y + 15);
       ctx.stroke();
 
-      // Draw label with subtle shadow instead of blocking box
       ctx.font = "bold 14px Arial";
       ctx.shadowColor = "black";
       ctx.shadowBlur = 4;
       ctx.fillStyle = "#FFD700";
       ctx.fillText(symbol, x + 8, y - 8);
-      ctx.shadowBlur = 0; // reset
+      ctx.shadowBlur = 0;
     } else if (hovered) {
-      // Hovered landmark - ring focus effect
       ctx.beginPath();
       ctx.arc(x, y, 5, 0, 2 * Math.PI);
       ctx.strokeStyle = "#FFD700";
       ctx.lineWidth = 2;
       ctx.stroke();
 
-      // Always show label when hovered, with semi-transparent background
       ctx.font = "bold 14px Arial";
       const textMetrics = ctx.measureText(symbol);
       const textWidth = textMetrics.width;
@@ -180,13 +178,11 @@ export function InteractiveCanvas() {
       ctx.fillStyle = "white";
       ctx.fillText(symbol, x + 11, y - 2);
     } else {
-      // Normal landmark
       ctx.beginPath();
       ctx.arc(x, y, 3, 0, 2 * Math.PI);
       ctx.fillStyle = "rgba(255, 0, 0, 0.5)";
       ctx.fill();
 
-      // Show label if toggle is on
       if (showLandmarkNames) {
         ctx.font = "bold 12px Arial";
         const textMetrics = ctx.measureText(symbol);
@@ -206,22 +202,21 @@ export function InteractiveCanvas() {
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current || !landmarksObj) return;
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
 
-    // Find if clicked near a landmark, accounting for zoom and pan
-    const hitRadius = 10;
+    const pointer = getCanvasPointer(e.clientX, e.clientY);
+    if (!pointer) return;
+
+    const { x, y, hitRadius } = pointer;
+    const imageScale = baseScaleRef.current * zoom;
+
     let clickedLandmark = false;
     for (const [symbol, pos] of Object.entries(landmarksObj)) {
-      // position on canvas coordinates
-      const lx = (pos.x * scale * zoom) + offset.x;
-      const ly = (pos.y * scale * zoom) + offset.y;
+      const lx = pos.x * imageScale + offset.x;
+      const ly = pos.y * imageScale + offset.y;
 
       if (Math.hypot(x - lx, y - ly) <= hitRadius) {
         setDraggedLandmark(symbol);
-        canvas.setPointerCapture(e.pointerId);
+        canvasRef.current.setPointerCapture(e.pointerId);
         clickedLandmark = true;
         break;
       }
@@ -229,31 +224,31 @@ export function InteractiveCanvas() {
 
     if (!clickedLandmark) {
       startPan(x, y);
-      canvas.setPointerCapture(e.pointerId);
+      canvasRef.current.setPointerCapture(e.pointerId);
     }
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
     if (!canvasRef.current || !loadedImage || !landmarksObj) return;
 
-    const canvas = canvasRef.current;
-    const rect = canvas.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const pointer = getCanvasPointer(e.clientX, e.clientY);
+    if (!pointer) return;
+
+    const { x, y, hitRadius } = pointer;
 
     if (isPanning) {
       updatePan(x, y);
       return;
     }
 
+    const imageScale = baseScaleRef.current * zoom;
+
     if (!draggedLandmark) {
-      // Hover effect logic
-      const hitRadius = 10;
       let foundHover = false;
       for (const [symbol, pos] of Object.entries(landmarksObj)) {
-        // Find if hover near a landmark, accounting for zoom and pan
-        const lx = (pos.x * scale * zoom) + offset.x;
-        const ly = (pos.y * scale * zoom) + offset.y;
+        const lx = pos.x * imageScale + offset.x;
+        const ly = pos.y * imageScale + offset.y;
+
         if (Math.hypot(x - lx, y - ly) <= hitRadius) {
           if (hoveredLandmark !== symbol) {
             setHoveredLandmark(symbol);
@@ -262,15 +257,17 @@ export function InteractiveCanvas() {
           break;
         }
       }
+
       if (!foundHover && hoveredLandmark !== null) {
         setHoveredLandmark(null);
       }
       return;
     }
 
-    // Convert screen coordinates back to image coordinates
-    const imgX = Math.max(0, Math.min(loadedImage.width, (x - offset.x) / (scale * zoom)));
-    const imgY = Math.max(0, Math.min(loadedImage.height, (y - offset.y) / (scale * zoom)));
+    if (imageScale <= 0) return;
+
+    const imgX = Math.max(0, Math.min(loadedImage.width, (x - offset.x) / imageScale));
+    const imgY = Math.max(0, Math.min(loadedImage.height, (y - offset.y) / imageScale));
 
     updateLandmark(draggedLandmark, imgX, imgY);
   };
@@ -296,7 +293,7 @@ export function InteractiveCanvas() {
 
   return (
     <div className="canvas-container relative w-full h-[900px] bg-slate-900 rounded-lg overflow-hidden flex items-center justify-center border-2 border-slate-700">
-       <canvas
+      <canvas
         ref={canvasRef}
         className={cn(
           "max-w-full max-h-full cursor-crosshair touch-none",
@@ -309,7 +306,6 @@ export function InteractiveCanvas() {
         onPointerLeave={handlePointerLeave}
       />
 
-      {/* Zoom Controls */}
       <div className="absolute top-4 right-4 flex flex-col gap-2 bg-slate-800/80 p-2 rounded-lg backdrop-blur-sm border border-slate-700">
         <button
           onClick={stepZoomIn}

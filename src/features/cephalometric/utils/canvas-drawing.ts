@@ -265,6 +265,21 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     drawLine(ctx, N, B, scale, '#FFFF00', 2);
     drawAngleArc(ctx, A, N, B, scale, '#00FF00');
   },
+  Z: (ctx, landmarks, scale) => {
+    const Pog_soft = landmarks["Pog`"];
+    const { Li, Po, Or } = landmarks;
+    if (!Pog_soft || !Li || !Po || !Or) return;
+  
+    drawExtendedLine(ctx, Pog_soft, Li, scale, '#FFFF00', 2, [5, 5]);
+    drawExtendedLine(ctx, Po, Or, scale, '#FFFF00', 2, [5, 5]);
+    drawLine(ctx, Po, Or, scale, '#FFFF00', 2);
+    drawLine(ctx, Pog_soft, Li, scale, '#FFFF00', 2);
+
+    const intersectionPoint = findLineIntersection(Pog_soft, Li, Po, Or);
+    if (intersectionPoint) {
+      drawAngleArc(ctx, Pog_soft, intersectionPoint, Po, scale, '#00FF00');
+    }
+  },
   "I-NA": (ctx, landmarks, scale) => {
     const I = landmarks.I || landmarks.UIT;
     const { N, A } = landmarks;
@@ -313,6 +328,23 @@ export const drawMeasurementGuides: Record<string, (ctx: CanvasRenderingContext2
     // Draw angle arc at the intersection point if it exists
     if (intersectionPoint) {
       drawAngleArc(ctx, LIA, intersectionPoint, Go, scale, '#00FF00');
+    }
+  },
+  FMIA: (ctx, landmarks, scale) => {
+    const i = landmarks.i || landmarks.LIT;
+    const LIA = landmarks.LIA;
+    const { Po, Or } = landmarks;
+    if (!i || !LIA || !Po || !Or) return;
+
+    drawExtendedLine(ctx, i, LIA, scale, '#FFFF00', 2, [5, 5]);
+    drawExtendedLine(ctx, Po, Or, scale, '#FFFF00', 2, [5, 5]);
+
+    drawLine(ctx, i, LIA, scale, '#FFFF00', 2);
+    drawLine(ctx, Po, Or, scale, '#FFFF00', 2);
+
+    const intersectionPoint = findLineIntersection(i, LIA, Po, Or);
+    if (intersectionPoint) {
+      drawAngleArc(ctx, i, intersectionPoint, Po, scale, '#00FF00');
     }
   },
   "N-Me": (ctx, landmarks, scale) => {
