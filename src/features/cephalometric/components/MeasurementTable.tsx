@@ -3,6 +3,7 @@ import { useCephStore } from "../stores/ceph-store";
 import { usePatientStore } from "../../patient/stores/patient-store";
 import { Ruler } from "lucide-react";
 import { evaluatePatientDataFromMeasurements } from "../utils/evaluation-utils";
+import { MEASUREMENTS_CONFIG } from "../../../core/diagnostic/measurements-config";
 
 export function MeasurementTable() {
   const measurements = useCephStore((state) => state.measurements);
@@ -25,6 +26,23 @@ export function MeasurementTable() {
       accumulator[current.indexName] = current;
       return accumulator;
     }, {});
+  }, [measurements]);
+
+  const measurementEntries = useMemo(() => {
+    const measurementOrder = Object.keys(MEASUREMENTS_CONFIG);
+
+    return Object.entries(measurements).sort(([leftKey], [rightKey]) => {
+      const leftIndex = measurementOrder.indexOf(leftKey);
+      const rightIndex = measurementOrder.indexOf(rightKey);
+
+      if (leftIndex === -1 && rightIndex === -1) {
+        return leftKey.localeCompare(rightKey);
+      }
+
+      if (leftIndex === -1) return 1;
+      if (rightIndex === -1) return -1;
+      return leftIndex - rightIndex;
+    });
   }, [measurements]);
 
   const getStatusLabel = (status: "LOW" | "NORMAL" | "HIGH") => {
@@ -87,7 +105,7 @@ export function MeasurementTable() {
             </tr>
           </thead>  
           <tbody>
-            {Object.entries(measurements).map(([key, measurement]) => {
+            {measurementEntries.map(([key, measurement]) => {
               const sdValue = (measurement.value - measurement.mean) / measurement.sd;
               const isError = measurement.classification === 'error';
               const rangeStr = `[${(measurement.mean - measurement.sd).toFixed(2)}, ${(measurement.mean + measurement.sd).toFixed(2)}]`;

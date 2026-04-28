@@ -51,6 +51,18 @@ export const CEPHALOMETRIC_EVALUATION_CONFIG: Record<string, IndexConfig> = {
       high: "Tương quan Hạng II (Hô xương). Xương hàm trên nhô hơn hàm dưới.",
     },
   },
+  Z: {
+    name: "Z",
+    category: "SoftTissue",
+    min: 67.33,
+    max: 80.79,
+    unit: "°",
+    evaluations: {
+      low: "Góc Z thấp hơn chuẩn, gợi ý cằm hoặc môi dưới lùi hơn.",
+      normal: "Góc Z hài hòa theo chuẩn tham chiếu.",
+      high: "Góc Z cao hơn chuẩn, gợi ý cằm hoặc môi dưới nhô hơn.",
+    },
+  },
   "I-NA": {
     name: "I-NA",
     category: "Dental",
@@ -85,6 +97,18 @@ export const CEPHALOMETRIC_EVALUATION_CONFIG: Record<string, IndexConfig> = {
       low: "Răng cửa dưới ngả quá nhiều vào trong (cụp).",
       normal: "Răng cửa dưới có độ nghiêng chuẩn.",
       high: "Răng cửa dưới ngả ra ngoài nhiều (chìa).",
+    },
+  },
+  FMIA: {
+    name: "FMIA",
+    category: "Dental",
+    min: 50.36,
+    max: 65.74,
+    unit: "°",
+    evaluations: {
+      low: "Răng cửa dưới ngả ra trước hơn so với mặt phẳng Frankfort.",
+      normal: "Trục răng cửa dưới hài hòa với mặt phẳng Frankfort.",
+      high: "Răng cửa dưới ngả vào trong hơn so với mặt phẳng Frankfort.",
     },
   },
   "I/i": {

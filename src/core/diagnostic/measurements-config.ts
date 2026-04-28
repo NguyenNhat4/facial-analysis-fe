@@ -76,6 +76,26 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     }
   },
 
+  Z: {
+    name: "Z",
+    nameFull: "Z angle",
+    type: "angle",
+    landmarks: ["Pog`", "Li", "Po", "Or"],
+    normal: {
+      male: { mean: 74.06, sd: 6.73 },
+      female: { mean: 76.62, sd: 5.56 }
+    },
+    unit: "°",
+    interpretation: { high: "Môi dưới hoặc cằm nằm trước đường tham chiếu nhiều hơn.", normal: "Góc Z hài hòa.", low: "Môi dưới hoặc cằm lùi hơn so với chuẩn." },
+    calculate: (landmarks: LandmarksObject) => {
+      const Pog_soft = landmarks["Pog`"];
+      const Li = landmarks.Li;
+      const Po = landmarks.Po;
+      const Or = landmarks.Or;
+      return calculateAngleBetweenLines(Pog_soft, Li, Po, Or);
+    }
+  },
+
   "I-NA": {
     name: "I-NA",
     nameFull: "Upper incisor to NA (mm)",
@@ -131,6 +151,26 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
       const Go = landmarks.Go;
       const Me = landmarks.Me;
       return calculateAngleBetweenLines(LIT, LIA, Go, Me);
+    }
+  },
+
+  FMIA: {
+    name: "FMIA",
+    nameFull: "Frankfort Mandibular Incisor Angle",
+    type: "angle",
+    landmarks: ["i", "LIA", "Po", "Or"],
+    normal: {
+      male: { mean: 58.05, sd: 7.69 },
+      female: { mean: 58.82, sd: 7.35 }
+    },
+    unit: "°",
+    interpretation: { high: "Răng cửa dưới ngả trong hơn so với mặt phẳng Frankfort.", normal: "Trục răng cửa dưới hài hòa với mặt phẳng Frankfort.", low: "Răng cửa dưới ngả ra trước hơn so với mặt phẳng Frankfort." },
+    calculate: (landmarks: LandmarksObject) => {
+      const i = landmarks.i;
+      const LIA = landmarks.LIA;
+      const Po = landmarks.Po;
+      const Or = landmarks.Or;
+      return calculateAngleBetweenLines(i, LIA, Po, Or);
     }
   },
 
