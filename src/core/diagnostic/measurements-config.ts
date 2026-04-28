@@ -170,7 +170,29 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
       const LIA = landmarks.LIA;
       const Po = landmarks.Po;
       const Or = landmarks.Or;
-      return calculateAngleBetweenLines(i, LIA, Po, Or);
+      const res = calculateAngleBetweenLines(i, LIA, Po, Or);
+      return res > 90 ? 180 - res : res;
+    }
+  },
+
+  "Sn-Ls-Li-Pg`": {
+    name: "Sn-Ls-Li-Pg’",
+    nameFull: "Two lips angle",
+    type: "angle",
+    landmarks: ["Sn", "Ls", "Li", "Pog`"],
+    normal: {
+      male: { mean: 141.01, sd: 10.51 },
+      female: { mean: 140.82, sd: 10.87 }
+    },
+    unit: "°",
+    interpretation: { high: "Hai môi căng hoặc nhô hơn so với chuẩn.", normal: "Hai môi hài hòa theo chuẩn tham chiếu.", low: "Hai môi thu hẹp hoặc lùi hơn so với chuẩn." },
+    calculate: (landmarks: LandmarksObject) => {
+      const Sn = landmarks.Sn;
+      const Ls = landmarks.Ls;
+      const Li = landmarks.Li;
+      const Pog_soft = landmarks["Pog`"];
+      const res = calculateAngleBetweenLines(Sn, Ls, Li, Pog_soft);
+      return res < 90 ?  180 - res : res;
     }
   },
 
@@ -254,22 +276,4 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     }
   },
 
-  "N-Sn-Pg": {
-    name: "N-Sn-Pg",
-    nameFull: "Soft Tissue Facial Angle",
-    type: "angle",
-    landmarks: ["N", "Sn", "Pog`"],
-    normal: {
-      male: { mean: 161.28, sd: 6.03 },
-      female: { mean: 162.85, sd: 5.49 }
-    },
-    unit: "°",
-    interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
-      const N = landmarks.N;
-      const Sn = landmarks.Sn;
-      const Pog_soft = landmarks["Pog`"];
-      return calculateAngle(N, Sn, Pog_soft);
-    }
-  }
 };
