@@ -57,31 +57,37 @@ export const useCephStore = create<CephState>((set, get) => ({
   pixelsPerMm: 10,
   rulerLengthMm: 10,
 
-  setLoadedImageSrc: (src) => set({ loadedImageSrc: src }),
+  setLoadedImageSrc: (src) => set({
+    loadedImageSrc: src,
+    rulerStart: { x: 50, y: 50 },
+    rulerEnd: { x: 50, y: 150 },
+    pixelsPerMm: 10,
+    rulerLengthMm: 10,
+  }),
   setShowLandmarkNames: (show) => set({ showLandmarkNames: show }),
   setHoveredMeasurement: (measurement) => set({ hoveredMeasurement: measurement }),
   setLoading: (loading) => set({ loading }),
   setError: (error) => set({ error }),
 
   setRulerVisible: (visible) => set({ rulerVisible: visible }),
-  
+
   updateRulerPoint: (point, x, y) => {
     const state = get();
     const newStart = point === "start" ? { x, y } : state.rulerStart;
     const newEnd = point === "end" ? { x, y } : state.rulerEnd;
-    
+
     // distance between start and end is considered as rulerLengthMm
     const dist = Math.hypot(newEnd.x - newStart.x, newEnd.y - newStart.y);
     // minimum distance to avoid division by zero
     const safeDist = Math.max(1, dist);
     const newPixelsPerMm = safeDist / state.rulerLengthMm;
-    
+
     set({
       rulerStart: newStart,
       rulerEnd: newEnd,
       pixelsPerMm: newPixelsPerMm,
     });
-    
+
     // Auto recalculate after updating scale
     get().recalculateMeasurements();
   },
@@ -89,7 +95,7 @@ export const useCephStore = create<CephState>((set, get) => ({
   setRulerLengthMm: (length: number) => {
     if (length <= 0) return;
     const state = get();
-    
+
     const dist = Math.hypot(state.rulerEnd.x - state.rulerStart.x, state.rulerEnd.y - state.rulerStart.y);
     const safeDist = Math.max(1, dist);
     const newPixelsPerMm = safeDist / length;
@@ -99,10 +105,33 @@ export const useCephStore = create<CephState>((set, get) => ({
   },
 
   setLandmarksData: (data) => {
+    const state = get();
     const obj = landmarksArrayToObject(data.landmarks);
+
+    let newRulerStart = state.rulerStart;
+    let newRulerEnd = state.rulerEnd;
+
+    // Position ruler near Po landmark if it exists
+    if (obj["Po"]) {
+      newRulerStart = { x: obj["Po"].x, y: obj["Po"].y };
+      newRulerEnd = { x: obj["Po"].x, y: obj["Po"].y + 100 }; // 100px default length
+    }
+
+    const dist = Math.hypot(newRulerEnd.x - newRulerStart.x, newRulerEnd.y - newRulerStart.y);
+    const safeDist = Math.max(1, dist);
+    const newPixelsPerMm = safeDist / state.rulerLengthMm;
+
     const sex = usePatientStore.getState().patientData?.sex as "male" | "female" || "male";
-    const measurements = calculateAllMeasurements(obj, sex, get().pixelsPerMm);
-    set({ landmarksData: data, landmarksObj: obj, measurements });
+    const measurements = calculateAllMeasurements(obj, sex, newPixelsPerMm);
+
+    set({
+      landmarksData: data,
+      landmarksObj: obj,
+      measurements,
+      rulerStart: newRulerStart,
+      rulerEnd: newRulerEnd,
+      pixelsPerMm: newPixelsPerMm
+    });
   },
 
   loadJsonData: (data) => {
@@ -150,7 +179,7 @@ export const useCephStore = create<CephState>((set, get) => ({
   recalculateMeasurements: (gender?: string) => {
     const state = get();
     if (!state.landmarksObj) return;
-    
+
     const sexStr = gender || usePatientStore.getState().patientData?.sex || "male";
     const sex = (sexStr as "male" | "female");
     const measurements = calculateAllMeasurements(state.landmarksObj, sex, state.pixelsPerMm);

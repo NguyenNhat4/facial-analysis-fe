@@ -273,7 +273,7 @@ export function InteractiveCanvas() {
   };
 
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current || !landmarksObj) return;
+    if (!canvasRef.current) return;
 
     const pointer = getCanvasPointer(e.clientX, e.clientY);
     if (!pointer) return;
@@ -300,15 +300,17 @@ export function InteractiveCanvas() {
     }
 
     let clickedLandmark = false;
-    for (const [symbol, pos] of Object.entries(landmarksObj)) {
-      const lx = pos.x * imageScale + offset.x;
-      const ly = pos.y * imageScale + offset.y;
+    if (landmarksObj) {
+      for (const [symbol, pos] of Object.entries(landmarksObj)) {
+        const lx = pos.x * imageScale + offset.x;
+        const ly = pos.y * imageScale + offset.y;
 
-      if (Math.hypot(x - lx, y - ly) <= hitRadius) {
-        setDraggedLandmark(symbol);
-        canvasRef.current.setPointerCapture(e.pointerId);
-        clickedLandmark = true;
-        break;
+        if (Math.hypot(x - lx, y - ly) <= hitRadius) {
+          setDraggedLandmark(symbol);
+          canvasRef.current.setPointerCapture(e.pointerId);
+          clickedLandmark = true;
+          break;
+        }
       }
     }
 
@@ -319,7 +321,7 @@ export function InteractiveCanvas() {
   };
 
   const handlePointerMove = (e: React.PointerEvent<HTMLCanvasElement>) => {
-    if (!canvasRef.current || !loadedImage || !landmarksObj) return;
+    if (!canvasRef.current || !loadedImage) return;
 
     const pointer = getCanvasPointer(e.clientX, e.clientY);
     if (!pointer) return;
@@ -343,16 +345,18 @@ export function InteractiveCanvas() {
 
     if (!draggedLandmark) {
       let foundHover = false;
-      for (const [symbol, pos] of Object.entries(landmarksObj)) {
-        const lx = pos.x * imageScale + offset.x;
-        const ly = pos.y * imageScale + offset.y;
+      if (landmarksObj) {
+        for (const [symbol, pos] of Object.entries(landmarksObj)) {
+          const lx = pos.x * imageScale + offset.x;
+          const ly = pos.y * imageScale + offset.y;
 
-        if (Math.hypot(x - lx, y - ly) <= hitRadius) {
-          if (hoveredLandmark !== symbol) {
-            setHoveredLandmark(symbol);
+          if (Math.hypot(x - lx, y - ly) <= hitRadius) {
+            if (hoveredLandmark !== symbol) {
+              setHoveredLandmark(symbol);
+            }
+            foundHover = true;
+            break;
           }
-          foundHover = true;
-          break;
         }
       }
 
@@ -364,10 +368,11 @@ export function InteractiveCanvas() {
 
     if (imageScale <= 0) return;
 
-    const imgX = Math.max(0, Math.min(loadedImage.width, (x - offset.x) / imageScale));
-    const imgY = Math.max(0, Math.min(loadedImage.height, (y - offset.y) / imageScale));
-
-    updateLandmark(draggedLandmark, imgX, imgY);
+    if (landmarksObj && draggedLandmark) {
+      const imgX = Math.max(0, Math.min(loadedImage.width, (x - offset.x) / imageScale));
+      const imgY = Math.max(0, Math.min(loadedImage.height, (y - offset.y) / imageScale));
+      updateLandmark(draggedLandmark, imgX, imgY);
+    }
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -410,9 +415,9 @@ export function InteractiveCanvas() {
       <div className="absolute top-4 right-4 flex flex-col gap-2 bg-slate-800/80 p-2 rounded-lg backdrop-blur-sm border border-slate-700">
         <div className="flex items-center gap-1">
           {rulerVisible && (
-            <input 
-              type="number" 
-              value={rulerLengthMm} 
+            <input
+              type="number"
+              value={rulerLengthMm}
               onChange={(e) => {
                 const val = parseFloat(e.target.value);
                 if (!isNaN(val) && val > 0) setRulerLengthMm(val);
