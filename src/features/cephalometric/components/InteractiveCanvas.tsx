@@ -16,8 +16,17 @@ export function InteractiveCanvas() {
   const hoveredMeasurement = useCephStore((state) => state.hoveredMeasurement);
   const updateLandmark = useCephStore((state) => state.updateLandmark);
 
+  const rulerVisible = useCephStore((state) => state.rulerVisible);
+  const setRulerVisible = useCephStore((state) => state.setRulerVisible);
+  const rulerStart = useCephStore((state) => state.rulerStart);
+  const rulerEnd = useCephStore((state) => state.rulerEnd);
+  const updateRulerPoint = useCephStore((state) => state.updateRulerPoint);
+  const rulerLengthMm = useCephStore((state) => state.rulerLengthMm);
+  const setRulerLengthMm = useCephStore((state) => state.setRulerLengthMm);
+
   const [draggedLandmark, setDraggedLandmark] = useState<string | null>(null);
   const [hoveredLandmark, setHoveredLandmark] = useState<string | null>(null);
+  const [draggedRulerPoint, setDraggedRulerPoint] = useState<"start" | "end" | null>(null);
 
   const {
     zoom,
@@ -58,7 +67,7 @@ export function InteractiveCanvas() {
 
   useEffect(() => {
     drawCanvas();
-  }, [loadedImage, landmarksObj, showLandmarkNames, hoveredMeasurement, draggedLandmark, hoveredLandmark, zoom, offset]);
+  }, [loadedImage, landmarksObj, showLandmarkNames, hoveredMeasurement, draggedLandmark, hoveredLandmark, zoom, offset, rulerVisible, rulerStart, rulerEnd, draggedRulerPoint, rulerLengthMm]);
 
   const drawCanvas = () => {
     const canvas = canvasRef.current;
@@ -109,6 +118,19 @@ export function InteractiveCanvas() {
       }
     }
 
+    if (rulerVisible) {
+      drawRuler(
+        ctx,
+        rulerStart.x * renderScale,
+        rulerStart.y * renderScale,
+        rulerEnd.x * renderScale,
+        rulerEnd.y * renderScale,
+        draggedRulerPoint === "start",
+        draggedRulerPoint === "end",
+        rulerLengthMm
+      );
+    }
+
     ctx.restore();
   };
 
@@ -127,6 +149,56 @@ export function InteractiveCanvas() {
       y: (clientY - rect.top) * scaleY,
       hitRadius: 10 * Math.max(scaleX, scaleY),
     };
+  };
+
+  const drawRuler = (
+    ctx: CanvasRenderingContext2D,
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number,
+    startActive: boolean,
+    endActive: boolean,
+    lengthMm: number
+  ) => {
+    ctx.save();
+
+    // Draw line
+    ctx.beginPath();
+    ctx.moveTo(x1, y1);
+    ctx.lineTo(x2, y2);
+    ctx.strokeStyle = "#00FFFF";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Draw start handle
+    ctx.beginPath();
+    ctx.arc(x1, y1, startActive ? 8 : 6, 0, 2 * Math.PI);
+    ctx.fillStyle = startActive ? "#FF00FF" : "#00FFFF";
+    ctx.fill();
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Draw end handle
+    ctx.beginPath();
+    ctx.arc(x2, y2, endActive ? 8 : 6, 0, 2 * Math.PI);
+    ctx.fillStyle = endActive ? "#FF00FF" : "#00FFFF";
+    ctx.fill();
+    ctx.strokeStyle = "white";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // Draw text dynamically
+    const midX = (x1 + x2) / 2;
+    const midY = (y1 + y2) / 2;
+    ctx.font = "bold 16px Arial";
+    ctx.fillStyle = "#00FFFF";
+    ctx.shadowColor = "black";
+    ctx.shadowBlur = 4;
+    ctx.fillText(`${lengthMm} mm`, midX + 10, midY - 10);
+
+    ctx.restore();
   };
 
   const drawLandmark = (
@@ -209,6 +281,24 @@ export function InteractiveCanvas() {
     const { x, y, hitRadius } = pointer;
     const imageScale = baseScaleRef.current * zoom;
 
+    if (rulerVisible) {
+      const rx1 = rulerStart.x * imageScale + offset.x;
+      const ry1 = rulerStart.y * imageScale + offset.y;
+      if (Math.hypot(x - rx1, y - ry1) <= hitRadius * 1.5) {
+        setDraggedRulerPoint("start");
+        canvasRef.current.setPointerCapture(e.pointerId);
+        return;
+      }
+
+      const rx2 = rulerEnd.x * imageScale + offset.x;
+      const ry2 = rulerEnd.y * imageScale + offset.y;
+      if (Math.hypot(x - rx2, y - ry2) <= hitRadius * 1.5) {
+        setDraggedRulerPoint("end");
+        canvasRef.current.setPointerCapture(e.pointerId);
+        return;
+      }
+    }
+
     let clickedLandmark = false;
     for (const [symbol, pos] of Object.entries(landmarksObj)) {
       const lx = pos.x * imageScale + offset.x;
@@ -243,6 +333,14 @@ export function InteractiveCanvas() {
 
     const imageScale = baseScaleRef.current * zoom;
 
+    if (draggedRulerPoint) {
+      if (imageScale <= 0) return;
+      const imgX = Math.max(0, Math.min(loadedImage.width, (x - offset.x) / imageScale));
+      const imgY = Math.max(0, Math.min(loadedImage.height, (y - offset.y) / imageScale));
+      updateRulerPoint(draggedRulerPoint, imgX, imgY);
+      return;
+    }
+
     if (!draggedLandmark) {
       let foundHover = false;
       for (const [symbol, pos] of Object.entries(landmarksObj)) {
@@ -276,6 +374,9 @@ export function InteractiveCanvas() {
     if (canvasRef.current) {
       canvasRef.current.releasePointerCapture(e.pointerId);
     }
+    if (draggedRulerPoint) {
+      setDraggedRulerPoint(null);
+    }
     if (draggedLandmark) {
       setDraggedLandmark(null);
     }
@@ -307,6 +408,30 @@ export function InteractiveCanvas() {
       />
 
       <div className="absolute top-4 right-4 flex flex-col gap-2 bg-slate-800/80 p-2 rounded-lg backdrop-blur-sm border border-slate-700">
+        <div className="flex items-center gap-1">
+          {rulerVisible && (
+            <input 
+              type="number" 
+              value={rulerLengthMm} 
+              onChange={(e) => {
+                const val = parseFloat(e.target.value);
+                if (!isNaN(val) && val > 0) setRulerLengthMm(val);
+              }}
+              className="w-12 h-8 text-xs bg-slate-700 text-white border border-slate-600 rounded px-1 text-center font-bold"
+              title="Ruler Physical Length (mm)"
+            />
+          )}
+          <button
+            onClick={() => setRulerVisible(!rulerVisible)}
+            className={cn(
+              "w-8 h-8 flex items-center justify-center rounded cursor-pointer transition-colors text-xs font-bold",
+              rulerVisible ? "bg-cyan-600 hover:bg-cyan-500 text-white" : "bg-slate-700 hover:bg-slate-600 text-white"
+            )}
+            title="Toggle Ruler"
+          >
+            📏
+          </button>
+        </div>
         <button
           onClick={stepZoomIn}
           className="w-8 h-8 flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-white rounded cursor-pointer transition-colors"

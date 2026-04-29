@@ -34,7 +34,7 @@ export interface MeasurementConfig {
     severe?: string;
     [key: string]: string | undefined;
   };
-  calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>) => number;
+  calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>, pixelsPerMm?: number) => number;
 }
 
 export interface MeasurementResult {

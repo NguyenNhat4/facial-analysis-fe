@@ -107,11 +107,11 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
+    calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>, pixelsPerMm?: number) => {
       const UIT = landmarks.I;
       const N = landmarks.N;
       const A = landmarks.A;
-      return calculatePointToLineDistance(UIT, N, A) * 0.1;
+      return calculatePointToLineDistance(UIT, N, A) / (pixelsPerMm || 10);
     }
   },
 
@@ -126,11 +126,11 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
+    calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>, pixelsPerMm?: number) => {
       const LIT = landmarks.i;
       const N = landmarks.N;
       const B = landmarks.B;
-      return calculatePointToLineDistance(LIT, N, B) * 0.1;
+      return calculatePointToLineDistance(LIT, N, B) / (pixelsPerMm || 10);
     }
   },
 
@@ -226,10 +226,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
+    calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>, pixelsPerMm?: number) => {
       const N = landmarks.N;
       const Me = landmarks.Me;
-      return calculateDistance(N, Me) * 0.1;
+      return calculateDistance(N, Me) / (pixelsPerMm || 10);
     }
   },
 
@@ -264,7 +264,7 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
+    calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>, pixelsPerMm?: number) => {
       const Li = landmarks.Li;
       const Pn = landmarks.Pn;
       const Pog_soft = landmarks["Pog`"];
@@ -272,7 +272,7 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
       // Point in front (right) means negative cross product if using crossProduct = (Bx-Ax)(Py-Ay) - (By-Ay)(Px-Ax)
       // Actually, if x goes right and y goes down, crossProduct for P(right of AB) is negative.
       // Let's use negative of the signed distance so right = positive.
-      return -calculatePointToLineSignedDistance(Li, Pn, Pog_soft) * 0.1;
+      return -calculatePointToLineSignedDistance(Li, Pn, Pog_soft) / (pixelsPerMm || 10);
     }
   },
 
@@ -287,11 +287,11 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
+    calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>, pixelsPerMm?: number) => {
       const Ls = landmarks.Ls;
       const Pn = landmarks.Pn;
       const Pog_soft = landmarks["Pog`"];
-      return -calculatePointToLineSignedDistance(Ls, Pn, Pog_soft) * 0.1;
+      return -calculatePointToLineSignedDistance(Ls, Pn, Pog_soft) / (pixelsPerMm || 10);
     }
   },
 
