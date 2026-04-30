@@ -53,8 +53,7 @@ export function calculateAngleBetweenLines(A: Point, B: Point, C: Point, D: Poin
 
   const cosAngle = dotProduct / (magnitude1 * magnitude2);
   const angleRad = Math.acos(Math.max(-1, Math.min(1, cosAngle)));
-  const result =  angleRad * (180 / Math.PI);
-  return result > 90 ? 180 - result : result;
+  return angleRad * (180 / Math.PI);
 }
 
 /**

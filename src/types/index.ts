@@ -46,7 +46,8 @@ export interface Features {
   "I/i": number;
   "Li-E": number;
   "Ls-E": number;
-  "N-Sn-Pg": number;
+  "Sn-Ls-Li-Pg`": number;
+  "Pn-N-Sn": number;
   ul_e_plane: number;
   ll_e_plane: number;
   ei: number;

@@ -123,6 +123,30 @@ export const CEPHALOMETRIC_EVALUATION_CONFIG: Record<string, IndexConfig> = {
       high: "Góc mở rộng, răng cửa hai hàm bị cụp vào trong hoặc mặt đứng.",
     },
   },
+  "Sn-Ls-Li-Pg`": {
+    name: "Sn-Ls-Li-Pg’",
+    category: "SoftTissue",
+    min: 130.50,
+    max: 151.52,
+    unit: "°",
+    evaluations: {
+      low: "Hai môi lùi hoặc khép hơn so với chuẩn.",
+      normal: "Hai môi hài hòa theo chuẩn tham chiếu.",
+      high: "Hai môi căng hoặc nhô hơn so với chuẩn.",
+    },
+  },
+  "Pn-N-Sn": {
+    name: "Pn-N-Sn",
+    category: "SoftTissue",
+    min: 16.45,
+    max: 21.99,
+    unit: "°",
+    evaluations: {
+      low: "Góc mũi - trán hẹp hơn so với chuẩn.",
+      normal: "Góc Pn-N-Sn hài hòa theo chuẩn tham chiếu.",
+      high: "Góc mũi - trán mở rộng hơn so với chuẩn.",
+    },
+  },
   "N-Me": {
     name: "N-Me",
     category: "SoftTissue",
@@ -157,18 +181,6 @@ export const CEPHALOMETRIC_EVALUATION_CONFIG: Record<string, IndexConfig> = {
       low: "Môi trên lùi nhiều phía sau đường E (móm môi trên).",
       normal: "Môi trên hài hòa với mặt nghiêng.",
       high: "Môi trên nhô ra trước đường E (hô môi trên).",
-    },
-  },
-  "N-Sn-Pg": {
-    name: "N-Sn-Pg",
-    category: "SoftTissue",
-    min: 155.25,
-    max: 167.31,
-    unit: "°",
-    evaluations: {
-      low: "Góc lồi mặt hẹp (Mặt lồi nhiều, đặc trưng của mặt hô).",
-      normal: "Mặt nghiêng lồi nhẹ, hài hòa chuẩn Á Đông.",
-      high: "Góc mở rộng (Mặt phẳng hoặc mặt lõm/móm).",
     },
   },
 };

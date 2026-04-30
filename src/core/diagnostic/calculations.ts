@@ -24,7 +24,8 @@ export function landmarksArrayToObject(landmarksArray: Landmark[]): LandmarksObj
  */
 export function calculateAllMeasurements(
   landmarksObj: LandmarksObject,
-  gender: 'male' | 'female' = 'male'
+  gender: 'male' | 'female' = 'male',
+  pixelsPerMm?: number
 ): Record<string, MeasurementResult> {
   const results: Record<string, MeasurementResult> = {};
 
@@ -41,7 +42,7 @@ export function calculateAllMeasurements(
       const normalMean = config.normal[genderKey].mean;
       const normalSD = config.normal[genderKey].sd;
 
-      const value = config.calculate(landmarksObj, results);
+      const value = config.calculate(landmarksObj, results, pixelsPerMm);
       const classification = getClassification(value, normalMean, normalSD);
       const significance = getSignificance(value, normalMean, normalSD);
 

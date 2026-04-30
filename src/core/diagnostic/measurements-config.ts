@@ -107,11 +107,11 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
+    calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>, pixelsPerMm?: number) => {
       const UIT = landmarks.I;
       const N = landmarks.N;
       const A = landmarks.A;
-      return calculatePointToLineDistance(UIT, N, A) * 0.1;
+      return calculatePointToLineDistance(UIT, N, A) / (pixelsPerMm || 10);
     }
   },
 
@@ -126,11 +126,11 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
+    calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>, pixelsPerMm?: number) => {
       const LIT = landmarks.i;
       const N = landmarks.N;
       const B = landmarks.B;
-      return calculatePointToLineDistance(LIT, N, B) * 0.1;
+      return calculatePointToLineDistance(LIT, N, B) / (pixelsPerMm || 10);
     }
   },
 
@@ -170,7 +170,48 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
       const LIA = landmarks.LIA;
       const Po = landmarks.Po;
       const Or = landmarks.Or;
-      return calculateAngleBetweenLines(i, LIA, Po, Or);
+      const res = calculateAngleBetweenLines(i, LIA, Po, Or);
+      return res > 90 ? 180 - res : res;
+    }
+  },
+
+  "Sn-Ls-Li-Pg`": {
+    name: "Sn-Ls-Li-Pg’",
+    nameFull: "Two lips angle",
+    type: "angle",
+    landmarks: ["Sn", "Ls", "Li", "Pog`"],
+    normal: {
+      male: { mean: 141.01, sd: 10.51 },
+      female: { mean: 140.82, sd: 10.87 }
+    },
+    unit: "°",
+    interpretation: { high: "Hai môi căng hoặc nhô hơn so với chuẩn.", normal: "Hai môi hài hòa theo chuẩn tham chiếu.", low: "Hai môi thu hẹp hoặc lùi hơn so với chuẩn." },
+    calculate: (landmarks: LandmarksObject) => {
+      const Sn = landmarks.Sn;
+      const Ls = landmarks.Ls;
+      const Li = landmarks.Li;
+      const Pog_soft = landmarks["Pog`"];
+      const res = calculateAngleBetweenLines(Sn, Ls, Li, Pog_soft);
+      return res < 90 ?  180 - res : res;
+    }
+  },
+
+  "Pn-N-Sn": {
+    name: "Pn-N-Sn",
+    nameFull: "Nasal angle",
+    type: "angle",
+    landmarks: ["Pn", "N", "Sn"],
+    normal: {
+      male: { mean: 19.22, sd: 2.77 },
+      female: { mean: 19.14, sd: 2.24 }
+    },
+    unit: "°",
+    interpretation: { high: "Góc mũi - trán mở rộng hơn so với chuẩn.", normal: "Góc Pn-N-Sn hài hòa theo chuẩn tham chiếu.", low: "Góc mũi - trán hẹp hơn so với chuẩn." },
+    calculate: (landmarks: LandmarksObject) => {
+      const Pn = landmarks.Pn;
+      const N = landmarks.N;
+      const Sn = landmarks.Sn;
+      return calculateAngle(Pn, N, Sn);
     }
   },
 
@@ -185,10 +226,10 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
+    calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>, pixelsPerMm?: number) => {
       const N = landmarks.N;
       const Me = landmarks.Me;
-      return calculateDistance(N, Me) * 0.1;
+      return calculateDistance(N, Me) / (pixelsPerMm || 10);
     }
   },
 
@@ -223,7 +264,7 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
+    calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>, pixelsPerMm?: number) => {
       const Li = landmarks.Li;
       const Pn = landmarks.Pn;
       const Pog_soft = landmarks["Pog`"];
@@ -231,7 +272,7 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
       // Point in front (right) means negative cross product if using crossProduct = (Bx-Ax)(Py-Ay) - (By-Ay)(Px-Ax)
       // Actually, if x goes right and y goes down, crossProduct for P(right of AB) is negative.
       // Let's use negative of the signed distance so right = positive.
-      return -calculatePointToLineSignedDistance(Li, Pn, Pog_soft) * 0.1;
+      return -calculatePointToLineSignedDistance(Li, Pn, Pog_soft) / (pixelsPerMm || 10);
     }
   },
 
@@ -246,30 +287,12 @@ export const MEASUREMENTS_CONFIG: Record<string, MeasurementConfig> = {
     },
     unit: "mm",
     interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
+    calculate: (landmarks: LandmarksObject, measurements?: Record<string, any>, pixelsPerMm?: number) => {
       const Ls = landmarks.Ls;
       const Pn = landmarks.Pn;
       const Pog_soft = landmarks["Pog`"];
-      return -calculatePointToLineSignedDistance(Ls, Pn, Pog_soft) * 0.1;
+      return -calculatePointToLineSignedDistance(Ls, Pn, Pog_soft) / (pixelsPerMm || 10);
     }
   },
 
-  "N-Sn-Pg": {
-    name: "N-Sn-Pg",
-    nameFull: "Soft Tissue Facial Angle",
-    type: "angle",
-    landmarks: ["N", "Sn", "Pog`"],
-    normal: {
-      male: { mean: 161.28, sd: 6.03 },
-      female: { mean: 162.85, sd: 5.49 }
-    },
-    unit: "°",
-    interpretation: { high: "", normal: "", low: "" },
-    calculate: (landmarks: LandmarksObject) => {
-      const N = landmarks.N;
-      const Sn = landmarks.Sn;
-      const Pog_soft = landmarks["Pog`"];
-      return calculateAngle(N, Sn, Pog_soft);
-    }
-  }
 };
