@@ -2,17 +2,18 @@ SHELL := /bin/sh
 
 DOCKERHUB_USERNAME ?= nguyennhat4
 IMAGE_NAME ?= dental-ai-ui
-IMAGE := $(DOCKERHUB_USERNAME)/$(IMAGE_NAME)
+IMAGE := $(DOCKERHUB_USERNAME)/$(IMAGE_NAME):v1.0.0
 
 KUBE_NAMESPACE ?= default
-KUBE_DEPLOYMENT ?= dental-app
-CONTAINER_NAME ?= dental-ai-ui-1
-LABEL=a
+KUBE_DEPLOYMENT ?= deployment-1
+KUBE_DEPLOYMENT_SERVICE ?= dental-app-service
+CONTAINER_NAME ?= nginx-1
+LABEL=deployment-1
 
 COMPOSE_FILE ?= docker-compose.yml
 COMPOSE_SERVICE ?= dental-ai-ui
 
-.PHONY: help build push build-push release compose-build compose-push compose-release deploy-gke rollout-status login
+.PHONY: help build push build-push release compose-build compose-push compose-release deploy-gke rollout-status login connect-GKE-project
 
 help:
 	@echo "Targets:"
@@ -37,24 +38,34 @@ push:
 	docker push $(IMAGE)
 
 build-push: build push
+set-image: 
+	kubectl set image deployment/$(KUBE_DEPLOYMENT) $(CONTAINER_NAME)=$(IMAGE) --namespace default
+
 
 release: build-push deploy-gke rollout-status
 
 compose-build:
-	docker compose -f $(COMPOSE_FILE) build $(COMPOSE_SERVICE)
+	docker compose  build
 
 compose-push:
-	docker compose -f $(COMPOSE_FILE) push $(COMPOSE_SERVICE)
-include .env
-connect-GKE-project: 
-	gcloud container clusters get-credentials $(GKE_CLUSTER_NAME)
-	 	--region $(GKE_REGION)
-		--project $(GCP_PROJECT_ID)
-compose-release: compose-build compose-push connect-GKE-project deploy-gke rollout-status
+	docker compose push
 
-deploy-gke:
-	kubectl set image deployment/$(KUBE_DEPLOYMENT) \
-		$(CONTAINER_NAME)=$(IMAGE) 
+include .env
+
+connect-GKE-project:
+	gcloud container clusters get-credentials $(GKE_CLUSTER_NAME) \
+		--region $(GKE_REGION) \
+		--project $(GCP_PROJECT_ID)
+
+compose-release: compose-build compose-push connect-GKE-project restart-deployment
+
+restart-deployment:
+	kubectl rollout restart deployment/$(KUBE_DEPLOYMENT) -n default
 
 rollout-status:
 	kubectl rollout status deployment/$(KUBE_DEPLOYMENT) -n $(KUBE_NAMESPACE)
+get-ip:
+	@kubectl get service $(KUBE_DEPLOYMENT_SERVICE) -o jsonpath='{.status.loadBalancer.ingress[0].ip}'
+
+create-loadbalancer:
+	kubectl expose deployment $(KUBE_DEPLOYMENT) --type=LoadBalancer --name=$(KUBE_DEPLOYMENT_SERVICE) --port=80 --target-port=4173	
