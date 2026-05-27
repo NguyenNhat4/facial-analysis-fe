@@ -139,3 +139,7 @@ logs
 # Build artifacts
 dist
 build
+
+docs
+
+README.md
