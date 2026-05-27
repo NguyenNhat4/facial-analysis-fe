@@ -20,7 +20,7 @@ RUN if [ ! -f .env ]; then cp .env.example .env; fi
 RUN npm run build
 
 # Expose port (Vite preview runs on 4173 by default)
-EXPOSE 8080
+EXPOSE 4173
 
 # Start the application using Vite preview
-CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "8080"]
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "4173"]
