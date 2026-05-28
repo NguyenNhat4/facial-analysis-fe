@@ -61,8 +61,8 @@ export function calculateAllMeasurements(
       results[key] = {
         name: config.name,
         value: 0,
-        mean: config.normalMean,
-        sd: config.normalSD,
+        mean: config.normal[gender].mean,
+        sd: config.normal[gender].sd,
         unit: config.unit,
         classification: 'error',
         significance: '',

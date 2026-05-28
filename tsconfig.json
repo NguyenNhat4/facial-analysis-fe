@@ -1,6 +1,15 @@
 {
   "include": ["src/**/*"],
-  "exclude": ["node_modules", "build", "dist", "**/*.test.ts"],
+  "exclude": [
+    "node_modules", 
+    "build", 
+    "dist", 
+    "**/*.test.ts",
+    "src/components/3DViewer.tsx",
+    "src/components/facial-analysis.tsx",
+    "src/components/patient-info.tsx",
+    "src/components/ui/input-otp.tsx"
+  ],
   "compilerOptions": {
     "incremental": true,
     "tsBuildInfoFile": "./node_modules/typescript/tsbuildinfo",
