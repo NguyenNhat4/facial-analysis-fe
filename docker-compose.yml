@@ -2,7 +2,6 @@ version: "3.8"
 
 services:
   dental-ai-ui:
-    image: nguyennhat4/dental-ai-ui:latest 
     build:
       context: .
       dockerfile: Dockerfile
