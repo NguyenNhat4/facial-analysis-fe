@@ -1,12 +1,6 @@
 import { useState } from "react";
-import { ImageType } from "../../../types/demo-cases";
-import { getFallbackImages } from "../../../utils/demo-cases";
-import { groupFilesByType, validateFileType } from "../../../utils/image-detection";
-import {
-  findOutputPathFromAssets,
-  extractCaseIdFromInputFile,
-} from "../../../utils/case-mapping";
 import { useImageStore } from "../stores/image-store";
+import type { ImageType } from "../stores/image-store";
 
 export function useImageManager(showToast: (message: string, type?: "success" | "error" | "info") => void) {
   const {
@@ -95,54 +89,36 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
       setCurrentFolderName(null);
 
       try {
-        const validFiles = files.filter(validateFileType);
-        const { detected } = await groupFilesByType(validFiles);
-
-        let detectedCaseId: string | null = null;
-        let detectedFolderName: string | null = null;
-
-        for (const file of validFiles) {
-          detectedCaseId = extractCaseIdFromInputFile(file);
-          if (detectedCaseId) {
-            detectedFolderName = detectedCaseId;
-            break;
-          }
-        }
-
-        if (detectedCaseId && detectedFolderName) {
-          setCurrentCaseId(detectedCaseId);
-          setCurrentFolderName(detectedFolderName);
-        }
-
-        const allDetectedFiles = Object.values(detected).flat();
+        // Process uploaded files
         let processedCount = 0;
+        const imageTypes: ImageType[] = ["lateral", "profile", "frontal"];
 
-        for (const [imageType, typeFiles] of Object.entries(detected)) {
-          if (typeFiles.length > 0) {
-            const file = typeFiles[0];
-            setLoadingCards((prev) => ({ ...prev, [imageType]: true }));
-            await new Promise((resolve) => setTimeout(resolve, 500 + Math.random() * 800));
+        for (let i = 0; i < files.length && i < imageTypes.length; i++) {
+          const file = files[i];
+          const imageType = imageTypes[i];
+          
+          setLoadingCards((prev) => ({ ...prev, [imageType]: true }));
+          await new Promise((resolve) => setTimeout(resolve, 500 + Math.random() * 800));
 
-            const inputPreviewUrl = URL.createObjectURL(file);
-            const outputPath = findOutputPathFromAssets(file, imageType as ImageType);
+          const inputPreviewUrl = URL.createObjectURL(file);
+          const outputPath = `/assets/outputs/${file.name}`;
 
-            setImagePreviewUrl(imageType, inputPreviewUrl);
-            setLocalImages((prev: any) => ({
-              ...prev,
-              [imageType as ImageType]: {
-                input: file,
-                inputPreview: inputPreviewUrl,
-                outputPreview: outputPath,
-                outputFilename: outputPath.split("/").pop() || "output.png",
-              },
-            }));
+          setImagePreviewUrl(imageType, inputPreviewUrl);
+          setLocalImages((prev: any) => ({
+            ...prev,
+            [imageType]: {
+              input: file,
+              inputPreview: inputPreviewUrl,
+              outputPreview: outputPath,
+              outputFilename: outputPath.split("/").pop() || "output.png",
+            },
+          }));
 
-            setUploadedImage(imageType, true);
-            setLoadingCards((prev) => ({ ...prev, [imageType]: false }));
+          setUploadedImage(imageType, true);
+          setLoadingCards((prev) => ({ ...prev, [imageType]: false }));
 
-            processedCount++;
-            setLoadingProgress((processedCount / allDetectedFiles.length) * 100);
-          }
+          processedCount++;
+          setLoadingProgress((processedCount / files.length) * 100);
         }
       } catch (error) {
         console.error("Failed to process uploaded images:", error);

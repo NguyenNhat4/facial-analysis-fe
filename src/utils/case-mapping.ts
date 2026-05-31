@@ -1,5 +1,4 @@
-import { ImageType } from '../types/demo-cases';
-import { detectImageTypeFromFilename } from './image-detection';
+import { ImageType, detectImageTypeFromFilename } from './image-detection';
 
 // Interface cho một case mapping
 export interface CaseMapping {

@@ -1,5 +1,6 @@
 import { create } from "zustand";
-import { ImageType } from "../../../types/demo-cases";
+
+export type ImageType = "lateral" | "profile" | "frontal";
 
 interface ImageState {
   localImages: {

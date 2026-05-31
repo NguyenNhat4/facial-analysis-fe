@@ -1,4 +1,5 @@
-import { ImageType } from '../types/demo-cases';
+// Define ImageType locally since demo-cases was removed
+export type ImageType = "lateral" | "profile" | "frontal";
 
 // Patterns để detect loại ảnh từ filename
 const IMAGE_PATTERNS: Record<ImageType, RegExp[]> = {
