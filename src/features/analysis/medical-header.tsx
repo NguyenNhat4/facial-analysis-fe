@@ -22,7 +22,7 @@ export const MedicalHeader: React.FC<MedicalHeaderProps> = ({ onNavigation }) =>
           <nav className="hidden md:flex items-center space-x-1">
           
             <button
-              onClick={() => onNavigation("/demo")}
+              onClick={() => onNavigation("/patients")}
               className="px-4 py-2 bg-blue-100 text-blue-700 font-semibold rounded-lg border border-blue-200"
             >
               Clinical Analysis

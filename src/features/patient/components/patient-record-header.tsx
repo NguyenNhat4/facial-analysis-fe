@@ -1,7 +1,10 @@
 import React from "react";
 import { User } from "lucide-react";
+import { usePatientStore } from "../stores/patient-store";
 
 export const PatientRecordHeader: React.FC = () => {
+  const { patientData } = usePatientStore();
+
   return (
     <div className="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-8 py-6 rounded-t-xl">
       <div className="flex items-center justify-between">
@@ -17,18 +20,20 @@ export const PatientRecordHeader: React.FC = () => {
           <div>
             <div className="flex items-center space-x-3 mb-2">
               <h2 className="text-2xl font-bold text-white">
-                Demonstration Case
+                {patientData.name || "Patient"}
               </h2>
-              <span className="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded-full">
-                DEMO
-              </span>
+              {patientData.patientId && (
+                <span className="px-3 py-1 bg-blue-500 text-white text-xs font-semibold rounded-full">
+                  {patientData.patientId}
+                </span>
+              )}
             </div>
             <p className="text-blue-100 text-lg font-medium">
-              Sample Clinical Data
+              {patientData.diagnose || "Clinical Record"}
             </p>
             <p className="text-blue-200 text-sm">
-              Case ID: #DEMO-2025-001 • Session Date:{" "}
-              {new Date().toLocaleDateString("en-GB")}
+              Case ID: #{patientData.patientId || "N/A"} • Consultation Date:{" "}
+              {patientData.consultationDate || new Date().toLocaleDateString("en-GB")}
             </p>
           </div>
         </div>

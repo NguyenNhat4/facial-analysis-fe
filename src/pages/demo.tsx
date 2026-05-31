@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useLocation } from "wouter";
+import React, { useEffect, useState } from "react";
+import { useLocation, useRoute } from "wouter";
 import {
   Tabs,
   TabsContent,
@@ -11,6 +11,8 @@ import ToastNotification from "../components/toast-notification";
 import { PatientRecordHeader } from "../features/patient";
 import { ImagingUploadHeader, ImagingUploadGrid } from "../features/imaging";
 import { ClinicalAnalysisSidebar, MedicalHeader, MedicalFooter } from "../features/analysis";
+import { getPatientById } from "../features/patient/data/patient-mocks";
+import { usePatientStore } from "../features/patient/stores/patient-store";
 const IMAGE_TYPE_MAPPING: Record<
   ImageType,
   {
@@ -42,9 +44,11 @@ export type ImageType =
 
 const DemoPage = () => {
   const [location, setLocation] = useLocation();
+  const [, params] = useRoute("/patients/:id/upload");
   const [activeTab, setActiveTab] = useState("record");
 
   const { toast, showToast, hideToast } = useSimpleToast();
+  const { setPatientData } = usePatientStore();
   
  
   const {
@@ -61,6 +65,16 @@ const DemoPage = () => {
     availableAnalysisCount,
     totalAnalysisCount
   } = useImageManager(showToast);
+
+  useEffect(() => {
+    if (!params?.id) return;
+    const patient = getPatientById(params.id);
+    if (!patient) {
+      showToast("Patient not found", "error");
+      return;
+    }
+    setPatientData(patient);
+  }, [params?.id, setPatientData, showToast]);
 
   // AI Thinking Modal state
   const [showAIThinking, setShowAIThinking] = useState(false);
@@ -204,7 +218,7 @@ const DemoPage = () => {
         </div>
       </div>
 
-      <MedicalFooter />
+      {/* <MedicalFooter /> */}
 
       {/* AI Thinking Modal */}
       <AIThinkingModal

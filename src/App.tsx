@@ -7,13 +7,15 @@ import Chat from "@/pages/chat";
 import FacialAnalysisPage from "@/pages/facial-analysis";
 import CephAnalysisPage from "@/pages/ceph-analysis";
 import DemoPage from "@/pages/demo";
+import PatientListPage from "@/pages/patient-list";
 import NotFound from "@/pages/not-found";
 import GlobalErrorBoundary from "@/components/GlobalErrorBoundary";
 
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={DemoPage} />
+      <Route path="/" component={PatientListPage} />
+      <Route path="/patients/:id/upload" component={DemoPage} />
       <Route path="/chat" component={Chat} />
       <Route path="/facial-analysis" component={FacialAnalysisPage} />
       <Route path="/ceph-analysis" component={CephAnalysisPage} />

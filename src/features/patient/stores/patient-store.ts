@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
 export interface PatientData {
+  patientId: string;
   name: string;
   firstName: string;
   lastName: string;
@@ -21,6 +22,7 @@ interface PatientState {
 }
 
 const initialPatientData: PatientData = {
+  patientId: "DEMO-2025-001",
   name: "NHẬT NGUYỄN",
   firstName: "NGUYỄN",
   lastName: "NHẬT",
