@@ -24,17 +24,17 @@ const IMAGE_TYPE_MAPPING: Record<
   lateral: {
     name: "Lateral Cephalometric",
     category: "Radiographic Imaging",
-    icon: "assets/upload_logo/logo-lateral-xray.png",
+    icon: "/assets/upload_logo/logo-lateral-xray.png",
   },
   frontal: {
     name: "Frontal Portrait",
     category: "Clinical Photography",
-    icon: "assets/upload_logo/frontal-face.png",
+    icon: "/assets/upload_logo/frontal-face.png",
   },
   profile: {
     name: "Lateral Profile",
     category: "Clinical Photography",
-    icon: "assets/upload_logo/logo-side-face.png",
+    icon: "/assets/upload_logo/logo-side-face.png",
   },
 };
 export type ImageType =
