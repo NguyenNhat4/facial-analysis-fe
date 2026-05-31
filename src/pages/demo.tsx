@@ -4,7 +4,7 @@ import {
   Tabs,
   TabsContent,
 } from "../components/ui/tabs";
-import { useToast } from "../shared/hooks/useToast";
+import { useSimpleToast } from "../hooks/useSimpleToast";
 import { useImageManager } from "../features/imaging/hooks/useImageManager";
 import AIThinkingModal from "../components/ai-thinking-modal";
 import ToastNotification from "../components/toast-notification";
@@ -44,7 +44,7 @@ const DemoPage = () => {
   const [location, setLocation] = useLocation();
   const [activeTab, setActiveTab] = useState("record");
 
-  const { toast, showToast, hideToast } = useToast();
+  const { toast, showToast, hideToast } = useSimpleToast();
   
  
   const {
