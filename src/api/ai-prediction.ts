@@ -1,6 +1,6 @@
-import demoData from "../data/cephalometric-demo.json";
-import { LandmarksData } from "../types";
-import { normalizeLandmarkSymbols } from "../utils/landmark-normalizer";
+import demoData from "./cephalometric-demo.json";
+import { LandmarksData } from "@/features/cephalometric/types";
+import { normalizeLandmarkSymbols } from "./landmark-normalizer";
 
 const toSpaceRuntimeUrl = (baseUrl: string): string => {
   const prefix = "https://huggingface.co/spaces/";

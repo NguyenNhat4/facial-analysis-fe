@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { LandmarksData, LandmarksObject, MeasurementResult, Point } from "../types";
 import { landmarksArrayToObject, calculateAllMeasurements } from "../../../core/diagnostic/calculations";
-import { predictLandmarks } from "../services/ai-prediction";
+import { predictLandmarks } from "@/api/ai-prediction";
 import { usePatientStore } from "../../patient/stores/patient-store";
 
 interface CephState {

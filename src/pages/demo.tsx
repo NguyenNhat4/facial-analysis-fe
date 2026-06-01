@@ -13,7 +13,7 @@ import { ImagingUploadHeader, ImagingUploadGrid } from "../features/imaging";
 import { ClinicalAnalysisSidebar } from "@/components/clinical-analysis-sidebar";
 import { MedicalHeader } from "@/components/medical-header";
 import { MedicalFooter } from "@/components/medical-footer";
-import { getPatientById } from "../features/patient/data/patient-mocks";
+import { getPatientById } from "@/api/patient-mocks";
 import { usePatientStore } from "../features/patient/stores/patient-store";
 const IMAGE_TYPE_MAPPING: Record<
   ImageType,
