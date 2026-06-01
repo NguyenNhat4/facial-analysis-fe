@@ -10,7 +10,9 @@ import AIThinkingModal from "../components/ai-thinking-modal";
 import ToastNotification from "../components/toast-notification";
 import { PatientRecordHeader } from "../features/patient";
 import { ImagingUploadHeader, ImagingUploadGrid } from "../features/imaging";
-import { ClinicalAnalysisSidebar, MedicalHeader, MedicalFooter } from "../features/analysis";
+import { ClinicalAnalysisSidebar } from "@/components/clinical-analysis-sidebar";
+import { MedicalHeader } from "@/components/medical-header";
+import { MedicalFooter } from "@/components/medical-footer";
 import { getPatientById } from "../features/patient/data/patient-mocks";
 import { usePatientStore } from "../features/patient/stores/patient-store";
 const IMAGE_TYPE_MAPPING: Record<
