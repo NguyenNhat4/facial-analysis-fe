@@ -14,9 +14,22 @@ export const MedicalHeader: React.FC<MedicalHeaderProps> = ({ onNavigation, show
             {showBackButton && (
               <button
                 onClick={() => onNavigation("/")}
-                className="px-2 py-2 text-blue-700 hover:bg-blue-50 rounded-lg transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg border-2 border-blue-700 hover:bg-blue-700 hover:shadow-md active:scale-95 transition-all duration-200 ease-out"
               >
-                ←
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 19l-7-7 7-7"
+                  />
+                </svg>
+                Back
               </button>
             )}
             <div className="border-l-2 border-blue-200 pl-6 border-l-0">
