@@ -40,8 +40,16 @@ The backend now supports complete patient information management with the follow
 - image_id (INT, Foreign Key) - References images.id
 - landmarks (JSON) - Detected landmarks data
 - confidence_score (FLOAT) - Overall confidence score
-- notes (VARCHAR(1000)) - Additional notes
 - analysis_date (DATETIME) - Analysis timestamp
+```
+
+#### `notes` Table (Semantic Search ready)
+```
+- id (INT, Primary Key)
+- patient_id (INT, Foreign Key) - References patients.id
+- content (VARCHAR) - Note text content
+- created_at (DATETIME) - Record creation timestamp
+- updated_at (DATETIME) - Last update timestamp
 ```
 
 ## API Endpoints
@@ -56,7 +64,8 @@ Request body:
 {
   "fullname": "Nguyen Van A",
   "phone": "0901234567",
-  "consultation_date": "2024-06-01T10:30:00"
+  "consultation_date": "2024-06-01T10:30:00",
+  "note": "Initial consultation notes"
 }
 ```
 
@@ -68,7 +77,15 @@ Response:
   "phone": "0901234567",
   "consultation_date": "2024-06-01T10:30:00",
   "created_at": "2024-06-01T10:30:00",
-  "updated_at": "2024-06-01T10:30:00"
+  "updated_at": "2024-06-01T10:30:00",
+  "notes": [
+    {
+      "id": 1,
+      "content": "Initial consultation notes",
+      "created_at": "2024-06-01T10:30:00",
+      "updated_at": "2024-06-01T10:30:00"
+    }
+  ]
 }
 ```
 
@@ -86,7 +103,8 @@ Request body (all fields optional):
 {
   "fullname": "Nguyen Van B",
   "phone": "0909876543",
-  "consultation_date": "2024-06-02T14:00:00"
+  "consultation_date": "2024-06-02T14:00:00",
+  "note": "Patient requested new appointment"
 }
 ```
 
@@ -111,7 +129,6 @@ Form data:
 - `image_file` (file, required) - X-ray image
 - `landmarks` (string, optional) - JSON string of landmarks
 - `confidence_score` (float, optional) - Confidence score
-- `notes` (string, optional) - Additional notes
 
 Example using curl:
 ```bash
@@ -119,8 +136,7 @@ curl -X POST "http://localhost:8000/api/v1/analysis/save" \
   -F "patient_id=1" \
   -F "image_file=@path/to/image.jpg" \
   -F "landmarks=[{\"name\": \"A\", \"x\": 100, \"y\": 200}]" \
-  -F "confidence_score=0.95" \
-  -F "notes=Good quality X-ray"
+  -F "confidence_score=0.95"
 ```
 
 #### Get Analysis
@@ -147,8 +163,7 @@ curl -X POST "http://localhost:8000/api/v1/patients/" \
 curl -X POST "http://localhost:8000/api/v1/analysis/save" \
   -F "patient_id=1" \
   -F "image_file=@xray_image.jpg" \
-  -F "confidence_score=0.92" \
-  -F "notes=Lateral view - good quality"
+  -F "confidence_score=0.92"
 ```
 
 ### 3. Search for Patient
@@ -175,6 +190,7 @@ Located in `app/services/patient.py`
 
 Methods:
 - `create_patient(db, patient_data)` - Create new patient
+- `create_patient_note(db, patient_id, content)` - Add a new note for a patient
 - `get_patient(db, patient_id)` - Get patient by ID
 - `get_patient_by_phone(db, phone)` - Get patient by phone
 - `get_all_patients(db, skip, limit)` - List patients with pagination
@@ -188,7 +204,7 @@ Methods:
 Located in `app/services/analysis.py`
 
 Methods:
-- `create_analysis(db, patient_id, image_id, landmarks, confidence_score, notes)` - Save analysis
+- `create_analysis(db, patient_id, image_id, landmarks, confidence_score)` - Save analysis
 - `get_analysis(db, analysis_id)` - Get analysis by ID
 - `get_patient_latest_analysis(db, patient_id)` - Get latest analysis
 - `get_image_analyses(db, image_id)` - Get analyses for image
