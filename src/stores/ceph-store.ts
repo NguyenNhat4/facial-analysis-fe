@@ -1,8 +1,8 @@
 import { create } from "zustand";
-import { LandmarksData, LandmarksObject, MeasurementResult, Point } from "../types";
-import { landmarksArrayToObject, calculateAllMeasurements } from "../../../core/diagnostic/calculations";
+import { LandmarksData, LandmarksObject, MeasurementResult, Point } from "@/utils/cephalometric-types";
+import { landmarksArrayToObject, calculateAllMeasurements } from "@/core/diagnostic/calculations";
 import { predictLandmarks } from "@/api/ai-prediction";
-import { usePatientStore } from "../../patient/stores/patient-store";
+import { usePatientStore } from "@/stores/patient-store";
 
 interface CephState {
   loadedImageSrc: string | null;

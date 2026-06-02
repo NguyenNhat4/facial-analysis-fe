@@ -1,6 +1,6 @@
 import React from "react";
 import { User } from "lucide-react";
-import { usePatientStore } from "../stores/patient-store";
+import { usePatientStore } from "@/stores/patient-store";
 
 export const PatientRecordHeader: React.FC = () => {
   const { patientData } = usePatientStore();

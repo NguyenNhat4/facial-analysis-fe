@@ -1,5 +1,5 @@
 import { calculateAngle, calculateAngleBetweenLines, calculateDistance, calculatePointToLineDistance, calculatePointToLineSignedDistance, Point } from "../geometry/math-utils";
-import { LandmarksObject, MeasurementConfig } from "../../features/cephalometric/types";
+import { LandmarksObject, MeasurementConfig } from "@/utils/cephalometric-types";
 
 // Helper function to get classification
 export function getClassification(value: number, mean: number, sd: number): "normal" | "moderate" | "severe" {

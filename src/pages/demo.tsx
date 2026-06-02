@@ -5,16 +5,17 @@ import {
   TabsContent,
 } from "../components/ui/tabs";
 import { useSimpleToast } from "../hooks/useSimpleToast";
-import { useImageManager } from "../features/imaging/hooks/useImageManager";
+import { useImageManager } from "@/hooks/useImageManager";
 import AIThinkingModal from "../components/ai-thinking-modal";
 import ToastNotification from "../components/toast-notification";
-import { PatientRecordHeader } from "../features/patient";
-import { ImagingUploadHeader, ImagingUploadGrid } from "../features/imaging";
+import { PatientRecordHeader } from "@/components/patient-record-header";
+import { ImagingUploadHeader } from "@/components/imaging-upload-header";
+import { ImagingUploadGrid } from "@/components/imaging-upload-grid";
 import { ClinicalAnalysisSidebar } from "@/components/clinical-analysis-sidebar";
 import { MedicalHeader } from "@/components/medical-header";
 import { MedicalFooter } from "@/components/medical-footer";
 import { getPatientById } from "@/api/patient-mocks";
-import { usePatientStore } from "../features/patient/stores/patient-store";
+import { usePatientStore } from "@/stores/patient-store";
 const IMAGE_TYPE_MAPPING: Record<
   ImageType,
   {

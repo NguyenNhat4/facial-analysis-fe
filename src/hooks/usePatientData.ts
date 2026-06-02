@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { usePatientStore } from "../stores/patient-store";
+import { usePatientStore } from "@/stores/patient-store";
 
 export function usePatientData() {
   const { patientData, setPatientData } = usePatientStore();

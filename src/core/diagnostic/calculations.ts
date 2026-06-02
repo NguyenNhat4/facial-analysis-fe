@@ -1,4 +1,4 @@
-import { Landmark, LandmarksObject, MeasurementResult } from "../../features/cephalometric/types";
+import { Landmark, LandmarksObject, MeasurementResult } from "@/utils/cephalometric-types";
 import { MEASUREMENTS_CONFIG, getClassification, getSignificance } from "./measurements-config";
 
 /**

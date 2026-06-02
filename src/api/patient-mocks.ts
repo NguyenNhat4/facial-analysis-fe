@@ -1,4 +1,4 @@
-import type { PatientData } from "@/features/patient/stores/patient-store";
+import type { PatientData } from "@/stores/patient-store";
 
 type PatientSummary = Pick<
   PatientData,

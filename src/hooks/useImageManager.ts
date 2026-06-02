@@ -1,6 +1,6 @@
 import { useState } from "react";
-import { useImageStore } from "../stores/image-store";
-import type { ImageType } from "../stores/image-store";
+import { useImageStore } from "@/stores/image-store";
+import type { ImageType } from "@/stores/image-store";
 
 export function useImageManager(showToast: (message: string, type?: "success" | "error" | "info") => void) {
   const {

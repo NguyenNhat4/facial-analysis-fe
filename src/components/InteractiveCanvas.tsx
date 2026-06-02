@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { useCephStore } from "../stores/ceph-store";
-import { drawMeasurementGuides } from "../utils/canvas-drawing";
-import { MEASUREMENTS_CONFIG } from "../../../core/diagnostic/measurements-config";
-import { useZoomPan } from "../hooks/useZoomPan";
-import { cn } from "../../../lib/utils";
+import { useCephStore } from "@/stores/ceph-store";
+import { drawMeasurementGuides } from "@/utils/canvas-drawing";
+import { MEASUREMENTS_CONFIG } from "@/core/diagnostic/measurements-config";
+import { useZoomPan } from "@/hooks/useZoomPan";
+import { cn } from "@/utils/tailwind";
 
 export function InteractiveCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);

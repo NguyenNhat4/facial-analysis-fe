@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
-import { useCephStore } from "../stores/ceph-store";
-import { usePatientStore } from "../../patient/stores/patient-store";
+import { useCephStore } from "@/stores/ceph-store";
+import { usePatientStore } from "@/stores/patient-store";
 import { Ruler } from "lucide-react";
-import { evaluatePatientDataFromMeasurements } from "../utils/evaluation-utils";
-import { MEASUREMENTS_CONFIG } from "../../../core/diagnostic/measurements-config";
+import { evaluatePatientDataFromMeasurements } from "@/utils/evaluation-utils";
+import { MEASUREMENTS_CONFIG } from "@/core/diagnostic/measurements-config";
 
 export function MeasurementTable() {
   const measurements = useCephStore((state) => state.measurements);

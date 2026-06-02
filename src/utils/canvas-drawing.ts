@@ -1,5 +1,5 @@
-import { Point } from "../../../core/geometry/math-utils";
-import { LandmarksObject } from "../types";
+import { Point } from "@/core/geometry/math-utils";
+import { LandmarksObject } from "@/utils/cephalometric-types";
 
 /**
  * Find intersection of two infinite lines

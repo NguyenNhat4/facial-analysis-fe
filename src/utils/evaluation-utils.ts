@@ -1,9 +1,9 @@
-import { MeasurementResult } from "../types";
+import { MeasurementResult } from "@/utils/cephalometric-types";
 import {
   CEPHALOMETRIC_EVALUATION_CONFIG,
   EvaluationStatus,
   IndexCategory,
-} from "../data/evaluation-config";
+} from "@/utils/evaluation-config";
 
 const INDEX_KEY_ALIASES: Record<string, string> = {
   i_MP: "i/MP",

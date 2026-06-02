@@ -1,5 +1,5 @@
-import { Landmark } from "@/features/cephalometric/types";
-import { getCanonicalSymbol } from "@/features/cephalometric/landmark-registry";
+import { Landmark } from "@/utils/cephalometric-types";
+import { getCanonicalSymbol } from "@/utils/landmark-registry";
 
 /**
  * Normalize landmark symbols from backend API format to frontend format.

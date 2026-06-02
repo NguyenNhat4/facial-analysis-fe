@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { useLocation } from "wouter";
 import { MedicalHeader } from "@/components/medical-header";
 import { patientSummaries, getPatientById } from "@/api/patient-mocks";
-import { usePatientStore } from "@/features/patient/stores/patient-store";
+import { usePatientStore } from "@/stores/patient-store";
 
 const PatientListPage = () => {
   const [, setLocation] = useLocation();
