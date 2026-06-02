@@ -14,7 +14,7 @@ import { ImagingUploadGrid } from "@/components/imaging-upload-grid";
 import { ClinicalAnalysisSidebar } from "@/components/clinical-analysis-sidebar";
 import { MedicalHeader } from "@/components/medical-header";
 import { MedicalFooter } from "@/components/medical-footer";
-import { getPatientById } from "@/api/patient-mocks";
+import { usePatient } from "@/api/patients";
 import { usePatientStore } from "@/stores/patient-store";
 const IMAGE_TYPE_MAPPING: Record<
   ImageType,
@@ -69,15 +69,25 @@ const DemoPage = () => {
     totalAnalysisCount
   } = useImageManager(showToast);
 
+  const { data: patient, isLoading: isLoadingPatient, isError } = usePatient(params?.id);
+
   useEffect(() => {
-    if (!params?.id) return;
-    const patient = getPatientById(params.id);
-    if (!patient) {
+    if (isError) {
       showToast("Patient not found", "error");
       return;
     }
-    setPatientData(patient);
-  }, [params?.id, setPatientData, showToast]);
+    if (patient) {
+      setPatientData({
+        patientId: patient.id.toString(),
+        name: patient.fullname,
+        firstName: patient.fullname.split(" ")[0] || "",
+        lastName: patient.fullname.split(" ").slice(1).join(" ") || "",
+        phone: patient.phone,
+        consultationDate: new Date(patient.consultation_date).toLocaleDateString("en-GB"),
+        note: patient.notes?.[0]?.content || "",
+      });
+    }
+  }, [patient, isError, setPatientData, showToast]);
 
   // AI Thinking Modal state
   const [showAIThinking, setShowAIThinking] = useState(false);

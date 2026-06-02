@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useImageStore } from "@/stores/image-store";
 import type { ImageType } from "@/stores/image-store";
+import { usePatientStore } from "@/stores/patient-store";
+import { useSaveAnalysis } from "@/api/patients";
 
 export function useImageManager(showToast: (message: string, type?: "success" | "error" | "info") => void) {
   const {
@@ -21,6 +23,9 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
     setImagePreviewUrl,
   } = useImageStore();
 
+  const { patientData } = usePatientStore();
+  const saveAnalysisMutation = useSaveAnalysis();
+
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [loadingCards, setLoadingCards] = useState<{ [key: string]: boolean }>({});
@@ -28,21 +33,34 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
   const handleFileUpload = (imageId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-
-    
-
-    if (imagePreviewUrls[imageId]) {
-      URL.revokeObjectURL(imagePreviewUrls[imageId]);
-    }
+      if (imagePreviewUrls[imageId]) {
+        URL.revokeObjectURL(imagePreviewUrls[imageId]);
+      }
 
       setUploadedFile(imageId, file);
-
       const previewUrl = URL.createObjectURL(file);
       setImagePreviewUrl(imageId, previewUrl);
-
       setUploadedImage(imageId, true);
 
-      showToast("Upload thành công", "success");
+      // Upload to backend
+      if (patientData.patientId) {
+        const formData = new FormData();
+        formData.append("patient_id", patientData.patientId);
+        formData.append("image_file", file);
+        // Optional: you can append a default confidence score or landmarks here if needed
+        // formData.append("confidence_score", "1.0");
+
+        saveAnalysisMutation.mutate(formData, {
+          onSuccess: () => {
+            showToast("Upload & Save successful", "success");
+          },
+          onError: () => {
+            showToast("Failed to save analysis to backend", "error");
+          }
+        });
+      } else {
+        showToast("Upload local success (no patient ID)", "success");
+      }
     }
   };
 

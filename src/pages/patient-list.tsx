@@ -1,31 +1,36 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { MedicalHeader } from "@/components/medical-header";
-import { patientSummaries, getPatientById } from "@/api/patient-mocks";
+import { usePatients, useSearchPatients } from "@/api/patients";
 import { usePatientStore } from "@/stores/patient-store";
+import { CreatePatientModal } from "@/components/create-patient-modal";
+import { useDebounce } from "@/hooks/useDebounce";
 
 const PatientListPage = () => {
   const [, setLocation] = useLocation();
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebounce(query, 300);
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const { setPatientData } = usePatientStore();
 
-  const filteredPatients = useMemo(() => {
-    const trimmed = query.trim().toLowerCase();
-    if (!trimmed) return patientSummaries;
-    return patientSummaries.filter((patient) =>
-      [patient.name, patient.phone, patient.patientId]
-        .join(" ")
-        .toLowerCase()
-        .includes(trimmed)
-    );
-  }, [query]);
+  const { data: allPatients, isLoading: isLoadingAll } = usePatients();
+  const { data: searchResults, isLoading: isLoadingSearch } = useSearchPatients(debouncedQuery);
 
-  const handleRowClick = (patientId: string) => {
-    const patient = getPatientById(patientId);
-    if (patient) {
-      setPatientData(patient);
-    }
-    setLocation(`/patients/${patientId}/upload`);
+  const displayedPatients = debouncedQuery ? searchResults : allPatients;
+  const isLoading = debouncedQuery ? isLoadingSearch : isLoadingAll;
+
+  const handleRowClick = (patient: any) => {
+    // Map backend patient to frontend PatientData
+    setPatientData({
+      patientId: patient.id.toString(),
+      name: patient.fullname,
+      firstName: patient.fullname.split(" ")[0] || "",
+      lastName: patient.fullname.split(" ").slice(1).join(" ") || "",
+      phone: patient.phone,
+      consultationDate: new Date(patient.consultation_date).toLocaleDateString("en-GB"),
+      note: patient.notes?.[0]?.content || "",
+    });
+    setLocation(`/patients/${patient.id}/upload`);
   };
 
   return (
@@ -42,6 +47,7 @@ const PatientListPage = () => {
             <button
               className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
               type="button"
+              onClick={() => setIsCreateModalOpen(true)}
             >
               Create new patient +
             </button>
@@ -71,31 +77,40 @@ const PatientListPage = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
-                {filteredPatients.map((patient) => (
-                  <tr
-                    key={patient.patientId}
-                    className="cursor-pointer hover:bg-blue-50"
-                    onClick={() => handleRowClick(patient.patientId)}
-                  >
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-gray-900">
-                        {patient.name}
-                      </div>
-                      <div className="text-xs text-gray-400">
-                        #{patient.patientId}
-                      </div>
+                {isLoading ? (
+                  <tr>
+                    <td colSpan={5} className="px-6 py-8 text-center text-gray-500">
+                      Loading patients...
                     </td>
-                    <td className="px-6 py-4 text-gray-600">{patient.phone}</td>
-                    <td className="px-6 py-4 text-gray-600">
-                      {patient.consultationDate}
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">
-                      Photo upload → Analysis → Treatment → Complete
-                    </td>
-                    <td className="px-6 py-4 text-gray-600">{patient.note}</td>
                   </tr>
-                ))}
-                {filteredPatients.length === 0 && (
+                ) : displayedPatients && displayedPatients.length > 0 ? (
+                  displayedPatients.map((patient) => (
+                    <tr
+                      key={patient.id}
+                      className="cursor-pointer hover:bg-blue-50"
+                      onClick={() => handleRowClick(patient)}
+                    >
+                      <td className="px-6 py-4">
+                        <div className="font-semibold text-gray-900">
+                          {patient.fullname}
+                        </div>
+                        <div className="text-xs text-gray-400">
+                          #{patient.id}
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">{patient.phone}</td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {new Date(patient.consultation_date).toLocaleDateString("en-GB")}
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        Photo upload → Analysis → Treatment → Complete
+                      </td>
+                      <td className="px-6 py-4 text-gray-600">
+                        {patient.notes && patient.notes.length > 0 ? patient.notes[0].content : ""}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
                   <tr>
                     <td
                       colSpan={5}
@@ -110,7 +125,10 @@ const PatientListPage = () => {
           </div>
         </div>
       </div>
-
+      <CreatePatientModal 
+        isOpen={isCreateModalOpen} 
+        onClose={() => setIsCreateModalOpen(false)} 
+      />
     </div>
   );
 };

@@ -22,19 +22,19 @@ interface PatientState {
 }
 
 const initialPatientData: PatientData = {
-  patientId: "DEMO-2025-001",
-  name: "NHẬT NGUYỄN",
-  firstName: "NGUYỄN",
-  lastName: "NHẬT",
-  email: "635107103@st.utc2.edu.v",
-  sex: "male",
-  dateOfBirth: "01/01/1990",
-  consultationDate: "07/07/2025",
-  phone: "0909090909909",
-  address: "Click to edit",
-  chiefComplaint: "Click to edit",
-  diagnose: "Click to edit",
-  note: "Click to edit",
+  patientId: "",
+  name: "",
+  firstName: "",
+  lastName: "",
+  email: "",
+  sex: "",
+  dateOfBirth: "",
+  consultationDate: "",
+  phone: "",
+  address: "",
+  chiefComplaint: "",
+  diagnose: "",
+  note: "",
 };
 
 export const usePatientStore = create<PatientState>((set) => ({
