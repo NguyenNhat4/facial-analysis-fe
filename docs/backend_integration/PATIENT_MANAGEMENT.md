@@ -31,6 +31,7 @@ The backend now supports complete patient information management with the follow
 - file_path (VARCHAR(512)) - Storage file path
 - image_type (VARCHAR(50)) - Type of image (lateral, panoramic, etc.)
 - upload_date (DATETIME) - Upload timestamp
+- image_url (Property) - Auto-generated relative URL to serve the image file
 ```
 
 #### `analyses` Table
@@ -112,7 +113,12 @@ Request body (all fields optional):
 **DELETE** `/api/v1/patients/{patient_id}`
 
 #### Get Patient Images
-**GET** `/api/v1/patients/{patient_id}/images`
+**GET** `/api/v1/images/patient/{patient_id}` (Note: Now includes `image_url` in the response)
+
+#### Get Image File
+**GET** `/api/v1/images/{image_id}/file`
+
+Returns the raw image file bytes (`FileResponse`). This URL is exposed as the `image_url` property in image responses and can be used directly in `<img>` src attributes.
 
 #### Search Patients
 **GET** `/api/v1/patients/search?q=Nguyen`
