@@ -14,9 +14,9 @@ import {
   Target,
 } from "lucide-react";
 
-import { useCephStore } from "../features/cephalometric/stores/ceph-store";
-import { InteractiveCanvas } from "../features/cephalometric/components/InteractiveCanvas";
-import { MeasurementTable } from "../features/cephalometric/components/MeasurementTable";
+import { useCephStore } from "@/stores/ceph-store";
+import { InteractiveCanvas } from "@/components/InteractiveCanvas";
+import { MeasurementTable } from "@/components/MeasurementTable";
 
 // Import styles from reference project
 import "./ceph-analysis.css";

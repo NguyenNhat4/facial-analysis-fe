@@ -1,16 +1,21 @@
-import React, { useState } from "react";
-import { useLocation } from "wouter";
+import React, { useEffect, useState } from "react";
+import { useLocation, useRoute } from "wouter";
 import {
   Tabs,
   TabsContent,
 } from "../components/ui/tabs";
 import { useSimpleToast } from "../hooks/useSimpleToast";
-import { useImageManager } from "../features/imaging/hooks/useImageManager";
+import { useImageManager } from "@/hooks/useImageManager";
 import AIThinkingModal from "../components/ai-thinking-modal";
 import ToastNotification from "../components/toast-notification";
-import { PatientRecordHeader } from "../features/patient";
-import { ImagingUploadHeader, ImagingUploadGrid } from "../features/imaging";
-import { ClinicalAnalysisSidebar, MedicalHeader, MedicalFooter } from "../features/analysis";
+import { PatientRecordHeader } from "@/components/patient-record-header";
+import { ImagingUploadHeader } from "@/components/imaging-upload-header";
+import { ImagingUploadGrid } from "@/components/imaging-upload-grid";
+import { ClinicalAnalysisSidebar } from "@/components/clinical-analysis-sidebar";
+import { MedicalHeader } from "@/components/medical-header";
+import { MedicalFooter } from "@/components/medical-footer";
+import { usePatient } from "@/api/patients";
+import { usePatientStore } from "@/stores/patient-store";
 const IMAGE_TYPE_MAPPING: Record<
   ImageType,
   {
@@ -22,17 +27,17 @@ const IMAGE_TYPE_MAPPING: Record<
   lateral: {
     name: "Lateral Cephalometric",
     category: "Radiographic Imaging",
-    icon: "assets/upload_logo/logo-lateral-xray.png",
+    icon: "/assets/upload_logo/logo-lateral-xray.png",
   },
   frontal: {
     name: "Frontal Portrait",
     category: "Clinical Photography",
-    icon: "assets/upload_logo/frontal-face.png",
+    icon: "/assets/upload_logo/frontal-face.png",
   },
   profile: {
     name: "Lateral Profile",
     category: "Clinical Photography",
-    icon: "assets/upload_logo/logo-side-face.png",
+    icon: "/assets/upload_logo/logo-side-face.png",
   },
 };
 export type ImageType =
@@ -42,9 +47,11 @@ export type ImageType =
 
 const DemoPage = () => {
   const [location, setLocation] = useLocation();
+  const [, params] = useRoute("/patients/:id/upload");
   const [activeTab, setActiveTab] = useState("record");
 
   const { toast, showToast, hideToast } = useSimpleToast();
+  const { setPatientData } = usePatientStore();
   
  
   const {
@@ -61,6 +68,26 @@ const DemoPage = () => {
     availableAnalysisCount,
     totalAnalysisCount
   } = useImageManager(showToast);
+
+  const { data: patient, isLoading: isLoadingPatient, isError } = usePatient(params?.id);
+
+  useEffect(() => {
+    if (isError) {
+      showToast("Patient not found", "error");
+      return;
+    }
+    if (patient) {
+      setPatientData({
+        patientId: patient.id.toString(),
+        name: patient.fullname,
+        firstName: patient.fullname.split(" ")[0] || "",
+        lastName: patient.fullname.split(" ").slice(1).join(" ") || "",
+        phone: patient.phone,
+        consultationDate: new Date(patient.consultation_date).toLocaleDateString("en-GB"),
+        note: patient.notes?.[0]?.content || "",
+      });
+    }
+  }, [patient, isError, setPatientData, showToast]);
 
   // AI Thinking Modal state
   const [showAIThinking, setShowAIThinking] = useState(false);
@@ -204,7 +231,7 @@ const DemoPage = () => {
         </div>
       </div>
 
-      <MedicalFooter />
+      {/* <MedicalFooter /> */}
 
       {/* AI Thinking Modal */}
       <AIThinkingModal
