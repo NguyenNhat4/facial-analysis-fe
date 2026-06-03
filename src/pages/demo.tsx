@@ -16,34 +16,37 @@ import { MedicalHeader } from "@/components/medical-header";
 import { MedicalFooter } from "@/components/medical-footer";
 import { usePatient } from "@/api/patients";
 import { usePatientStore } from "@/stores/patient-store";
-const IMAGE_TYPE_MAPPING: Record<
-  ImageType,
+export type ImageType = "lateral" | "profile" | "frontal";
+
+const UPLOAD_CATEGORIES = [
   {
-    name?: string;
-    category?: string;
-    icon?: string;
-  }
-> = {
-  lateral: {
-    name: "Lateral Cephalometric",
-    category: "Radiographic Imaging",
-    icon: "/assets/upload_logo/logo-lateral-xray.png",
+    title: "Radiographic Imaging",
+    subtitle: "Digital X-Ray Acquisitions",
+    items: [
+      {
+        id: "lateral" as ImageType,
+        name: "Lateral Cephalometric",
+        icon: "/assets/upload_logo/logo-lateral-xray.png",
+      },
+    ],
   },
-  frontal: {
-    name: "Frontal Portrait",
-    category: "Clinical Photography",
-    icon: "/assets/upload_logo/frontal-face.png",
+  {
+    title: "Clinical Photography",
+    subtitle: "Facial Analysis Images",
+    items: [
+      {
+        id: "frontal" as ImageType,
+        name: "Frontal Portrait",
+        icon: "/assets/upload_logo/frontal-face.png",
+      },
+      {
+        id: "profile" as ImageType,
+        name: "Lateral Profile",
+        icon: "/assets/upload_logo/logo-side-face.png",
+      },
+    ],
   },
-  profile: {
-    name: "Lateral Profile",
-    category: "Clinical Photography",
-    icon: "/assets/upload_logo/logo-side-face.png",
-  },
-};
-export type ImageType =
-  | "lateral"
-  | "profile"
-  | "frontal";
+];
 
 const DemoPage = () => {
   const [location, setLocation] = useLocation();
@@ -52,8 +55,8 @@ const DemoPage = () => {
 
   const { toast, showToast, hideToast } = useSimpleToast();
   const { setPatientData } = usePatientStore();
-  
- 
+
+
   const {
     currentFolderName,
     uploadedImages,
@@ -95,37 +98,7 @@ const DemoPage = () => {
     "facial" | "ceph"
   >("facial");
 
-  // Generate upload categories from IMAGE_TYPE_MAPPING
-  const uploadCategories = (() => {
-    const categories: {
-      [key: string]: { title: string; subtitle: string; items: any[] };
-    } = {};
-
-    Object.entries(IMAGE_TYPE_MAPPING).forEach(
-      ([type, config]: [string, any]) => {
-        if (!categories[config.category]) {
-          categories[config.category] = {
-            title: config.category,
-            subtitle:
-              config.category === "Radiographic Imaging"
-                ? "Digital X-Ray Acquisitions"
-                : config.category === "Clinical Photography"
-                ? "Facial Analysis Images"
-                : "3D Dental Scans",
-            items: [],
-          };
-        }
-
-        categories[config.category].items.push({
-          id: type,
-          name: config.name,
-          icon: config.icon,
-        });
-      }
-    );
-
-    return Object.values(categories);
-  })();
+  const uploadCategories = UPLOAD_CATEGORIES;
 
 
 
@@ -237,7 +210,7 @@ const DemoPage = () => {
       <AIThinkingModal
         isOpen={showAIThinking}
         analysisType={currentAnalysis}
-        onComplete={() => {}} // No-op since modal closes immediately via parent
+        onComplete={() => { }} // No-op since modal closes immediately via parent
       />
 
       {/* Toast Notification */}
