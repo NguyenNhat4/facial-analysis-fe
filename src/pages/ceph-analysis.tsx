@@ -17,6 +17,7 @@ import {
 import { useCephStore } from "@/stores/ceph-store";
 import { InteractiveCanvas } from "@/components/InteractiveCanvas";
 import { MeasurementTable } from "@/components/MeasurementTable";
+import { MedicalHeader } from "@/components/medical-header";
 
 // Import styles from reference project
 import "./ceph-analysis.css";
@@ -77,29 +78,12 @@ export default function CephAnalysisPage() {
   return (
     <div className="ceph-analysis-page min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25" style={{ backgroundColor: "#fafbfc" }}>
       {/* Header */}
-      <header className="bg-white border-b-2 border-blue-100 shadow-sm">
-        <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-24">
-            <div className="flex items-center space-x-6">
-              <Button
-                onClick={() => setLocation("/")}
-                className="bg-gray-100 hover:bg-gray-200 text-gray-700"
-              >
-                <ArrowLeft className="w-5 h-5 mr-2" />
-                Quay lại
-              </Button>
-              <div className="border-l-2 border-blue-200 pl-6">
-                <h1 className="text-xl font-bold text-gray-800">
-                  Phân Tích Cephalometric
-                </h1>
-                <p className="text-sm text-gray-600 font-medium">
-                  AI-Powered Ceph Analysis
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <MedicalHeader 
+        onNavigation={setLocation} 
+        title="Phân Tích Cephalometric" 
+        subtitle="AI-Powered Ceph Analysis"
+        maxWidthClass="max-w-[1800px]"
+      />
 
       {/* Main Content */}
       <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-8">

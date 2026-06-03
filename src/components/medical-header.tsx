@@ -1,17 +1,26 @@
 import React from "react";
 
 interface MedicalHeaderProps {
-  onNavigation: (path: string) => void;
+  onNavigation?: (path: string) => void;
   showBackButton?: boolean;
+  title?: React.ReactNode;
+  subtitle?: React.ReactNode;
+  maxWidthClass?: string;
 }
 
-export const MedicalHeader: React.FC<MedicalHeaderProps> = ({ onNavigation, showBackButton = true }) => {
+export const MedicalHeader: React.FC<MedicalHeaderProps> = ({ 
+  onNavigation, 
+  showBackButton = true,
+  title = "Facial Harmony Analysis System",
+  subtitle = "AI-Powered Clinical Diagnostics",
+  maxWidthClass = "max-w-7xl"
+}) => {
   return (
     <header className="bg-white border-b-2 border-blue-100 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className={`${maxWidthClass} mx-auto px-4 sm:px-6 lg:px-8`}>
         <div className="flex justify-between items-center h-24">
           <div className="flex items-center space-x-6">
-            {showBackButton && (
+            {showBackButton && onNavigation && (
               <button
                 onClick={() => onNavigation("/")}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg border-2 border-blue-700 hover:bg-blue-700 hover:shadow-md active:scale-95 transition-all duration-200 ease-out"
@@ -32,12 +41,12 @@ export const MedicalHeader: React.FC<MedicalHeaderProps> = ({ onNavigation, show
                 Back
               </button>
             )}
-            <div className="border-l-2 border-blue-200 pl-6 border-l-0">
+            <div className={`${showBackButton && onNavigation ? 'border-l-2 border-blue-200 pl-6' : ''}`}>
               <h1 className="text-xl font-bold text-gray-800">
-                Facial Harmony Analysis System
+                {title}
               </h1>
               <p className="text-sm text-gray-600 font-medium">
-                AI-Powered Clinical Diagnostics
+                {subtitle}
               </p>
             </div>
           </div>
