@@ -9,11 +9,9 @@ import { useImageManager } from "@/hooks/useImageManager";
 import AIThinkingModal from "../components/ai-thinking-modal";
 import ToastNotification from "../components/toast-notification";
 import { PatientRecordHeader } from "@/components/patient-record-header";
-import { ImagingUploadHeader } from "@/components/imaging-upload-header";
 import { ImagingUploadGrid } from "@/components/imaging-upload-grid";
 import { ClinicalAnalysisSidebar } from "@/components/clinical-analysis-sidebar";
 import { MedicalHeader } from "@/components/medical-header";
-import { MedicalFooter } from "@/components/medical-footer";
 import { usePatient } from "@/api/patients";
 import { usePatientStore } from "@/stores/patient-store";
 export type ImageType = "lateral" | "profile" | "frontal";
@@ -171,12 +169,6 @@ const DemoPage = () => {
             <TabsContent value="record" className="p-8">
               {/* Upload Section */}
               <div className="mb-10">
-                <ImagingUploadHeader
-                  currentFolderName={currentFolderName}
-                  isLoading={isLoading}
-                  loadingProgress={loadingProgress}
-                  onFakeLoadImages={fakeLoadImages}
-                />
 
                 <div className="flex gap-8">
                   <ImagingUploadGrid
