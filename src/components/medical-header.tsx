@@ -1,6 +1,7 @@
 import React from "react";
 
 interface MedicalHeaderProps {
+  previousPage?: string;
   onNavigation?: (path: string) => void;
   showBackButton?: boolean;
   title?: React.ReactNode;
@@ -8,8 +9,9 @@ interface MedicalHeaderProps {
   maxWidthClass?: string;
 }
 
-export const MedicalHeader: React.FC<MedicalHeaderProps> = ({ 
-  onNavigation, 
+export const MedicalHeader: React.FC<MedicalHeaderProps> = ({
+  previousPage,
+  onNavigation,
   showBackButton = true,
   title = "Facial Harmony Analysis System",
   subtitle = "AI-Powered Clinical Diagnostics",
@@ -20,9 +22,17 @@ export const MedicalHeader: React.FC<MedicalHeaderProps> = ({
       <div className={`${maxWidthClass} mx-auto px-4 sm:px-6 lg:px-8`}>
         <div className="flex justify-between items-center h-24">
           <div className="flex items-center space-x-6">
-            {showBackButton && onNavigation && (
+            {showBackButton && (
               <button
-                onClick={() => onNavigation("/")}
+                onClick={() => {
+                  if (previousPage && onNavigation && previousPage !== window.location.pathname) {
+                    onNavigation(previousPage);
+                  } else if (window.history.length > 1) {
+                    window.history.back();
+                  } else if (onNavigation) {
+                    onNavigation("/");
+                  }
+                }}
                 className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white font-semibold rounded-lg border-2 border-blue-700 hover:bg-blue-700 hover:shadow-md active:scale-95 transition-all duration-200 ease-out"
               >
                 <svg

@@ -78,9 +78,10 @@ export default function CephAnalysisPage() {
   return (
     <div className="ceph-analysis-page min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25" style={{ backgroundColor: "#fafbfc" }}>
       {/* Header */}
-      <MedicalHeader 
-        onNavigation={setLocation} 
-        title="Phân Tích Cephalometric" 
+      <MedicalHeader
+        onNavigation={setLocation}
+        previousPage={location}
+        title="Phân Tích Cephalometric"
         subtitle="AI-Powered Ceph Analysis"
         maxWidthClass="max-w-[1800px]"
       />
