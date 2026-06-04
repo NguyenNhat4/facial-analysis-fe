@@ -96,6 +96,7 @@ const DemoPage = () => {
     }
   }, [patient, isError, setPatientData, showToast]);
 
+  console.log("patientImages", patientImages);
   useEffect(() => {
     if (patientImages) {
       if (patientImages.xray) {
@@ -136,33 +137,6 @@ const DemoPage = () => {
   ) => {
     setCurrentAnalysis(analysisType);
     setShowAIThinking(true);
-
-    if (analysisType === "ceph") {
-      const patientId = patientData.patientId;
-      const imageId = imageIds["lateral"];
-
-      if (patientId && imageId) {
-        saveAnalysisMutation.mutate(
-          {
-            patient_id: Number(patientId),
-            image_id: imageId,
-          },
-          {
-            onSuccess: () => {
-              setTimeout(() => {
-                setShowAIThinking(false);
-                handleNavigation(path, withImages);
-              }, 1000);
-            },
-            onError: (err: any) => {
-              setShowAIThinking(false);
-              showToast(`Failed to save analysis: ${err.message}`, "error");
-            }
-          }
-        );
-        return;
-      }
-    }
 
     // Close modal after 1s and navigate
     setTimeout(() => {

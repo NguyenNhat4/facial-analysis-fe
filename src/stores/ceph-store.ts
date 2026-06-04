@@ -35,7 +35,7 @@ interface CephState {
   // Data actions
   setLandmarksData: (data: LandmarksData) => void;
   loadJsonData: (data: LandmarksData) => void;
-  uploadAndDetect: (file: File) => Promise<void>;
+  uploadAndDetect: (imageId: number, imageType?: string) => Promise<void>;
   reset: () => void;
   updateLandmark: (symbol: string, x: number, y: number) => void;
   recalculateMeasurements: (gender?: string) => void;
@@ -138,10 +138,10 @@ export const useCephStore = create<CephState>((set, get) => ({
     get().setLandmarksData(data);
   },
 
-  uploadAndDetect: async (file: File) => {
+  uploadAndDetect: async (imageId: number, imageType: string = "xray") => {
     set({ loading: true, error: null });
     try {
-      const data = await predictLandmarks(file);
+      const data = await predictLandmarks(imageId, imageType);
 
       // Update store
       get().setLandmarksData(data);

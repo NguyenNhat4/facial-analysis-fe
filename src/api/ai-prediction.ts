@@ -26,9 +26,7 @@ export const getMockPrediction = (): Promise<LandmarksData> => {
   });
 };
 
-export const predictLandmarks = async (file: File): Promise<LandmarksData> => {
-  const formData = new FormData();
-  formData.append("file", file);
+export const predictLandmarks = async (imageId: number, imageType: string = "xray"): Promise<LandmarksData> => {
 
   const rawApiUrl = import.meta.env.VITE_DENTAL_TREATMENT_API_URL || "http://localhost:8000";
   const apiUrl = toSpaceRuntimeUrl(rawApiUrl);
@@ -45,8 +43,8 @@ export const predictLandmarks = async (file: File): Promise<LandmarksData> => {
   try {
     const response = await fetch(`${apiUrl}/api/predict`, {
       method: "POST",
-      headers: headers,
-      body: formData,
+      headers: { ...headers, "Content-Type": "application/json" },
+      body: JSON.stringify({ image_id: imageId, image_type: imageType }),
       signal: controller.signal,
     });
     clearTimeout(timeoutId);

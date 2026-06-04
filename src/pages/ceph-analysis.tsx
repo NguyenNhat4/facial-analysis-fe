@@ -61,10 +61,14 @@ export default function CephAnalysisPage() {
         setLoadedImageSrc(lateral);
 
         try {
-          const response = await fetch(lateral);
-          const blob = await response.blob();
-          const file = new File([blob], "lateral.jpg", { type: blob.type });
-          await uploadAndDetect(file);
+          // Extract image ID from the URL (e.g. .../api/v1/images/1/file)
+          const match = lateral.match(/\/images\/(\d+)\/file/);
+          if (match && match[1]) {
+            const imageId = parseInt(match[1], 10);
+            await uploadAndDetect(imageId, "xray");
+          } else {
+            console.error("Could not extract image ID from URL:", lateral);
+          }
         } catch (err: any) {
           console.error("Failed to load image for detection:", err);
           alert(err.message || "Lỗi tải ảnh");
