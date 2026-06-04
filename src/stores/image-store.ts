@@ -16,6 +16,7 @@ interface ImageState {
   uploadedImages: { [key: string]: boolean };
   uploadedFiles: { [key: string]: File | null };
   imagePreviewUrls: { [key: string]: string };
+  imageIds: { [key: string]: number | null };
 
   setLocalImages: (images: any | ((prev: any) => any)) => void;
   setCurrentCaseId: (id: string | null) => void;
@@ -28,6 +29,7 @@ interface ImageState {
   setUploadedImage: (imageId: string, isUploaded: boolean) => void;
   setUploadedFile: (imageId: string, file: File | null) => void;
   setImagePreviewUrl: (imageId: string, url: string) => void;
+  setImageId: (imageId: string, id: number | null) => void;
 
   reset: () => void;
 }
@@ -51,6 +53,11 @@ export const useImageStore = create<ImageState>((set) => ({
     profile: "",
     frontal: "",
   },
+  imageIds: {
+    lateral: null,
+    profile: null,
+    frontal: null,
+  },
 
   setLocalImages: (images) => set((state) => ({
     localImages: typeof images === "function" ? images(state.localImages) : images
@@ -69,6 +76,9 @@ export const useImageStore = create<ImageState>((set) => ({
   })),
   setImagePreviewUrl: (imageId, url) => set((state) => ({
     imagePreviewUrls: { ...state.imagePreviewUrls, [imageId]: url }
+  })),
+  setImageId: (imageId, id) => set((state) => ({
+    imageIds: { ...state.imageIds, [imageId]: id }
   })),
 
   reset: () => {
@@ -91,6 +101,11 @@ export const useImageStore = create<ImageState>((set) => ({
         lateral: "",
         profile: "",
         frontal: "",
+      },
+      imageIds: {
+        lateral: null,
+        profile: null,
+        frontal: null,
       },
     });
   }

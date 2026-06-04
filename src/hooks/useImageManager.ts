@@ -2,9 +2,22 @@ import { useState } from "react";
 import { useImageStore } from "@/stores/image-store";
 import type { ImageType } from "@/stores/image-store";
 import { usePatientStore } from "@/stores/patient-store";
-import { useSaveAnalysis } from "@/api/patients";
+import { useUploadImage } from "@/api/patients";
 
-export function useImageManager(showToast: (message: string, type?: "success" | "error" | "info") => void) {
+interface LocalImageDetail {
+  input: File;
+  inputPreview: string;
+  outputPreview: string;
+  outputFilename: string;
+}
+
+type LocalImagesMap = {
+  [key in ImageType]?: LocalImageDetail;
+};
+
+export function useImageManager(
+  showToast: (message: string, type?: "success" | "error" | "info") => void
+) {
   const {
     localImages,
     currentCaseId,
@@ -12,6 +25,7 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
     uploadedImages,
     uploadedFiles,
     imagePreviewUrls,
+    imageIds,
     setLocalImages,
     setCurrentCaseId,
     setCurrentFolderName,
@@ -21,62 +35,78 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
     setUploadedImage,
     setUploadedFile,
     setImagePreviewUrl,
+    setImageId,
   } = useImageStore();
+  console.log("hello world");
 
+  console.log("uploaded images", uploadedImages);
   const { patientData } = usePatientStore();
-  const saveAnalysisMutation = useSaveAnalysis();
+  const uploadImageMutation = useUploadImage();
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
-  const [loadingCards, setLoadingCards] = useState<{ [key: string]: boolean }>({});
+  const [loadingCards, setLoadingCards] = useState<Record<string, boolean>>({});
 
-  const handleFileUpload = (imageId: string, event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      if (imagePreviewUrls[imageId]) {
-        URL.revokeObjectURL(imagePreviewUrls[imageId]);
-      }
+  /**
+   * Performs the upload of an image file to the backend
+   */
+  const uploadFile = (imageId: string, file: File) => {
+    // Revoke previous local object URL to avoid memory leaks
+    if (imagePreviewUrls[imageId]) {
+      URL.revokeObjectURL(imagePreviewUrls[imageId]);
+    }
 
-      setUploadedFile(imageId, file);
-      const previewUrl = URL.createObjectURL(file);
-      setImagePreviewUrl(imageId, previewUrl);
-      setUploadedImage(imageId, true);
+    // Save locally
+    setUploadedFile(imageId, file);
+    const previewUrl = URL.createObjectURL(file);
+    setImagePreviewUrl(imageId, previewUrl);
+    setUploadedImage(imageId, true);
 
-      // Upload to backend
-      if (patientData.patientId) {
-        const formData = new FormData();
-        formData.append("patient_id", patientData.patientId);
-        formData.append("image_file", file);
-        // Optional: you can append a default confidence score or landmarks here if needed
-        // formData.append("confidence_score", "1.0");
-
-        saveAnalysisMutation.mutate(formData, {
-          onSuccess: () => {
-            showToast("Upload & Save successful", "success");
+    // Save to backend if patient ID exists
+    if (patientData.patientId) {
+      uploadImageMutation.mutate(
+        {
+          patientId: patientData.patientId,
+          file,
+          imageType: imageId === "lateral" ? "xray" : imageId,
+        },
+        {
+          onSuccess: (dbImage) => {
+            setImageId(imageId, dbImage.id);
+            showToast("Upload successful", "success");
           },
-          onError: () => {
-            showToast("Failed to save analysis to backend", "error");
-          }
-        });
-      } else {
-        showToast("Upload local success (no patient ID)", "success");
-      }
+          onError: (err: any) => {
+            showToast(`Failed to upload image: ${err.message}`, "error");
+          },
+        }
+      );
+    } else {
+      showToast("Upload local success (no patient ID)", "success");
     }
   };
 
+  /**
+   * Prompts the browser's native file selector and handles the file selection
+   */
   const handleImageUpload = (imageId: string) => {
     const input = document.createElement("input");
     input.type = "file";
     input.accept = "image/*";
+
     input.onchange = (event) => {
       const target = event.target as HTMLInputElement;
-      if (target.files && target.files[0]) {
-        handleFileUpload(imageId, { target: { files: target.files } } as any);
+      const file = target.files?.[0];
+      if (file) {
+        uploadFile(imageId, file);
       }
     };
+
     input.click();
   };
 
+  /**
+   * Removes an uploaded image and releases resources
+   */
   const handleRemoveImage = (imageId: string, event: React.MouseEvent) => {
     event.stopPropagation();
     if (imagePreviewUrls[imageId]) {
@@ -87,75 +117,16 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
     setUploadedImage(imageId, false);
   };
 
-  const fakeLoadImages = async () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.multiple = true;
-    input.accept = "image/*,.stl,.obj,.ply";
 
-    input.onchange = async (event) => {
-      const target = event.target as HTMLInputElement;
-      const files = Array.from(target.files || []);
-      if (files.length === 0) return;
-
-      setIsLoading(true);
-      setLoadingProgress(0);
-      setLoadingCards({});
-      setUploadedImages({ lateral: false, profile: false, frontal: false });
-      setImagePreviewUrls({ lateral: "", profile: "", frontal: "" });
-      setCurrentCaseId(null);
-      setCurrentFolderName(null);
-
-      try {
-        // Process uploaded files
-        let processedCount = 0;
-        const imageTypes: ImageType[] = ["lateral", "profile", "frontal"];
-
-        for (let i = 0; i < files.length && i < imageTypes.length; i++) {
-          const file = files[i];
-          const imageType = imageTypes[i];
-          
-          setLoadingCards((prev) => ({ ...prev, [imageType]: true }));
-          await new Promise((resolve) => setTimeout(resolve, 500 + Math.random() * 800));
-
-          const inputPreviewUrl = URL.createObjectURL(file);
-          const outputPath = `/assets/outputs/${file.name}`;
-
-          setImagePreviewUrl(imageType, inputPreviewUrl);
-          setLocalImages((prev: any) => ({
-            ...prev,
-            [imageType]: {
-              input: file,
-              inputPreview: inputPreviewUrl,
-              outputPreview: outputPath,
-              outputFilename: outputPath.split("/").pop() || "output.png",
-            },
-          }));
-
-          setUploadedImage(imageType, true);
-          setLoadingCards((prev) => ({ ...prev, [imageType]: false }));
-
-          processedCount++;
-          setLoadingProgress((processedCount / files.length) * 100);
-        }
-      } catch (error) {
-        console.error("Failed to process uploaded images:", error);
-      }
-
-      setTimeout(() => {
-        setIsLoading(false);
-        setLoadingProgress(0);
-      }, 300);
-    };
-
-    input.click();
-  };
 
   const hasFaceImages = uploadedImages.frontal && uploadedImages.profile;
   const hasCephImages = uploadedImages.lateral;
-  const hasAllImages = uploadedImages.frontal && uploadedImages.profile && uploadedImages.lateral;
-  
-  const availableAnalysisCount = [hasFaceImages, hasCephImages].filter(Boolean).length;
+  const hasAllImages =
+    uploadedImages.frontal && uploadedImages.profile && uploadedImages.lateral;
+
+  const availableAnalysisCount = [hasFaceImages, hasCephImages].filter(
+    Boolean
+  ).length;
   const totalAnalysisCount = 2;
 
   return {
@@ -168,14 +139,13 @@ export function useImageManager(showToast: (message: string, type?: "success" | 
     isLoading,
     loadingProgress,
     loadingCards,
-    handleFileUpload,
+    uploadFile,
     handleImageUpload,
     handleRemoveImage,
-    fakeLoadImages,
     hasFaceImages,
     hasCephImages,
     hasAllImages,
     availableAnalysisCount,
-    totalAnalysisCount
+    totalAnalysisCount,
   };
 }

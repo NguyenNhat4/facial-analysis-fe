@@ -33,6 +33,20 @@ export interface ImageBackendResponse {
   file_path: string;
   image_type: string;
   upload_date: string;
+  image_url?: string;
+}
+
+export function getAbsoluteImageUrl(relativeUrl?: string): string {
+  if (!relativeUrl) return "";
+  // API_BASE is e.g. "http://localhost:8000/api/v1"
+  // relativeUrl is e.g. "/api/v1/images/1/file"
+  // To avoid duplicate /api/v1 we can extract the origin.
+  try {
+    const baseUrl = new URL(API_BASE);
+    return `${baseUrl.origin}${relativeUrl}`;
+  } catch (e) {
+    return `http://localhost:8000${relativeUrl}`;
+  }
 }
 
 export interface AnalysisBackendResponse {
@@ -95,8 +109,14 @@ export function useCreatePatient() {
 
 // --- Images & Analysis ---
 
+export interface PatientImagesResponse {
+  xray?: ImageBackendResponse;
+  frontal?: ImageBackendResponse;
+  profile?: ImageBackendResponse;
+}
+
 export function usePatientImages(patientId: number | string | undefined) {
-  return useQuery<ImageBackendResponse[]>({
+  return useQuery<PatientImagesResponse>({
     queryKey: [API_BASE, "patients", patientId, "images"],
     queryFn: async () => {
       const res = await apiRequest("GET", `${API_BASE}/patients/${patientId}/images`);
@@ -117,22 +137,38 @@ export function usePatientAnalyses(patientId: number | string | undefined) {
   });
 }
 
-export function useSaveAnalysis() {
+export function useUploadImage() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (formData: FormData) => {
-      // Need to use native fetch for FormData to avoid Content-Type: application/json
-      const res = await fetch(`${API_BASE}/analysis/save`, {
+    mutationFn: async ({ patientId, file, imageType }: { patientId: number | string; file: File; imageType: string }) => {
+      const formData = new FormData();
+      formData.append("file", file);
+      const url = `${API_BASE}/images/upload?patient_id=${patientId}&image_type=${imageType}`;
+      const res = await fetch(url, {
         method: "POST",
         body: formData,
       });
       if (!res.ok) {
-        throw new Error(`Failed to save analysis: ${res.statusText}`);
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Failed to upload image: ${res.statusText}`);
       }
+      return res.json() as Promise<ImageBackendResponse>;
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: [API_BASE, "patients", variables.patientId, "images"] });
+    },
+  });
+}
+
+export function useSaveAnalysis() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { patient_id: number; image_id: number; landmarks?: any[]; confidence_score?: number }) => {
+      const res = await apiRequest("POST", `${API_BASE}/analysis/save`, data);
       return res.json();
     },
     onSuccess: (_, variables) => {
-      const patientId = variables.get("patient_id");
+      const patientId = variables.patient_id;
       if (patientId) {
         queryClient.invalidateQueries({ queryKey: [API_BASE, "analysis", "patient", patientId] });
         queryClient.invalidateQueries({ queryKey: [API_BASE, "patients", patientId, "images"] });

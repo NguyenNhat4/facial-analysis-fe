@@ -12,8 +12,9 @@ import { PatientRecordHeader } from "@/components/patient-record-header";
 import { ImagingUploadGrid } from "@/components/imaging-upload-grid";
 import { ClinicalAnalysisSidebar } from "@/components/clinical-analysis-sidebar";
 import { MedicalHeader } from "@/components/medical-header";
-import { usePatient } from "@/api/patients";
+import { usePatient, usePatientImages, getAbsoluteImageUrl, useSaveAnalysis } from "@/api/patients";
 import { usePatientStore } from "@/stores/patient-store";
+import { useImageStore } from "@/stores/image-store";
 export type ImageType = "lateral" | "profile" | "frontal";
 
 const UPLOAD_CATEGORIES = [
@@ -52,7 +53,7 @@ const DemoPage = () => {
   const [activeTab, setActiveTab] = useState("record");
 
   const { toast, showToast, hideToast } = useSimpleToast();
-  const { setPatientData } = usePatientStore();
+  const { patientData, setPatientData } = usePatientStore();
 
 
   const {
@@ -64,13 +65,18 @@ const DemoPage = () => {
     loadingCards,
     handleImageUpload,
     handleRemoveImage,
-    fakeLoadImages,
     hasFaceImages,
     availableAnalysisCount,
     totalAnalysisCount
   } = useImageManager(showToast);
 
   const { data: patient, isLoading: isLoadingPatient, isError } = usePatient(params?.id);
+  const { data: patientImages } = usePatientImages(params?.id);
+  const { reset, setUploadedImage, setImagePreviewUrl, setImageId, imageIds } = useImageStore();
+
+  useEffect(() => {
+    reset();
+  }, [params?.id, reset]);
 
   useEffect(() => {
     if (isError) {
@@ -90,11 +96,33 @@ const DemoPage = () => {
     }
   }, [patient, isError, setPatientData, showToast]);
 
+  useEffect(() => {
+    if (patientImages) {
+      if (patientImages.xray) {
+        setUploadedImage("lateral", true);
+        setImagePreviewUrl("lateral", getAbsoluteImageUrl(patientImages.xray.image_url));
+        setImageId("lateral", patientImages.xray.id);
+      }
+      if (patientImages.frontal) {
+        setUploadedImage("frontal", true);
+        setImagePreviewUrl("frontal", getAbsoluteImageUrl(patientImages.frontal.image_url));
+        setImageId("frontal", patientImages.frontal.id);
+      }
+      if (patientImages.profile) {
+        setUploadedImage("profile", true);
+        setImagePreviewUrl("profile", getAbsoluteImageUrl(patientImages.profile.image_url));
+        setImageId("profile", patientImages.profile.id);
+      }
+    }
+  }, [patientImages, setUploadedImage, setImagePreviewUrl, setImageId]);
+
   // AI Thinking Modal state
   const [showAIThinking, setShowAIThinking] = useState(false);
   const [currentAnalysis, setCurrentAnalysis] = useState<
     "facial" | "ceph"
   >("facial");
+
+  const saveAnalysisMutation = useSaveAnalysis();
 
   const uploadCategories = UPLOAD_CATEGORIES;
 
@@ -109,15 +137,37 @@ const DemoPage = () => {
     setCurrentAnalysis(analysisType);
     setShowAIThinking(true);
 
+    if (analysisType === "ceph") {
+      const patientId = patientData.patientId;
+      const imageId = imageIds["lateral"];
+      
+      if (patientId && imageId) {
+        saveAnalysisMutation.mutate(
+          {
+            patient_id: Number(patientId),
+            image_id: imageId,
+          },
+          {
+            onSuccess: () => {
+              setTimeout(() => {
+                setShowAIThinking(false);
+                handleNavigation(path, withImages);
+              }, 1000);
+            },
+            onError: (err: any) => {
+              setShowAIThinking(false);
+              showToast(`Failed to save analysis: ${err.message}`, "error");
+            }
+          }
+        );
+        return;
+      }
+    }
+
     // Close modal after 1s and navigate
     setTimeout(() => {
       setShowAIThinking(false);
-      // Navigate after modal closes
-      if (withImages) {
-        handleNavigation(path, true);
-      } else {
-        handleNavigation(path);
-      }
+      handleNavigation(path, withImages);
     }, 1000); // 1 second delay
   };
 
