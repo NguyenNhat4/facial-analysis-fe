@@ -33,20 +33,11 @@ export interface ImageBackendResponse {
   file_path: string;
   image_type: string;
   upload_date: string;
-  image_url?: string;
 }
 
-export function getAbsoluteImageUrl(relativeUrl?: string): string {
-  if (!relativeUrl) return "";
-  // API_BASE is e.g. "http://localhost:8000/api/v1"
-  // relativeUrl is e.g. "/api/v1/images/1/file"
-  // To avoid duplicate /api/v1 we can extract the origin.
-  try {
-    const baseUrl = new URL(API_BASE);
-    return `${baseUrl.origin}${relativeUrl}`;
-  } catch (e) {
-    return `http://localhost:8000${relativeUrl}`;
-  }
+export function getAbsoluteImageUrl(imageId?: number | string): string {
+  if (!imageId) return "";
+  return `${API_BASE}/images/${imageId}/file`;
 }
 
 export interface AnalysisBackendResponse {

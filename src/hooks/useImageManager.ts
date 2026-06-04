@@ -37,9 +37,6 @@ export function useImageManager(
     setImagePreviewUrl,
     setImageId,
   } = useImageStore();
-  console.log("hello world");
-
-  console.log("uploaded images", uploadedImages);
   const { patientData } = usePatientStore();
   const uploadImageMutation = useUploadImage();
 

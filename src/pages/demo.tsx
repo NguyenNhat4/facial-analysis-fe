@@ -100,17 +100,17 @@ const DemoPage = () => {
     if (patientImages) {
       if (patientImages.xray) {
         setUploadedImage("lateral", true);
-        setImagePreviewUrl("lateral", getAbsoluteImageUrl(patientImages.xray.image_url));
+        setImagePreviewUrl("lateral", getAbsoluteImageUrl(patientImages.xray.id));
         setImageId("lateral", patientImages.xray.id);
       }
       if (patientImages.frontal) {
         setUploadedImage("frontal", true);
-        setImagePreviewUrl("frontal", getAbsoluteImageUrl(patientImages.frontal.image_url));
+        setImagePreviewUrl("frontal", getAbsoluteImageUrl(patientImages.frontal.id));
         setImageId("frontal", patientImages.frontal.id);
       }
       if (patientImages.profile) {
         setUploadedImage("profile", true);
-        setImagePreviewUrl("profile", getAbsoluteImageUrl(patientImages.profile.image_url));
+        setImagePreviewUrl("profile", getAbsoluteImageUrl(patientImages.profile.id));
         setImageId("profile", patientImages.profile.id);
       }
     }
@@ -140,7 +140,7 @@ const DemoPage = () => {
     if (analysisType === "ceph") {
       const patientId = patientData.patientId;
       const imageId = imageIds["lateral"];
-      
+
       if (patientId && imageId) {
         saveAnalysisMutation.mutate(
           {
