@@ -109,7 +109,7 @@ export interface PatientImagesResponse {
 
 export function usePatientImages(patientId: number | string | undefined) {
   return useQuery<PatientImagesResponse>({
-    queryKey: [API_BASE, "patients", patientId, "images"],
+    queryKey: [API_BASE, "patients", String(patientId), "images"],
     queryFn: async () => {
       const res = await apiRequest("GET", `${API_BASE}/patients/${patientId}/images`);
       return res.json();
@@ -120,7 +120,7 @@ export function usePatientImages(patientId: number | string | undefined) {
 
 export function usePatientAnalyses(patientId: number | string | undefined) {
   return useQuery<AnalysisBackendResponse[]>({
-    queryKey: [API_BASE, "analysis", "patient", patientId],
+    queryKey: [API_BASE, "analysis", "patient", String(patientId)],
     queryFn: async () => {
       const res = await apiRequest("GET", `${API_BASE}/analysis/patient/${patientId}`);
       return res.json();
@@ -147,7 +147,7 @@ export function useUploadImage() {
       return res.json() as Promise<ImageBackendResponse>;
     },
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({ queryKey: [API_BASE, "patients", variables.patientId, "images"] });
+      queryClient.invalidateQueries({ queryKey: [API_BASE, "patients", String(variables.patientId), "images"] });
     },
   });
 }
@@ -155,15 +155,20 @@ export function useUploadImage() {
 export function useSaveAnalysis() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (data: { patient_id: number; image_id: number; landmarks?: any[]; confidence_score?: number }) => {
-      const res = await apiRequest("POST", `${API_BASE}/analysis/save`, data);
-      return res.json();
+    mutationFn: async (data: { patient_id: number; image_id: number; landmarks?: any[]; confidence_score?: number; analysis_id?: number; status?: string }) => {
+      if (data.analysis_id) {
+        const res = await apiRequest("PUT", `${API_BASE}/analysis/${data.analysis_id}`, data);
+        return res.json();
+      } else {
+        const res = await apiRequest("POST", `${API_BASE}/analysis/save`, data);
+        return res.json();
+      }
     },
     onSuccess: (_, variables) => {
       const patientId = variables.patient_id;
       if (patientId) {
-        queryClient.invalidateQueries({ queryKey: [API_BASE, "analysis", "patient", patientId] });
-        queryClient.invalidateQueries({ queryKey: [API_BASE, "patients", patientId, "images"] });
+        queryClient.invalidateQueries({ queryKey: [API_BASE, "analysis", "patient", String(patientId)] });
+        queryClient.invalidateQueries({ queryKey: [API_BASE, "patients", String(patientId), "images"] });
       }
     },
   });
