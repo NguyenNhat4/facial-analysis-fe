@@ -129,8 +129,40 @@ export const ImagingUploadGrid: React.FC<ImagingUploadGridProps> = ({
   onImageUpload,
   onRemoveImage,
 }) => {
+  const [showFutureModal, setShowFutureModal] = React.useState(false);
+
+  const handleUploadClick = (id: string) => {
+    if (id === "frontal" || id === "profile") {
+      setShowFutureModal(true);
+    } else {
+      onImageUpload(id);
+    }
+  };
+
   return (
     <div className="flex-1 space-y-10">
+      {/* Future Feature Modal */}
+      {showFutureModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full mx-4 border border-blue-100 transform transition-all">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                <Upload className="w-8 h-8 text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800 mb-2">Tính năng đang phát triển</h3>
+              <p className="text-gray-600 mb-6">
+                Chức năng phân tích khuôn mặt và hình ảnh góc nghiêng (profile) đang được phát triển.
+              </p>
+              <button
+                onClick={() => setShowFutureModal(false)}
+                className="px-6 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition-colors shadow-md"
+              >
+                Đã hiểu
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {uploadCategories.map((category, categoryIndex) => (
         <div key={categoryIndex} className="space-y-6">
           {/* Category Header */}
@@ -158,7 +190,7 @@ export const ImagingUploadGrid: React.FC<ImagingUploadGridProps> = ({
                 isLoading={!!loadingCards[item.id]}
                 isUploaded={!!uploadedImages[item.id]}
                 previewUrl={imagePreviewUrls[item.id]}
-                onUpload={onImageUpload}
+                onUpload={handleUploadClick}
                 onRemove={onRemoveImage}
               />
             ))}
