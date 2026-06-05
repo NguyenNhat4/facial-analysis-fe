@@ -101,17 +101,17 @@ const DemoPage = () => {
     if (patientImages) {
       if (patientImages.xray) {
         setUploadedImage("lateral", true);
-        setImagePreviewUrl("lateral", getAbsoluteImageUrl(patientImages.xray.id));
+        setImagePreviewUrl("lateral", getAbsoluteImageUrl(patientImages.xray.id, patientImages.xray.upload_date));
         setImageId("lateral", patientImages.xray.id);
       }
       if (patientImages.frontal) {
         setUploadedImage("frontal", true);
-        setImagePreviewUrl("frontal", getAbsoluteImageUrl(patientImages.frontal.id));
+        setImagePreviewUrl("frontal", getAbsoluteImageUrl(patientImages.frontal.id, patientImages.frontal.upload_date));
         setImageId("frontal", patientImages.frontal.id);
       }
       if (patientImages.profile) {
         setUploadedImage("profile", true);
-        setImagePreviewUrl("profile", getAbsoluteImageUrl(patientImages.profile.id));
+        setImagePreviewUrl("profile", getAbsoluteImageUrl(patientImages.profile.id, patientImages.profile.upload_date));
         setImageId("profile", patientImages.profile.id);
       }
     }

@@ -35,9 +35,10 @@ export interface ImageBackendResponse {
   upload_date: string;
 }
 
-export function getAbsoluteImageUrl(imageId?: number | string): string {
+export function getAbsoluteImageUrl(imageId?: number | string, cacheBuster?: string | number): string {
   if (!imageId) return "";
-  return `${API_BASE}/images/${imageId}/file`;
+  const url = `${API_BASE}/images/${imageId}/file`;
+  return cacheBuster ? `${url}?t=${new Date(cacheBuster).getTime() || cacheBuster}` : url;
 }
 
 export interface AnalysisBackendResponse {
