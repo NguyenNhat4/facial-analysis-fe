@@ -27,7 +27,7 @@ const initialPatientData: PatientData = {
   firstName: "",
   lastName: "",
   email: "",
-  sex: "",
+  sex: "male",
   dateOfBirth: "",
   consultationDate: "",
   phone: "",
