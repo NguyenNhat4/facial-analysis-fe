@@ -167,3 +167,24 @@ export function useSaveAnalysis() {
     },
   });
 }
+
+export function useDeleteImage() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ imageId, patientId }: { imageId: number; patientId?: number | string }) => {
+      const res = await fetch(`${API_BASE}/images/${imageId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Failed to delete image: ${res.statusText}`);
+      }
+      return true;
+    },
+    onSuccess: (_, variables) => {
+      if (variables.patientId) {
+        queryClient.invalidateQueries({ queryKey: [API_BASE, "patients", variables.patientId, "images"] });
+      }
+    },
+  });
+}

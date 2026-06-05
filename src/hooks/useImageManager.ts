@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useImageStore } from "@/stores/image-store";
 import type { ImageType } from "@/stores/image-store";
 import { usePatientStore } from "@/stores/patient-store";
-import { useUploadImage } from "@/api/patients";
+import { useUploadImage, useDeleteImage } from "@/api/patients";
 
 interface LocalImageDetail {
   input: File;
@@ -39,6 +39,7 @@ export function useImageManager(
   } = useImageStore();
   const { patientData } = usePatientStore();
   const uploadImageMutation = useUploadImage();
+  const deleteImageMutation = useDeleteImage();
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -106,12 +107,30 @@ export function useImageManager(
    */
   const handleRemoveImage = (imageId: string, event: React.MouseEvent) => {
     event.stopPropagation();
+
+    // Remove from backend if exists
+    const dbImageId = imageIds[imageId];
+    if (dbImageId) {
+      deleteImageMutation.mutate(
+        { imageId: dbImageId, patientId: patientData.patientId },
+        {
+          onSuccess: () => {
+            showToast("Image removed successfully", "success");
+          },
+          onError: (err: any) => {
+            showToast(`Failed to remove image: ${err.message}`, "error");
+          },
+        }
+      );
+    }
+
     if (imagePreviewUrls[imageId]) {
       URL.revokeObjectURL(imagePreviewUrls[imageId]);
     }
     setUploadedFile(imageId, null);
     setImagePreviewUrl(imageId, "");
     setUploadedImage(imageId, false);
+    setImageId(imageId, null);
   };
 
 
