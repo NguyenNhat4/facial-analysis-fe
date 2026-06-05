@@ -18,6 +18,7 @@ import { useCephStore } from "@/stores/ceph-store";
 import { InteractiveCanvas } from "@/components/InteractiveCanvas";
 import { MeasurementTable } from "@/components/MeasurementTable";
 import { MedicalHeader } from "@/components/medical-header";
+import { PatientRecordHeader } from "@/components/patient-record-header";
 
 // Import styles from reference project
 import "./ceph-analysis.css";
@@ -38,14 +39,6 @@ export default function CephAnalysisPage() {
     landmarksData
   } = useCephStore();
 
-  // Demo patient data
-  const patientData = {
-    name: "DEMO PATIENT",
-    id: "P2025-001",
-    date: new Date().toLocaleDateString("en-GB"),
-    age: 28,
-    gender: "Demo Case",
-  };
 
   // Parse query parameters for lateral image and trigger API
   const processedLateralRef = useRef<string | null>(null);
@@ -93,31 +86,9 @@ export default function CephAnalysisPage() {
       {/* Main Content */}
       <div className="max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Patient Info Card */}
-        <Card className="mb-8 border-2 border-blue-200 shadow-lg">
-          <CardHeader className="bg-gradient-to-r from-blue-700 to-blue-800 text-white">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-                  <User className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <CardTitle className="text-xl font-bold text-white">
-                    {patientData.name}
-                  </CardTitle>
-                  <p className="text-blue-100 text-sm">
-                    ID: {patientData.id} • {patientData.date}
-                  </p>
-                </div>
-              </div>
-              <div className="text-right">
-                <Badge className="bg-emerald-500 text-white">
-                  <Activity className="w-3 h-3 mr-1" />
-                  Active Session
-                </Badge>
-              </div>
-            </div>
-          </CardHeader>
-        </Card>
+        <div className="rounded-xl overflow-hidden shadow-lg mb-8 border-2 border-blue-200">
+          <PatientRecordHeader />
+        </div>
 
         {/* Content Wrapper - Reference style grid */}
         <div className="content-wrapper">

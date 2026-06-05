@@ -32,7 +32,7 @@ export const PatientRecordHeader: React.FC = () => {
               {patientData.diagnose || "Clinical Record"}
             </p>
             <p className="text-blue-200 text-sm">
-              Case ID: #{patientData.patientId || "N/A"} • Consultation Date:{" "}
+              Patient ID: #{patientData.patientId || "N/A"} • Consultation Date:{" "}
               {patientData.consultationDate || new Date().toLocaleDateString("en-GB")}
             </p>
           </div>
