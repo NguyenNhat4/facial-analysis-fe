@@ -39,6 +39,7 @@ interface CephState {
   reset: () => void;
   updateLandmark: (symbol: string, x: number, y: number) => void;
   recalculateMeasurements: (gender?: string) => void;
+  clearAnalysis: () => void;
 }
 
 export const useCephStore = create<CephState>((set, get) => ({
@@ -174,6 +175,16 @@ export const useCephStore = create<CephState>((set, get) => ({
 
   reset: () => {
     set({ hoveredMeasurement: null });
+  },
+
+  clearAnalysis: () => {
+    set({
+      landmarksData: null,
+      landmarksObj: null,
+      measurements: {},
+      loadedImageSrc: null,
+      error: null
+    });
   },
 
   recalculateMeasurements: (gender?: string) => {

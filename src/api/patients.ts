@@ -99,6 +99,38 @@ export function useCreatePatient() {
   });
 }
 
+export function useUpdatePatient() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: number; data: Partial<CreatePatientRequest> }) => {
+      const res = await apiRequest("PUT", `${API_BASE}/patients/${id}`, data);
+      return res.json() as Promise<PatientBackendResponse>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [API_BASE, "patients"] });
+    },
+  });
+}
+
+export function useDeletePatient() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      const res = await fetch(`${API_BASE}/patients/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Failed to delete patient: ${res.statusText}`);
+      }
+      return true;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: [API_BASE, "patients"] });
+    },
+  });
+}
+
 // --- Images & Analysis ---
 
 export interface PatientImagesResponse {
@@ -190,6 +222,35 @@ export function useDeleteImage() {
     onSuccess: (_, variables) => {
       if (variables.patientId) {
         queryClient.invalidateQueries({ queryKey: [API_BASE, "patients", variables.patientId, "images"] });
+      }
+    },
+  });
+}
+
+export function useDeleteImageAnalyses() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ imageId, patientId }: { imageId: number; patientId?: number | string }) => {
+      const res = await fetch(`${API_BASE}/analysis/image/${imageId}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.detail || `Failed to delete analysis: ${res.statusText}`);
+      }
+      return true;
+    },
+    onSuccess: (_, variables) => {
+      if (variables.patientId) {
+        const queryKey = [API_BASE, "analysis", "patient", String(variables.patientId)];
+        
+        // Optimistically remove the analysis from the cache so it doesn't stay stale
+        queryClient.setQueryData<AnalysisBackendResponse[]>(queryKey, (oldData) => {
+          if (!oldData) return [];
+          return oldData.filter((analysis) => analysis.image_id !== variables.imageId);
+        });
+
+        queryClient.invalidateQueries({ queryKey });
       }
     },
   });

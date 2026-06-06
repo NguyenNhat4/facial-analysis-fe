@@ -2,7 +2,8 @@ import { useState } from "react";
 import { useImageStore } from "@/stores/image-store";
 import type { ImageType } from "@/stores/image-store";
 import { usePatientStore } from "@/stores/patient-store";
-import { useUploadImage, useDeleteImage } from "@/api/patients";
+import { useCephStore } from "@/stores/ceph-store";
+import { useUploadImage, useDeleteImage, useDeleteImageAnalyses } from "@/api/patients";
 
 interface LocalImageDetail {
   input: File;
@@ -40,6 +41,7 @@ export function useImageManager(
   const { patientData } = usePatientStore();
   const uploadImageMutation = useUploadImage();
   const deleteImageMutation = useDeleteImage();
+  const deleteImageAnalysesMutation = useDeleteImageAnalyses();
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -111,15 +113,25 @@ export function useImageManager(
     // Remove from backend if exists
     const dbImageId = imageIds[imageId];
     if (dbImageId) {
-      deleteImageMutation.mutate(
+      console.log("Removing image and its analysis. Image ID:", dbImageId);
+      // Delete analysis first, then delete image
+      deleteImageAnalysesMutation.mutate(
         { imageId: dbImageId, patientId: patientData.patientId },
         {
-          onSuccess: () => {
-            showToast("Image removed successfully", "success");
-          },
-          onError: (err: any) => {
-            showToast(`Failed to remove image: ${err.message}`, "error");
-          },
+          onSettled: () => {
+            console.log("Analysis deletion settled, now deleting image...");
+            deleteImageMutation.mutate(
+              { imageId: dbImageId, patientId: patientData.patientId },
+              {
+                onSuccess: () => {
+                  showToast("Image removed successfully", "success");
+                },
+                onError: (err: any) => {
+                  showToast(`Failed to remove image: ${err.message}`, "error");
+                },
+              }
+            );
+          }
         }
       );
     }
@@ -131,6 +143,10 @@ export function useImageManager(
     setImagePreviewUrl(imageId, "");
     setUploadedImage(imageId, false);
     setImageId(imageId, null);
+
+    if (imageId === "lateral") {
+      useCephStore.getState().clearAnalysis();
+    }
   };
 
 
