@@ -1,9 +1,11 @@
 import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { MedicalHeader } from "@/components/medical-header";
-import { usePatients, useSearchPatients } from "@/api/patients";
+import { usePatients, useSearchPatients, useDeletePatient } from "@/api/patients";
+import { Trash2 } from "lucide-react";
 import { usePatientStore } from "@/stores/patient-store";
 import { CreatePatientModal } from "@/components/create-patient-modal";
+import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
 import { useDebounce } from "@/hooks/useDebounce";
 
 const PatientListPage = () => {
@@ -11,7 +13,10 @@ const PatientListPage = () => {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [patientToDelete, setPatientToDelete] = useState<number | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const { setPatientData } = usePatientStore();
+  const deletePatientMutation = useDeletePatient();
 
   const { data: allPatients, isLoading: isLoadingAll } = usePatients();
   const { data: searchResults, isLoading: isLoadingSearch } = useSearchPatients(debouncedQuery);
@@ -31,6 +36,21 @@ const PatientListPage = () => {
       note: patient.notes?.[0]?.content || "",
     });
     setLocation(`/patients/${patient.id}/upload`);
+  };
+
+  const confirmDeletePatient = async () => {
+    if (patientToDelete === null) return;
+    setIsDeleting(true);
+
+    try {
+      await deletePatientMutation.mutateAsync(patientToDelete);
+      setPatientToDelete(null);
+    } catch (err) {
+      console.error("Failed to delete patient data:", err);
+      alert("Failed to completely delete patient data.");
+    } finally {
+      setIsDeleting(false);
+    }
   };
 
   return (
@@ -72,8 +92,8 @@ const PatientListPage = () => {
                   <th className="px-6 py-3">Full Name</th>
                   <th className="px-6 py-3">Phone</th>
                   <th className="px-6 py-3">Consultation Date</th>
-                  <th className="px-6 py-3">Progress</th>
                   <th className="px-6 py-3">Note</th>
+                  <th className="px-6 py-3 text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -103,10 +123,19 @@ const PatientListPage = () => {
                         {new Date(patient.consultation_date).toLocaleDateString("en-GB")}
                       </td>
                       <td className="px-6 py-4 text-gray-600">
-                        Photo upload → Analysis → Treatment → Complete
-                      </td>
-                      <td className="px-6 py-4 text-gray-600">
                         {patient.notes && patient.notes.length > 0 ? patient.notes[0].content : ""}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPatientToDelete(patient.id);
+                          }}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                          title="Delete Patient"
+                        >
+                          <Trash2 className="w-5 h-5" />
+                        </button>
                       </td>
                     </tr>
                   ))
@@ -125,9 +154,15 @@ const PatientListPage = () => {
           </div>
         </div>
       </div>
-      <CreatePatientModal 
-        isOpen={isCreateModalOpen} 
-        onClose={() => setIsCreateModalOpen(false)} 
+      <CreatePatientModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
+      <DeleteConfirmationModal
+        isOpen={patientToDelete !== null}
+        onClose={() => !isDeleting && setPatientToDelete(null)}
+        onConfirm={confirmDeletePatient}
+        isDeleting={isDeleting}
       />
     </div>
   );

@@ -13,6 +13,8 @@ export interface PatientBackendResponse {
   id: number;
   fullname: string;
   phone: string;
+  date_of_birth?: string;
+  chief_complaint?: string;
   consultation_date: string;
   created_at: string;
   updated_at: string;
@@ -22,6 +24,8 @@ export interface PatientBackendResponse {
 export interface CreatePatientRequest {
   fullname: string;
   phone: string;
+  date_of_birth?: string;
+  chief_complaint?: string;
   consultation_date: string;
   note?: string;
 }
@@ -116,12 +120,27 @@ export function useDeletePatient() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`${API_BASE}/patients/${id}`, {
+      // Fetch images for patient to delete them explicitly
+      const res = await fetch(`${API_BASE}/patients/${id}/images`);
+      if (res.ok) {
+        const images = await res.json();
+        const imageIds = [images.xray?.id, images.frontal?.id, images.profile?.id].filter(Boolean);
+        
+        for (const imageId of imageIds) {
+          // Delete image analysis
+          await fetch(`${API_BASE}/analysis/image/${imageId}`, { method: 'DELETE' });
+          // Delete image
+          await fetch(`${API_BASE}/images/${imageId}`, { method: 'DELETE' });
+        }
+      }
+
+      // Finally delete the patient
+      const delRes = await fetch(`${API_BASE}/patients/${id}`, {
         method: "DELETE",
       });
-      if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        throw new Error(errData.detail || `Failed to delete patient: ${res.statusText}`);
+      if (!delRes.ok) {
+        const errData = await delRes.json().catch(() => ({}));
+        throw new Error(errData.detail || `Failed to delete patient: ${delRes.statusText}`);
       }
       return true;
     },
@@ -243,7 +262,7 @@ export function useDeleteImageAnalyses() {
     onSuccess: (_, variables) => {
       if (variables.patientId) {
         const queryKey = [API_BASE, "analysis", "patient", String(variables.patientId)];
-        
+
         // Optimistically remove the analysis from the cache so it doesn't stay stale
         queryClient.setQueryData<AnalysisBackendResponse[]>(queryKey, (oldData) => {
           if (!oldData) return [];

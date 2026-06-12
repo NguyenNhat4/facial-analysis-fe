@@ -12,6 +12,8 @@ export const CreatePatientModal: React.FC<CreatePatientModalProps> = ({
 }) => {
   const [fullname, setFullname] = useState("");
   const [phone, setPhone] = useState("");
+  const [dateOfBirth, setDateOfBirth] = useState("");
+  const [chiefComplaint, setChiefComplaint] = useState("");
   const [consultationDate, setConsultationDate] = useState(
     new Date().toISOString().slice(0, 10)
   );
@@ -27,6 +29,8 @@ export const CreatePatientModal: React.FC<CreatePatientModalProps> = ({
       {
         fullname,
         phone,
+        date_of_birth: dateOfBirth ? dateOfBirth + "T00:00:00" : undefined,
+        chief_complaint: chiefComplaint || undefined,
         consultation_date: consultationDate + "T00:00:00",
         note,
       },
@@ -35,6 +39,8 @@ export const CreatePatientModal: React.FC<CreatePatientModalProps> = ({
           onClose();
           setFullname("");
           setPhone("");
+          setDateOfBirth("");
+          setChiefComplaint("");
           setNote("");
         },
         onError: (err) => {
@@ -81,6 +87,29 @@ export const CreatePatientModal: React.FC<CreatePatientModalProps> = ({
               onChange={(e) => setPhone(e.target.value)}
               className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
               placeholder="0901234567"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Date of Birth (Optional)
+            </label>
+            <input
+              type="date"
+              value={dateOfBirth}
+              onChange={(e) => setDateOfBirth(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">
+              Chief Complaint (Optional)
+            </label>
+            <input
+              type="text"
+              value={chiefComplaint}
+              onChange={(e) => setChiefComplaint(e.target.value)}
+              className="w-full rounded-lg border border-gray-300 px-4 py-2 text-sm text-gray-900 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              placeholder="E.g., Missing teeth"
             />
           </div>
           <div>
