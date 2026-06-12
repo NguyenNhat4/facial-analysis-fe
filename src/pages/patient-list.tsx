@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useLocation } from "wouter";
 import { MedicalHeader } from "@/components/medical-header";
 import { usePatients, useSearchPatients, useDeletePatient } from "@/api/patients";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit2 } from "lucide-react";
 import { usePatientStore } from "@/stores/patient-store";
 import { CreatePatientModal } from "@/components/create-patient-modal";
 import { DeleteConfirmationModal } from "@/components/delete-confirmation-modal";
@@ -13,6 +13,7 @@ const PatientListPage = () => {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [patientToEdit, setPatientToEdit] = useState<any>(null);
   const [patientToDelete, setPatientToDelete] = useState<number | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const { setPatientData } = usePatientStore();
@@ -67,7 +68,10 @@ const PatientListPage = () => {
             <button
               className="inline-flex items-center justify-center rounded-lg bg-blue-600 px-4 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-700"
               type="button"
-              onClick={() => setIsCreateModalOpen(true)}
+              onClick={() => {
+                setPatientToEdit(null);
+                setIsCreateModalOpen(true);
+              }}
             >
               Create new patient +
             </button>
@@ -129,6 +133,17 @@ const PatientListPage = () => {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
+                            setPatientToEdit(patient);
+                            setIsCreateModalOpen(true);
+                          }}
+                          className="p-2 text-blue-500 hover:bg-blue-50 rounded-full transition-colors mr-2"
+                          title="Edit Patient"
+                        >
+                          <Edit2 className="w-5 h-5" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setPatientToDelete(patient.id);
                           }}
                           className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
@@ -156,7 +171,11 @@ const PatientListPage = () => {
       </div>
       <CreatePatientModal
         isOpen={isCreateModalOpen}
-        onClose={() => setIsCreateModalOpen(false)}
+        onClose={() => {
+          setIsCreateModalOpen(false);
+          setPatientToEdit(null);
+        }}
+        patientToEdit={patientToEdit}
       />
       <DeleteConfirmationModal
         isOpen={patientToDelete !== null}

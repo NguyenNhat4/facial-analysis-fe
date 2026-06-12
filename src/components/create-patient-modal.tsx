@@ -1,14 +1,16 @@
-import React, { useState } from "react";
-import { useCreatePatient } from "@/api/patients";
+import React, { useState, useEffect } from "react";
+import { useCreatePatient, useUpdatePatient, PatientBackendResponse } from "@/api/patients";
 
 interface CreatePatientModalProps {
   isOpen: boolean;
   onClose: () => void;
+  patientToEdit?: PatientBackendResponse | null;
 }
 
 export const CreatePatientModal: React.FC<CreatePatientModalProps> = ({
   isOpen,
   onClose,
+  patientToEdit,
 }) => {
   const [fullname, setFullname] = useState("");
   const [phone, setPhone] = useState("");
@@ -20,41 +22,73 @@ export const CreatePatientModal: React.FC<CreatePatientModalProps> = ({
   const [note, setNote] = useState("");
 
   const createPatientMutation = useCreatePatient();
+  const updatePatientMutation = useUpdatePatient();
+
+  useEffect(() => {
+    if (patientToEdit && isOpen) {
+      setFullname(patientToEdit.fullname || "");
+      setPhone(patientToEdit.phone || "");
+      setDateOfBirth(patientToEdit.date_of_birth ? patientToEdit.date_of_birth.split("T")[0] : "");
+      setChiefComplaint(patientToEdit.chief_complaint || "");
+      setConsultationDate(patientToEdit.consultation_date ? patientToEdit.consultation_date.split("T")[0] : new Date().toISOString().slice(0, 10));
+      setNote(patientToEdit.notes?.[0]?.content || "");
+    } else if (!isOpen) {
+      setFullname("");
+      setPhone("");
+      setDateOfBirth("");
+      setChiefComplaint("");
+      setConsultationDate(new Date().toISOString().slice(0, 10));
+      setNote("");
+    }
+  }, [patientToEdit, isOpen]);
 
   if (!isOpen) return null;
 
+  const isEditing = !!patientToEdit;
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    createPatientMutation.mutate(
-      {
-        fullname,
-        phone,
-        date_of_birth: dateOfBirth ? dateOfBirth + "T00:00:00" : undefined,
-        chief_complaint: chiefComplaint || undefined,
-        consultation_date: consultationDate + "T00:00:00",
-        note,
-      },
-      {
-        onSuccess: () => {
-          onClose();
-          setFullname("");
-          setPhone("");
-          setDateOfBirth("");
-          setChiefComplaint("");
-          setNote("");
-        },
-        onError: (err) => {
-          alert("Error creating patient: " + err.message);
-        },
-      }
-    );
+    const payload = {
+      fullname,
+      phone,
+      date_of_birth: dateOfBirth ? dateOfBirth + "T00:00:00" : undefined,
+      chief_complaint: chiefComplaint || undefined,
+      consultation_date: consultationDate + "T00:00:00",
+      note,
+    };
+
+    if (isEditing) {
+      updatePatientMutation.mutate(
+        { id: patientToEdit.id, data: payload },
+        {
+          onSuccess: () => {
+            onClose();
+          },
+          onError: (err) => {
+            alert("Error updating patient: " + err.message);
+          },
+        }
+      );
+    } else {
+      createPatientMutation.mutate(
+        payload,
+        {
+          onSuccess: () => {
+            onClose();
+          },
+          onError: (err) => {
+            alert("Error creating patient: " + err.message);
+          },
+        }
+      );
+    }
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-xl shadow-xl w-full max-w-md overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
-          <h2 className="text-xl font-semibold text-gray-800">Create New Patient</h2>
+          <h2 className="text-xl font-semibold text-gray-800">{isEditing ? "Edit Patient" : "Create New Patient"}</h2>
           <button
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700 focus:outline-none"
@@ -145,10 +179,10 @@ export const CreatePatientModal: React.FC<CreatePatientModalProps> = ({
             </button>
             <button
               type="submit"
-              disabled={createPatientMutation.isPending}
+              disabled={isEditing ? updatePatientMutation.isPending : createPatientMutation.isPending}
               className="px-4 py-2 rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none disabled:opacity-50"
             >
-              {createPatientMutation.isPending ? "Creating..." : "Create Patient"}
+              {(isEditing ? updatePatientMutation.isPending : createPatientMutation.isPending) ? (isEditing ? "Updating..." : "Creating...") : (isEditing ? "Update Patient" : "Create Patient")}
             </button>
           </div>
         </form>
