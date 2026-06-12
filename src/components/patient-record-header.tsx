@@ -5,6 +5,21 @@ import { usePatientStore } from "@/stores/patient-store";
 export const PatientRecordHeader: React.FC = () => {
   const { patientData } = usePatientStore();
 
+  const calculateAge = (dobString?: string) => {
+    if (!dobString) return null;
+    const dob = new Date(dobString);
+    if (isNaN(dob.getTime())) return null;
+    const today = new Date();
+    let age = today.getFullYear() - dob.getFullYear();
+    const m = today.getMonth() - dob.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) {
+      age--;
+    }
+    return age;
+  };
+
+  const age = calculateAge(patientData.dateOfBirth);
+
   return (
     <div className="bg-gradient-to-r from-blue-700 to-blue-800 text-white px-8 py-6 rounded-t-xl">
       <div className="flex items-center justify-between">
@@ -32,7 +47,7 @@ export const PatientRecordHeader: React.FC = () => {
               {patientData.diagnose || "Clinical Record"}
             </p>
             <p className="text-blue-200 text-sm">
-              Patient ID: #{patientData.patientId || "N/A"} • Consultation Date:{" "}
+              Patient ID: #{patientData.patientId || "N/A"}{age !== null ? ` • Age: ${age}` : ""} • Consultation Date:{" "}
               {patientData.consultationDate || new Date().toLocaleDateString("en-GB")}
             </p>
           </div>

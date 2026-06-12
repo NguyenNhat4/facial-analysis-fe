@@ -90,6 +90,7 @@ const DemoPage = () => {
         firstName: patient.fullname.split(" ")[0] || "",
         lastName: patient.fullname.split(" ").slice(1).join(" ") || "",
         phone: patient.phone,
+        dateOfBirth: patient.date_of_birth || "",
         consultationDate: new Date(patient.consultation_date).toLocaleDateString("en-GB"),
         note: patient.notes?.[0]?.content || "",
       });
