@@ -21,7 +21,7 @@ import { MedicalHeader } from "@/components/medical-header";
 import { PatientRecordHeader } from "@/components/patient-record-header";
 
 import { usePatientStore } from "@/stores/patient-store";
-import { usePatientAnalyses, useSaveAnalysis } from "@/api/patients";
+import { usePatient, usePatientAnalyses, useSaveAnalysis } from "@/api/patients";
 import { useSimpleToast } from "@/hooks/useSimpleToast";
 import ToastNotification from "@/components/toast-notification";
 
@@ -29,8 +29,13 @@ import ToastNotification from "@/components/toast-notification";
 import "./ceph-analysis.css";
 
 export default function CephAnalysisPage() {
+  // --- Routing & Navigation ---
   const [location, setLocation] = useLocation();
+  const urlParams = React.useMemo(() => new URLSearchParams(window.location.search), []);
+  const urlPatientId = urlParams.get("patientId");
 
+  // --- Global State Stores ---
+  const { patientData, setPatientData } = usePatientStore();
   const {
     loadedImageSrc,
     loading,
@@ -44,18 +49,40 @@ export default function CephAnalysisPage() {
     landmarksData
   } = useCephStore();
 
+  // --- UI & Notification Hooks ---
   const { toast, showToast, hideToast } = useSimpleToast();
-  const patientId = usePatientStore((state) => state.patientData?.patientId);
-  const { data: patientAnalyses, isSuccess: isAnalysesLoaded } = usePatientAnalyses(patientId);
-  const saveAnalysisMutation = useSaveAnalysis();
 
+  // --- Local State & Refs ---
   const processedLateralRef = useRef<string | null>(null);
   const [imageId, setImageId] = React.useState<number | null>(null);
   const [originalLandmarks, setOriginalLandmarks] = React.useState<any>(null);
 
+  // --- Derived State ---
+  const patientId = patientData?.patientId || urlPatientId || undefined;
+
+  // --- API Queries & Mutations ---
+  const { data: patient } = usePatient(patientId);
+  const { data: patientAnalyses, isSuccess: isAnalysesLoaded } = usePatientAnalyses(patientId);
+  const saveAnalysisMutation = useSaveAnalysis();
+
+  // Sync patient details to the store if loaded from the API (e.g. on F5 refresh)
+  useEffect(() => {
+    if (patient && (!patientData.patientId || patientData.patientId !== patient.id.toString())) {
+      setPatientData({
+        patientId: patient.id.toString(),
+        name: patient.fullname,
+        firstName: patient.fullname.split(" ")[0] || "",
+        lastName: patient.fullname.split(" ").slice(1).join(" ") || "",
+        phone: patient.phone,
+        dateOfBirth: patient.date_of_birth || "",
+        consultationDate: new Date(patient.consultation_date).toLocaleDateString("en-GB"),
+        note: patient.notes?.[0]?.content || "",
+      });
+    }
+  }, [patient, patientData.patientId, setPatientData]);
+
   useEffect(() => {
     const processImage = async () => {
-      const urlParams = new URLSearchParams(window.location.search);
       const lateral = urlParams.get("lateral");
 
       // We only proceed if analyses are loaded and we have a lateral param
@@ -121,7 +148,7 @@ export default function CephAnalysisPage() {
     };
 
     processImage();
-  }, [isAnalysesLoaded, patientAnalyses, setLoadedImageSrc, uploadAndDetect, loadJsonData]);
+  }, [isAnalysesLoaded, patientAnalyses, setLoadedImageSrc, uploadAndDetect, loadJsonData, urlParams]);
 
   // Separate effect to handle auto-save after inference (when landmarksData becomes available and it's not from a load)
   // We use a ref to track if we need to auto-save
@@ -215,7 +242,7 @@ export default function CephAnalysisPage() {
       {/* Header */}
       <MedicalHeader
         onNavigation={setLocation}
-        previousPage={location}
+        previousPage={patientId ? `/patients/${patientId}/upload` : "/"}
         title="Phân Tích Cephalometric"
         subtitle="AI-Powered Ceph Analysis"
         maxWidthClass="max-w-[1800px]"

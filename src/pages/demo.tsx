@@ -157,6 +157,12 @@ const DemoPage = () => {
         imageParams.set("folder", currentFolderName);
       }
 
+      // Add patient ID if available
+      const pId = params?.id || patientData?.patientId;
+      if (pId) {
+        imageParams.set("patientId", pId);
+      }
+
       // Add image URLs for analysis
       Object.entries(imagePreviewUrls).forEach(([key, url]) => {
         if (url && uploadedImages[key]) {
