@@ -183,7 +183,7 @@ const DemoPage = () => {
       className="min-h-screen bg-gradient-to-br from-slate-25 via-blue-25 to-indigo-25"
       style={{ backgroundColor: "#fafbfc" }}
     >
-      <MedicalHeader onNavigation={handleNavigation} />
+      <MedicalHeader onNavigation={handleNavigation} previousPage="/" />
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
